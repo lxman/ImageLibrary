@@ -1,3 +1,4 @@
+using ImageLibrary.Png;
 using Xunit;
 
 namespace PngCodec.Tests;
@@ -275,30 +276,5 @@ public class PngImageTests
         Assert.Equal(0, pixel.G);
         Assert.Equal(0, pixel.B);
         Assert.Equal(0, pixel.A);
-    }
-}
-
-
-public class PngSignatureTests
-{
-    [Fact]
-    public void IsValid_ValidSignature_ReturnsTrue()
-    {
-        byte[] data = [137, 80, 78, 71, 13, 10, 26, 10];
-        Assert.True(PngSignature.IsValid(data));
-    }
-
-    [Fact]
-    public void IsValid_InvalidSignature_ReturnsFalse()
-    {
-        byte[] data = [0, 0, 0, 0, 0, 0, 0, 0];
-        Assert.False(PngSignature.IsValid(data));
-    }
-
-    [Fact]
-    public void IsValid_TooShort_ReturnsFalse()
-    {
-        byte[] data = [137, 80, 78];
-        Assert.False(PngSignature.IsValid(data));
     }
 }

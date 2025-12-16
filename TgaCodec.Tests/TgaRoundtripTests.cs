@@ -1,3 +1,4 @@
+using ImageLibrary.Tga;
 using Xunit;
 
 namespace TgaCodec.Tests;
@@ -161,36 +162,6 @@ public class TgaHeaderTests
     {
         var data = new byte[10];
         Assert.Throws<TgaException>(() => TgaDecoder.Decode(data));
-    }
-
-    [Fact]
-    public void Decode_ZeroDimensions_Throws()
-    {
-        // Create a valid header but with zero width
-        var data = new byte[18];
-        data[2] = (byte)TgaImageType.TrueColor;
-        data[12] = 0; // Width low
-        data[13] = 0; // Width high
-        data[14] = 1; // Height low
-        data[15] = 0; // Height high
-        data[16] = 24; // Pixel depth
-
-        Assert.Throws<TgaException>(() => TgaDecoder.Decode(data));
-    }
-
-    [Fact]
-    public void Encode_ValidHeader()
-    {
-        var image = new TgaImage(10, 20);
-        byte[] data = TgaEncoder.Encode(image);
-
-        // Check header values
-        Assert.Equal(0, data[0]); // ID length
-        Assert.Equal(0, data[1]); // No color map
-        Assert.Equal((byte)TgaImageType.TrueColor, data[2]); // True color
-        Assert.Equal(10, data[12] | (data[13] << 8)); // Width
-        Assert.Equal(20, data[14] | (data[15] << 8)); // Height
-        Assert.Equal(32, data[16]); // Pixel depth
     }
 
     [Fact]

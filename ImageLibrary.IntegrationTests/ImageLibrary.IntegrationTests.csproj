@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>12.0</LangVersion>
+    <LangVersion>default</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
@@ -18,11 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BmpCodec\BmpCodec.csproj" />
-    <ProjectReference Include="..\TgaCodec\TgaCodec.csproj" />
-    <ProjectReference Include="..\GifCodec\GifCodec.csproj" />
-    <ProjectReference Include="..\PngCodec\PngCodec.csproj" />
-    <ProjectReference Include="..\Jbig2Codec\Jbig2Codec.csproj" />
+    <ProjectReference Include="..\ImageLibrary\ImageLibrary.csproj" />
   </ItemGroup>
 
 </Project>

@@ -7,6 +7,7 @@
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,8 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Jp2Codec\Jp2Codec.csproj" />
-    <ProjectReference Include="..\PngCodec\PngCodec.csproj" />
+    <ProjectReference Include="..\ImageLibrary\ImageLibrary.csproj" />
   </ItemGroup>
 
 </Project>

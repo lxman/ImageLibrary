@@ -1,3 +1,4 @@
+using ImageLibrary.Jpeg;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Xunit;

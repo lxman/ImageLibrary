@@ -1,3 +1,4 @@
+using ImageLibrary.Jbig2;
 using Xunit;
 
 namespace Jbig2Codec.Tests;

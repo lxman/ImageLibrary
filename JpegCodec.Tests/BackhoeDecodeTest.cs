@@ -1,3 +1,4 @@
+using ImageLibrary.Jpeg;
 using Xunit;
 using Xunit.Abstractions;
 

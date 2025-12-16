@@ -1,3 +1,4 @@
+using ImageLibrary.Gif;
 using Xunit;
 
 namespace GifCodec.Tests;

@@ -1,10 +1,7 @@
 using Xunit;
 using Xunit.Abstractions;
-using BmpCodec;
-using TgaCodec;
-using GifCodec;
-using PngCodec;
-using Jbig2Codec;
+using ImageLibrary.Jbig2;
+using ImageLibrary.Png;
 
 namespace ImageLibrary.IntegrationTests;
 

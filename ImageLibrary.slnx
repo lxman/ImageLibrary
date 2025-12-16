@@ -1,13 +1,4 @@
 <Solution>
-  <Folder Name="/Codecs/">
-    <Project Path="BmpCodec/BmpCodec.csproj" />
-    <Project Path="TgaCodec/TgaCodec.csproj" />
-    <Project Path="GifCodec/GifCodec.csproj" />
-    <Project Path="PngCodec/PngCodec.csproj" />
-    <Project Path="Jbig2Codec/Jbig2Codec.csproj" />
-    <Project Path="Jp2Codec/Jp2Codec.csproj" />
-    <Project Path="JpegCodec/JpegCodec.csproj" />
-  </Folder>
   <Folder Name="/Docs/">
     <File Path="CHANGELOG.md" />
     <File Path="LICENSE" />
@@ -23,4 +14,5 @@
     <Project Path="JpegCodec.Tests/JpegCodec.Tests.csproj" />
     <Project Path="ImageLibrary.IntegrationTests/ImageLibrary.IntegrationTests.csproj" />
   </Folder>
+  <Project Path="ImageLibrary/ImageLibrary.csproj" />
 </Solution>
