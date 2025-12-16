@@ -135,7 +135,7 @@ public class HuffmanDecoderTests
         var data = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
         var decoder = new HuffmanDecoder(data, 0, data.Length);
 
-        var table = StandardHuffmanTables.TableA;
+        HuffmanTable table = StandardHuffmanTables.TableA;
         int value = decoder.Decode(table);
 
         // Should decode to some valid integer (not OOB)
@@ -148,7 +148,7 @@ public class HuffmanDecoderTests
         var data = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
         var decoder = new HuffmanDecoder(data, 0, data.Length);
 
-        var table = StandardHuffmanTables.TableB;
+        HuffmanTable table = StandardHuffmanTables.TableB;
         int value = decoder.Decode(table);
 
         Assert.NotEqual(HuffmanDecoder.OOB, value);
@@ -161,8 +161,8 @@ public class HuffmanDecoderTests
         var decoder = new HuffmanDecoder(data, 0, data.Length);
 
         // Decode using different tables in sequence
-        var tableA = StandardHuffmanTables.TableA;
-        var tableB = StandardHuffmanTables.TableB;
+        HuffmanTable tableA = StandardHuffmanTables.TableA;
+        HuffmanTable tableB = StandardHuffmanTables.TableB;
 
         int val1 = decoder.Decode(tableA);
         int val2 = decoder.Decode(tableB);
@@ -218,7 +218,7 @@ public class HuffmanDecoderTests
         var decoder1 = new HuffmanDecoder(data, 0, data.Length);
         var decoder2 = new HuffmanDecoder(data, 0, data.Length);
 
-        var table = StandardHuffmanTables.TableA;
+        HuffmanTable table = StandardHuffmanTables.TableA;
 
         int val1 = decoder1.Decode(table);
         int val2 = decoder2.Decode(table);

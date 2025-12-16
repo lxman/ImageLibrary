@@ -127,7 +127,7 @@ public class JpegReader
 
         int maxH = 0, maxV = 0;
 
-        for (int i = 0; i < componentCount; i++)
+        for (var i = 0; i < componentCount; i++)
         {
             var component = new JpegComponent
             {
@@ -170,8 +170,8 @@ public class JpegReader
             var spec = new HuffmanTableSpec();
 
             // Read code counts for each bit length (1-16)
-            int totalCodes = 0;
-            for (int i = 0; i < 16; i++)
+            var totalCodes = 0;
+            for (var i = 0; i < 16; i++)
             {
                 spec.CodeCounts[i] = _data[_position++];
                 totalCodes += spec.CodeCounts[i];
@@ -179,7 +179,7 @@ public class JpegReader
 
             // Read symbol values
             spec.Symbols = new byte[totalCodes];
-            for (int i = 0; i < totalCodes; i++)
+            for (var i = 0; i < totalCodes; i++)
             {
                 spec.Symbols[i] = _data[_position++];
             }
@@ -214,7 +214,7 @@ public class JpegReader
             if (precision == 0)
             {
                 // 8-bit precision
-                for (int i = 0; i < 64; i++)
+                for (var i = 0; i < 64; i++)
                 {
                     table[i] = _data[_position++];
                 }
@@ -222,7 +222,7 @@ public class JpegReader
             else
             {
                 // 16-bit precision
-                for (int i = 0; i < 64; i++)
+                for (var i = 0; i < 64; i++)
                 {
                     table[i] = ReadUInt16();
                 }
@@ -250,13 +250,13 @@ public class JpegReader
         int length = ReadUInt16();
         int componentCount = _data[_position++];
 
-        for (int i = 0; i < componentCount; i++)
+        for (var i = 0; i < componentCount; i++)
         {
             byte componentId = _data[_position++];
             byte tableIds = _data[_position++];
 
             // Find the component by ID
-            var component = Array.Find(frame.Components, c => c.Id == componentId);
+            JpegComponent? component = Array.Find(frame.Components, c => c.Id == componentId);
             if (component != null)
             {
                 component.DcTableId = (byte)(tableIds >> 4);
@@ -320,7 +320,7 @@ public class JpegReader
 
     private ushort ReadUInt16()
     {
-        ushort value = (ushort)((_data[_position] << 8) | _data[_position + 1]);
+        var value = (ushort)((_data[_position] << 8) | _data[_position + 1]);
         _position += 2;
         return value;
     }

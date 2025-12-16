@@ -35,10 +35,10 @@ public class InverseDwt : IInverseDwt
         }
 
         // Start with LL subband
-        double[,] result = (double[,])input.Subbands[0].Clone();
+        var result = (double[,])input.Subbands[0].Clone();
 
         // Reconstruct from lowest resolution to highest
-        int subbandIdx = 1; // Skip LL (index 0)
+        var subbandIdx = 1; // Skip LL (index 0)
 
         for (int level = input.DecompositionLevels; level >= 1; level--)
         {
@@ -65,42 +65,42 @@ public class InverseDwt : IInverseDwt
         int width = lowWidth + hl.GetLength(1);
 
         // First, interleave horizontally: combine LL with HL, and LH with HH
-        double[,] lowBand = new double[lowHeight, width];
-        double[,] highBand = new double[lh.GetLength(0), width];
+        var lowBand = new double[lowHeight, width];
+        var highBand = new double[lh.GetLength(0), width];
 
         // Combine LL and HL row-wise
-        for (int y = 0; y < lowHeight; y++)
+        for (var y = 0; y < lowHeight; y++)
         {
-            var row = InterleaveAndSynthesize1D(
+            double[] row = InterleaveAndSynthesize1D(
                 GetRow(ll, y),
                 GetRow(hl, y));
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 lowBand[y, x] = row[x];
             }
         }
 
         // Combine LH and HH row-wise
-        for (int y = 0; y < lh.GetLength(0); y++)
+        for (var y = 0; y < lh.GetLength(0); y++)
         {
-            var row = InterleaveAndSynthesize1D(
+            double[] row = InterleaveAndSynthesize1D(
                 GetRow(lh, y),
                 GetRow(hh, y));
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 highBand[y, x] = row[x];
             }
         }
 
         // Then, interleave vertically: combine lowBand with highBand
-        double[,] result = new double[height, width];
+        var result = new double[height, width];
 
-        for (int x = 0; x < width; x++)
+        for (var x = 0; x < width; x++)
         {
-            var col = InterleaveAndSynthesize1D(
+            double[] col = InterleaveAndSynthesize1D(
                 GetColumn(lowBand, x),
                 GetColumn(highBand, x));
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
                 result[y, x] = col[y];
             }
@@ -131,11 +131,11 @@ public class InverseDwt : IInverseDwt
         {
             // Phase 0: Even indices from low, odd indices from high
             // Sample 0 is even (low-pass)
-            for (int i = 0; i < low.Length; i++)
+            for (var i = 0; i < low.Length; i++)
             {
                 result[i * 2] = low[i];
             }
-            for (int i = 0; i < high.Length; i++)
+            for (var i = 0; i < high.Length; i++)
             {
                 result[i * 2 + 1] = high[i];
             }
@@ -144,11 +144,11 @@ public class InverseDwt : IInverseDwt
         {
             // Phase 1: Odd indices from low, even indices from high
             // Sample 0 is odd (high-pass)
-            for (int i = 0; i < high.Length; i++)
+            for (var i = 0; i < high.Length; i++)
             {
                 result[i * 2] = high[i];
             }
-            for (int i = 0; i < low.Length; i++)
+            for (var i = 0; i < low.Length; i++)
             {
                 result[i * 2 + 1] = low[i];
             }
@@ -264,7 +264,7 @@ public class InverseDwt : IInverseDwt
     {
         int width = array.GetLength(1);
         var result = new double[width];
-        for (int x = 0; x < width; x++)
+        for (var x = 0; x < width; x++)
         {
             result[x] = array[row, x];
         }
@@ -275,7 +275,7 @@ public class InverseDwt : IInverseDwt
     {
         int height = array.GetLength(0);
         var result = new double[height];
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
             result[y] = array[y, col];
         }

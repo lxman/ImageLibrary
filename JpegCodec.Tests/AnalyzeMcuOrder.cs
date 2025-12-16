@@ -22,8 +22,8 @@ public class AnalyzeMcuOrder
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
 
-        var ourImage = JpegDecoder.DecodeFile(path);
-        using var isImage = Image.Load<L8>(path);
+        DecodedImage ourImage = JpegDecoder.DecodeFile(path);
+        using Image<L8> isImage = Image.Load<L8>(path);
 
         // For each 8x8 block in our image, find where that block appears in ImageSharp
         // This will reveal the scrambling pattern
@@ -36,15 +36,15 @@ public class AnalyzeMcuOrder
         int blocksY = (ourImage.Height + 7) / 8;
 
         // Just check first few rows of blocks
-        for (int ourBlockY = 0; ourBlockY < Math.Min(4, blocksY); ourBlockY++)
+        for (var ourBlockY = 0; ourBlockY < Math.Min(4, blocksY); ourBlockY++)
         {
-            for (int ourBlockX = 0; ourBlockX < Math.Min(8, blocksX); ourBlockX++)
+            for (var ourBlockX = 0; ourBlockX < Math.Min(8, blocksX); ourBlockX++)
             {
                 // Get the signature (average and variance) of our block
-                var ourSig = GetBlockSignature(ourImage, ourBlockX * 8, ourBlockY * 8);
+                (double avg, double variance, byte[] samples) ourSig = GetBlockSignature(ourImage, ourBlockX * 8, ourBlockY * 8);
 
                 // Find matching block in ImageSharp
-                var match = FindMatchingBlock(isImage, ourSig, blocksX, blocksY);
+                (int x, int y)? match = FindMatchingBlock(isImage, ourSig, blocksX, blocksY);
 
                 string matchStr = match.HasValue
                     ? $"IS block ({match.Value.x}, {match.Value.y})"
@@ -60,13 +60,13 @@ public class AnalyzeMcuOrder
     {
         var samples = new byte[64];
         double sum = 0;
-        int count = 0;
+        var count = 0;
 
-        for (int y = 0; y < 8 && startY + y < img.Height; y++)
+        for (var y = 0; y < 8 && startY + y < img.Height; y++)
         {
-            for (int x = 0; x < 8 && startX + x < img.Width; x++)
+            for (var x = 0; x < 8 && startX + x < img.Width; x++)
             {
-                var (r, _, _) = img.GetPixel(startX + x, startY + y);
+                (byte r, _, _) = img.GetPixel(startX + x, startY + y);
                 samples[y * 8 + x] = r;
                 sum += r;
                 count++;
@@ -76,7 +76,7 @@ public class AnalyzeMcuOrder
         double avg = count > 0 ? sum / count : 0;
 
         double variance = 0;
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             variance += (samples[i] - avg) * (samples[i] - avg);
         }
@@ -89,11 +89,11 @@ public class AnalyzeMcuOrder
     {
         var samples = new byte[64];
         double sum = 0;
-        int count = 0;
+        var count = 0;
 
-        for (int y = 0; y < 8 && startY + y < img.Height; y++)
+        for (var y = 0; y < 8 && startY + y < img.Height; y++)
         {
-            for (int x = 0; x < 8 && startX + x < img.Width; x++)
+            for (var x = 0; x < 8 && startX + x < img.Width; x++)
             {
                 byte val = img[startX + x, startY + y].PackedValue;
                 samples[y * 8 + x] = val;
@@ -105,7 +105,7 @@ public class AnalyzeMcuOrder
         double avg = count > 0 ? sum / count : 0;
 
         double variance = 0;
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             variance += (samples[i] - avg) * (samples[i] - avg);
         }
@@ -122,14 +122,14 @@ public class AnalyzeMcuOrder
             return null;
         }
 
-        double bestScore = double.MaxValue;
+        var bestScore = double.MaxValue;
         (int x, int y)? bestMatch = null;
 
-        for (int blockY = 0; blockY < blocksY; blockY++)
+        for (var blockY = 0; blockY < blocksY; blockY++)
         {
-            for (int blockX = 0; blockX < blocksX; blockX++)
+            for (var blockX = 0; blockX < blocksX; blockX++)
             {
-                var sig = GetBlockSignatureIS(img, blockX * 8, blockY * 8);
+                (double avg, double variance, byte[] samples) sig = GetBlockSignatureIS(img, blockX * 8, blockY * 8);
 
                 // Skip if variance is very different
                 if (Math.Abs(sig.variance - target.variance) > target.variance * 0.5)
@@ -137,7 +137,7 @@ public class AnalyzeMcuOrder
 
                 // Calculate sample-by-sample difference
                 double score = 0;
-                for (int i = 0; i < 64; i++)
+                for (var i = 0; i < 64; i++)
                 {
                     double diff = sig.samples[i] - target.samples[i];
                     score += diff * diff;
@@ -166,8 +166,8 @@ public class AnalyzeMcuOrder
         // Look at a specific MCU that has content (not just white)
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
 
-        var ourImage = JpegDecoder.DecodeFile(path);
-        using var isImage = Image.Load<L8>(path);
+        DecodedImage ourImage = JpegDecoder.DecodeFile(path);
+        using Image<L8> isImage = Image.Load<L8>(path);
 
         // MCU at position (5, 10) should have some actual image content
         int mcuX = 5, mcuY = 10;
@@ -177,31 +177,31 @@ public class AnalyzeMcuOrder
         _output.WriteLine("");
 
         // Show all 4 blocks within this MCU
-        for (int by = 0; by < 2; by++)
+        for (var by = 0; by < 2; by++)
         {
-            for (int bx = 0; bx < 2; bx++)
+            for (var bx = 0; bx < 2; bx++)
             {
                 int blockPixelX = pixelX + bx * 8;
                 int blockPixelY = pixelY + by * 8;
 
                 _output.WriteLine($"Block ({bx}, {by}) at pixel ({blockPixelX}, {blockPixelY}):");
                 _output.WriteLine("OUR:");
-                for (int y = 0; y < 8; y++)
+                for (var y = 0; y < 8; y++)
                 {
-                    string row = "  ";
-                    for (int x = 0; x < 8; x++)
+                    var row = "  ";
+                    for (var x = 0; x < 8; x++)
                     {
-                        var (v, _, _) = ourImage.GetPixel(blockPixelX + x, blockPixelY + y);
+                        (byte v, _, _) = ourImage.GetPixel(blockPixelX + x, blockPixelY + y);
                         row += $"{v,4}";
                     }
                     _output.WriteLine(row);
                 }
 
                 _output.WriteLine("ImageSharp:");
-                for (int y = 0; y < 8; y++)
+                for (var y = 0; y < 8; y++)
                 {
-                    string row = "  ";
-                    for (int x = 0; x < 8; x++)
+                    var row = "  ";
+                    for (var x = 0; x < 8; x++)
                     {
                         row += $"{isImage[blockPixelX + x, blockPixelY + y].PackedValue,4}";
                     }

@@ -25,20 +25,20 @@ public class HuffmanTableTests
     [Fact]
     public void BuildHuffmanTable_FromSimpleJpeg_NoException()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         // Build DC table
-        var dcSpec = frame.DcHuffmanTables[0];
+        HuffmanTableSpec? dcSpec = frame.DcHuffmanTables[0];
         Assert.NotNull(dcSpec);
         var dcTable = new HuffmanTable(dcSpec);
         Assert.NotNull(dcTable);
 
         // Build AC table
-        var acSpec = frame.AcHuffmanTables[0];
+        HuffmanTableSpec? acSpec = frame.AcHuffmanTables[0];
         Assert.NotNull(acSpec);
         var acTable = new HuffmanTable(acSpec);
         Assert.NotNull(acTable);
@@ -47,11 +47,11 @@ public class HuffmanTableTests
     [Fact]
     public void BuildHuffmanTable_LookupTablePopulated()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var dcTable = new HuffmanTable(frame.DcHuffmanTables[0]!);
 
@@ -63,18 +63,18 @@ public class HuffmanTableTests
     [Fact]
     public void BuildHuffmanTable_SymbolsPreserved()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
-        var dcSpec = frame.DcHuffmanTables[0]!;
+        HuffmanTableSpec dcSpec = frame.DcHuffmanTables[0]!;
         var dcTable = new HuffmanTable(dcSpec);
 
         // Symbols should be preserved
         Assert.Equal(dcSpec.Symbols.Length, dcTable.Symbols.Length);
-        for (int i = 0; i < dcSpec.Symbols.Length; i++)
+        for (var i = 0; i < dcSpec.Symbols.Length; i++)
         {
             Assert.Equal(dcSpec.Symbols[i], dcTable.Symbols[i]);
         }
@@ -88,13 +88,13 @@ public class HuffmanTableTests
     public void BuildDcLuminanceTable_CorrectSymbolCount()
     {
         // Standard JPEG DC luminance table has 12 symbols (0-11)
-        var path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
-        var dcSpec = frame.DcHuffmanTables[0]!;
+        HuffmanTableSpec dcSpec = frame.DcHuffmanTables[0]!;
         Assert.Equal(12, dcSpec.TotalCodes);
     }
 
@@ -102,13 +102,13 @@ public class HuffmanTableTests
     public void BuildAcLuminanceTable_CorrectSymbolCount()
     {
         // Standard JPEG AC luminance table has 162 symbols
-        var path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
-        var acSpec = frame.AcHuffmanTables[0]!;
+        HuffmanTableSpec acSpec = frame.AcHuffmanTables[0]!;
         Assert.Equal(162, acSpec.TotalCodes);
     }
 
@@ -119,21 +119,21 @@ public class HuffmanTableTests
     [Fact]
     public void BuildHuffmanTables_AllTestImages_NoExceptions()
     {
-        var basePath = GetTestImagesPath();
-        var jpegFiles = Directory.GetFiles(basePath, "*.jpg", SearchOption.AllDirectories);
+        string basePath = GetTestImagesPath();
+        string[] jpegFiles = Directory.GetFiles(basePath, "*.jpg", SearchOption.AllDirectories);
 
         var failures = new List<string>();
 
-        foreach (var file in jpegFiles)
+        foreach (string file in jpegFiles)
         {
             try
             {
-                var data = File.ReadAllBytes(file);
+                byte[] data = File.ReadAllBytes(file);
                 var reader = new JpegReader(data);
-                var frame = reader.ReadFrame();
+                JpegFrame frame = reader.ReadFrame();
 
                 // Build all DC tables
-                for (int i = 0; i < 4; i++)
+                for (var i = 0; i < 4; i++)
                 {
                     if (frame.DcHuffmanTables[i] != null)
                     {
@@ -143,7 +143,7 @@ public class HuffmanTableTests
                 }
 
                 // Build all AC tables
-                for (int i = 0; i < 4; i++)
+                for (var i = 0; i < 4; i++)
                 {
                     if (frame.AcHuffmanTables[i] != null)
                     {

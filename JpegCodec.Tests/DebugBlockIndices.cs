@@ -16,16 +16,16 @@ public class DebugBlockIndices
     public void TraceBlockAllocation()
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         _output.WriteLine($"Image: {frame.Width}x{frame.Height}");
         _output.WriteLine($"MaxHSamp: {frame.MaxHorizontalSamplingFactor}, MaxVSamp: {frame.MaxVerticalSamplingFactor}");
         _output.WriteLine($"MCUs: {frame.McuCountX}x{frame.McuCountY}");
 
-        var comp = frame.Components[0];
+        JpegComponent comp = frame.Components[0];
         _output.WriteLine($"Component 0: hSamp={comp.HorizontalSamplingFactor}, vSamp={comp.VerticalSamplingFactor}");
 
         // Calculate blocks per row as done in EntropyDecoder
@@ -37,14 +37,14 @@ public class DebugBlockIndices
 
         // Trace first few MCUs - show which block indices they write to
         _output.WriteLine("\n=== Block allocation by MCU ===");
-        for (int mcuY = 0; mcuY < 3; mcuY++)
+        for (var mcuY = 0; mcuY < 3; mcuY++)
         {
-            for (int mcuX = 0; mcuX < 3; mcuX++)
+            for (var mcuX = 0; mcuX < 3; mcuX++)
             {
                 _output.WriteLine($"\nMCU ({mcuX}, {mcuY}):");
-                for (int blockY = 0; blockY < comp.VerticalSamplingFactor; blockY++)
+                for (var blockY = 0; blockY < comp.VerticalSamplingFactor; blockY++)
                 {
-                    for (int blockX = 0; blockX < comp.HorizontalSamplingFactor; blockX++)
+                    for (var blockX = 0; blockX < comp.HorizontalSamplingFactor; blockX++)
                     {
                         int globalBlockX = mcuX * comp.HorizontalSamplingFactor + blockX;
                         int globalBlockY = mcuY * comp.VerticalSamplingFactor + blockY;
@@ -81,19 +81,19 @@ public class DebugBlockIndices
     public void CompareFirstBlockDCT()
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         _output.WriteLine($"Total blocks decoded for component 0: {blocks[0].Length}");
 
         // Show first 8 blocks (should be first 2 MCU rows for 2x2 sampling)
         _output.WriteLine("\nFirst 8 blocks (DCT coefficients, DC only):");
-        for (int i = 0; i < Math.Min(8, blocks[0].Length); i++)
+        for (var i = 0; i < Math.Min(8, blocks[0].Length); i++)
         {
             _output.WriteLine($"Block {i}: DC = {blocks[0][i][0]}");
         }

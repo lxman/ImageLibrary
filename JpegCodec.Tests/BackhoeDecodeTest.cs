@@ -31,18 +31,18 @@ public class BackhoeDecodeTest
     [Fact]
     public void DecodeBackhoe_SaveAsPpm()
     {
-        var jpegPath = Path.Combine(GetTestImagesPath(), "backhoe-006.jpg");
-        var ppmPath = Path.Combine(GetTestImagesPath(), "backhoe-test-output.ppm");
+        string jpegPath = Path.Combine(GetTestImagesPath(), "backhoe-006.jpg");
+        string ppmPath = Path.Combine(GetTestImagesPath(), "backhoe-test-output.ppm");
 
         _output.WriteLine($"Input: {jpegPath}");
         _output.WriteLine($"Output: {ppmPath}");
 
-        var image = JpegDecoder.DecodeFile(jpegPath);
+        DecodedImage image = JpegDecoder.DecodeFile(jpegPath);
 
         _output.WriteLine($"Decoded: {image.Width}x{image.Height}");
 
         // Save as PPM (simple format that can be viewed/converted)
-        using var fs = File.Create(ppmPath);
+        using FileStream fs = File.Create(ppmPath);
         using var sw = new StreamWriter(fs);
 
         // PPM header
@@ -51,11 +51,11 @@ public class BackhoeDecodeTest
         sw.WriteLine("255");
 
         // Pixel data
-        for (int y = 0; y < image.Height; y++)
+        for (var y = 0; y < image.Height; y++)
         {
-            for (int x = 0; x < image.Width; x++)
+            for (var x = 0; x < image.Width; x++)
             {
-                var (r, g, b) = image.GetPixel(x, y);
+                (byte r, byte g, byte b) = image.GetPixel(x, y);
                 sw.Write($"{r} {g} {b} ");
             }
             sw.WriteLine();

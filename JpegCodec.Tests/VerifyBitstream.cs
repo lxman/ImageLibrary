@@ -19,10 +19,10 @@ public class VerifyBitstream
     public void CheckEntropyOffset()
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         _output.WriteLine($"File size: {data.Length} bytes");
         _output.WriteLine($"Entropy data offset: {frame.EntropyDataOffset}");
@@ -39,7 +39,7 @@ public class VerifyBitstream
 
         _output.WriteLine("");
         _output.WriteLine("First bytes of entropy data:");
-        for (int i = 0; i < Math.Min(20, frame.EntropyDataLength); i++)
+        for (var i = 0; i < Math.Min(20, frame.EntropyDataLength); i++)
         {
             _output.WriteLine($"  [{frame.EntropyDataOffset + i}] = 0x{data[frame.EntropyDataOffset + i]:X2}");
         }
@@ -50,14 +50,14 @@ public class VerifyBitstream
     {
         // Try to manually decode the first few DC coefficients to verify
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         _output.WriteLine("SOS marker info:");
         _output.WriteLine($"  Component count: {frame.ComponentCount}");
-        foreach (var comp in frame.Components)
+        foreach (JpegComponent comp in frame.Components)
         {
             _output.WriteLine($"  Component {comp.Id}: DC table {comp.DcTableId}, AC table {comp.AcTableId}");
         }
@@ -68,9 +68,9 @@ public class VerifyBitstream
         decoder.Reset();
 
         _output.WriteLine("First 10 decoded DC values (sequential decode order):");
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
-            var block = decoder.DecodeSingleBlock(0);
+            short[] block = decoder.DecodeSingleBlock(0);
             _output.WriteLine($"  Block {i}: DC = {block[0]}");
         }
     }
@@ -79,17 +79,17 @@ public class VerifyBitstream
     public void CheckDcTableContents()
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         _output.WriteLine("DC Huffman Table 0:");
-        var dcSpec = frame.DcHuffmanTables[0];
+        HuffmanTableSpec? dcSpec = frame.DcHuffmanTables[0];
         if (dcSpec != null)
         {
             _output.WriteLine("  Code counts by length:");
-            for (int i = 0; i < 16; i++)
+            for (var i = 0; i < 16; i++)
             {
                 if (dcSpec.CodeCounts[i] > 0)
                 {
@@ -106,14 +106,14 @@ public class VerifyBitstream
     {
         // Compare DC values from decode-order vs storage-index
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         // Get blocks from DecodeAllBlocks (stored by spatial position)
         var decoder1 = new EntropyDecoder(frame, data);
-        var spatialBlocks = decoder1.DecodeAllBlocks();
+        short[][][] spatialBlocks = decoder1.DecodeAllBlocks();
 
         // Decode sequentially to get decode-order
         var decoder2 = new EntropyDecoder(frame, data);
@@ -123,16 +123,16 @@ public class VerifyBitstream
         _output.WriteLine("DecodeIdx | DecodeOrderDC | SpatialIdx | SpatialDC | Match?");
         _output.WriteLine("----------|---------------|------------|-----------|-------");
 
-        int decodeIdx = 0;
-        for (int mcuY = 0; mcuY < 3; mcuY++)  // First 3 MCU rows
+        var decodeIdx = 0;
+        for (var mcuY = 0; mcuY < 3; mcuY++)  // First 3 MCU rows
         {
-            for (int mcuX = 0; mcuX < frame.McuCountX; mcuX++)
+            for (var mcuX = 0; mcuX < frame.McuCountX; mcuX++)
             {
-                for (int subY = 0; subY < 2; subY++)
+                for (var subY = 0; subY < 2; subY++)
                 {
-                    for (int subX = 0; subX < 2; subX++)
+                    for (var subX = 0; subX < 2; subX++)
                     {
-                        var block = decoder2.DecodeSingleBlock(0);
+                        short[] block = decoder2.DecodeSingleBlock(0);
                         short decodeOrderDc = block[0];
 
                         int gx = mcuX * 2 + subX;

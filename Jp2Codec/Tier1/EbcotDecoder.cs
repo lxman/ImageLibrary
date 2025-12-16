@@ -57,13 +57,13 @@ public class EbcotDecoder : ITier1Decoder
         // Total size: 3 * 3 * 5 * 3 = 135 entries
         var table = new int[135];
 
-        for (int h = 0; h <= 2; h++)
+        for (var h = 0; h <= 2; h++)
         {
-            for (int v = 0; v <= 2; v++)
+            for (var v = 0; v <= 2; v++)
             {
-                for (int d = 0; d <= 4; d++)
+                for (var d = 0; d <= 4; d++)
                 {
-                    for (int sub = 0; sub < 3; sub++)
+                    for (var sub = 0; sub < 3; sub++)
                     {
                         int idx = ((h * 3 + v) * 5 + d) * 3 + sub;
                         table[idx] = ComputeSignificanceContext(h, v, d, sub);
@@ -245,9 +245,9 @@ internal class CodeBlockDecoder
         // Each bit-plane has up to 3 passes: significance propagation, magnitude refinement, cleanup.
         // First bit-plane only has cleanup pass.
 
-        int passIdx = 0;
+        var passIdx = 0;
         int bitPlane = 30 - _zeroBitPlanes;  // Absolute bit position
-        int passInPlane = 2; // Start with cleanup pass for first bit-plane
+        var passInPlane = 2; // Start with cleanup pass for first bit-plane
 
         while (passIdx < _numPasses && bitPlane >= 0)
         {
@@ -284,18 +284,18 @@ internal class CodeBlockDecoder
     {
         // Midpoint reconstruction: use 1.5 * 2^bp = (3 << bp) >> 1
         // Use sign-magnitude format to match Melville: (sign << 31) | magnitude
-        int setmask = (int)(((long)3 << bitPlane) >> 1);
+        var setmask = (int)(((long)3 << bitPlane) >> 1);
 
         // Scan in vertical stripes (4 rows at a time)
         // Per spec: within stripe, columns left-to-right, within column top-to-bottom
-        for (int stripeY = 0; stripeY < _height; stripeY += 4)
+        for (var stripeY = 0; stripeY < _height; stripeY += 4)
         {
             int stripHeight = Math.Min(4, _height - stripeY);
 
             // Within stripe: column by column (x), then row within column (dy)
-            for (int x = 0; x < _width; x++)
+            for (var x = 0; x < _width; x++)
             {
-                for (int dy = 0; dy < stripHeight; dy++)
+                for (var dy = 0; dy < stripHeight; dy++)
                 {
                     int y = stripeY + dy;
                     byte state = _state[y + 1, x + 1];
@@ -339,14 +339,14 @@ internal class CodeBlockDecoder
 
         // Scan in vertical stripes (4 rows at a time)
         // Per spec: within stripe, columns left-to-right, within column top-to-bottom
-        for (int stripeY = 0; stripeY < _height; stripeY += 4)
+        for (var stripeY = 0; stripeY < _height; stripeY += 4)
         {
             int stripHeight = Math.Min(4, _height - stripeY);
 
             // Within stripe: column by column (x), then row within column (dy)
-            for (int x = 0; x < _width; x++)
+            for (var x = 0; x < _width; x++)
             {
-                for (int dy = 0; dy < stripHeight; dy++)
+                for (var dy = 0; dy < stripHeight; dy++)
                 {
                     int y = stripeY + dy;
                     byte state = _state[y + 1, x + 1];
@@ -379,17 +379,17 @@ internal class CodeBlockDecoder
     {
         // Midpoint reconstruction: use 1.5 * 2^bp = (3 << bp) >> 1
         // Use sign-magnitude format to match Melville: (sign << 31) | magnitude
-        int setmask = (int)(((long)3 << bitPlane) >> 1);
+        var setmask = (int)(((long)3 << bitPlane) >> 1);
 
-        for (int y = 0; y < _height; y += 4)
+        for (var y = 0; y < _height; y += 4)
         {
-            for (int x = 0; x < _width; x++)
+            for (var x = 0; x < _width; x++)
             {
                 int stripHeight = Math.Min(4, _height - y);
 
                 // Check for run-length coding opportunity
-                bool canUseRunLength = true;
-                for (int dy = 0; dy < stripHeight && canUseRunLength; dy++)
+                var canUseRunLength = true;
+                for (var dy = 0; dy < stripHeight && canUseRunLength; dy++)
                 {
                     byte state = _state[y + dy + 1, x + 1];
                     if ((state & (SigCurrent | SigNeighbor | Visited)) != 0)
@@ -425,7 +425,7 @@ internal class CodeBlockDecoder
                 else
                 {
                     // Process each sample individually
-                    for (int dy = 0; dy < stripHeight; dy++)
+                    for (var dy = 0; dy < stripHeight; dy++)
                     {
                         ProcessCleanupSample(x, y + dy, setmask);
                     }
@@ -474,7 +474,7 @@ internal class CodeBlockDecoder
         hc = Math.Max(-1, Math.Min(1, hc));
         vc = Math.Max(-1, Math.Min(1, vc));
 
-        var (ctx, xorBit) = EbcotDecoder.GetSignContext(hc, vc);
+        (int ctx, int xorBit) = EbcotDecoder.GetSignContext(hc, vc);
 
         int signBit = _mq.Decode(ctx);
         int result = signBit ^ xorBit;
@@ -553,9 +553,9 @@ internal class CodeBlockDecoder
 
     private void ClearVisited()
     {
-        for (int y = 0; y < _height; y++)
+        for (var y = 0; y < _height; y++)
         {
-            for (int x = 0; x < _width; x++)
+            for (var x = 0; x < _width; x++)
             {
                 _state[y + 1, x + 1] &= unchecked((byte)~Visited);
             }

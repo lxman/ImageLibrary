@@ -15,7 +15,7 @@ internal static class Crc32
         for (uint i = 0; i < 256; i++)
         {
             uint crc = i;
-            for (int j = 0; j < 8; j++)
+            for (var j = 0; j < 8; j++)
             {
                 if ((crc & 1) != 0)
                     crc = (crc >> 1) ^ polynomial;
@@ -39,11 +39,11 @@ internal static class Crc32
     /// </summary>
     public static uint Calculate(byte[] data, int offset, int length)
     {
-        uint crc = 0xFFFFFFFF;
+        var crc = 0xFFFFFFFF;
 
-        for (int i = 0; i < length; i++)
+        for (var i = 0; i < length; i++)
         {
-            byte index = (byte)((crc ^ data[offset + i]) & 0xFF);
+            var index = (byte)((crc ^ data[offset + i]) & 0xFF);
             crc = (crc >> 8) ^ Table[index];
         }
 
@@ -57,9 +57,9 @@ internal static class Crc32
     {
         crc ^= 0xFFFFFFFF;
 
-        for (int i = 0; i < length; i++)
+        for (var i = 0; i < length; i++)
         {
-            byte index = (byte)((crc ^ data[offset + i]) & 0xFF);
+            var index = (byte)((crc ^ data[offset + i]) & 0xFF);
             crc = (crc >> 8) ^ Table[index];
         }
 
@@ -71,19 +71,19 @@ internal static class Crc32
     /// </summary>
     public static uint CalculateChunkCrc(string type, byte[] data, int offset, int length)
     {
-        uint crc = 0xFFFFFFFF;
+        var crc = 0xFFFFFFFF;
 
         // Include type bytes
         foreach (char c in type)
         {
-            byte index = (byte)((crc ^ (byte)c) & 0xFF);
+            var index = (byte)((crc ^ (byte)c) & 0xFF);
             crc = (crc >> 8) ^ Table[index];
         }
 
         // Include data bytes
-        for (int i = 0; i < length; i++)
+        for (var i = 0; i < length; i++)
         {
-            byte index = (byte)((crc ^ data[offset + i]) & 0xFF);
+            var index = (byte)((crc ^ data[offset + i]) & 0xFF);
             crc = (crc >> 8) ^ Table[index];
         }
 

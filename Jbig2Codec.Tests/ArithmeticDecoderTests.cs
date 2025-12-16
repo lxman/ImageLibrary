@@ -88,7 +88,7 @@ public class ArithmeticDecoderTests
         var context = new ArithmeticDecoder.Context();
 
         // Decode several bits - context state should evolve
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
             decoder.DecodeBit(context);
         }
@@ -166,7 +166,7 @@ public class ArithmeticDecoderTests
         var context2 = new ArithmeticDecoder.Context();
 
         // Same input should produce same output
-        for (int i = 0; i < 20; i++)
+        for (var i = 0; i < 20; i++)
         {
             int bit1 = decoder1.DecodeBit(context1);
             int bit2 = decoder2.DecodeBit(context2);

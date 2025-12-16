@@ -10,12 +10,12 @@ public class IntegrationTests
     private static string GetTestImagesPath()
     {
         // Find TestImages directory relative to the test assembly
-        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        string baseDir = AppDomain.CurrentDomain.BaseDirectory;
         var dir = new DirectoryInfo(baseDir);
 
         while (dir != null)
         {
-            var testImagesDir = Path.Combine(dir.FullName, "TestImages", "jbig2_suite");
+            string testImagesDir = Path.Combine(dir.FullName, "TestImages", "jbig2_suite");
             if (Directory.Exists(testImagesDir))
                 return testImagesDir;
             dir = dir.Parent;
@@ -27,7 +27,7 @@ public class IntegrationTests
 
     private static byte[] LoadTestFile(string filename)
     {
-        var path = Path.Combine(TestImagesPath, filename);
+        string path = Path.Combine(TestImagesPath, filename);
         if (!File.Exists(path))
             throw new FileNotFoundException($"Test file not found: {path}");
         return File.ReadAllBytes(path);
@@ -35,7 +35,7 @@ public class IntegrationTests
 
     private static byte[]? LoadReferenceFile(string filename)
     {
-        var path = Path.Combine(TestImagesPath, filename);
+        string path = Path.Combine(TestImagesPath, filename);
         if (!File.Exists(path))
             return null;
         return File.ReadAllBytes(path);
@@ -44,10 +44,10 @@ public class IntegrationTests
     [Fact]
     public void Decode_AnnexH_ProducesValidBitmap()
     {
-        var data = LoadTestFile("annex-h.jbig2");
+        byte[] data = LoadTestFile("annex-h.jbig2");
 
         var decoder = new Jbig2Decoder(data);
-        var bitmap = decoder.Decode();
+        Bitmap bitmap = decoder.Decode();
 
         Assert.NotNull(bitmap);
         Assert.Equal(64, bitmap.Width);
@@ -57,10 +57,10 @@ public class IntegrationTests
     [Fact]
     public void Decode_SimpleLine_ProducesValidBitmap()
     {
-        var data = LoadTestFile("simple_line.jb2");
+        byte[] data = LoadTestFile("simple_line.jb2");
 
         var decoder = new Jbig2Decoder(data);
-        var bitmap = decoder.Decode();
+        Bitmap bitmap = decoder.Decode();
 
         Assert.NotNull(bitmap);
         Assert.True(bitmap.Width > 0);
@@ -70,10 +70,10 @@ public class IntegrationTests
     [Fact]
     public void Decode_SmallRect_ProducesValidBitmap()
     {
-        var data = LoadTestFile("small_rect.jb2");
+        byte[] data = LoadTestFile("small_rect.jb2");
 
         var decoder = new Jbig2Decoder(data);
-        var bitmap = decoder.Decode();
+        Bitmap bitmap = decoder.Decode();
 
         Assert.NotNull(bitmap);
         Assert.True(bitmap.Width > 0);
@@ -83,10 +83,10 @@ public class IntegrationTests
     [Fact]
     public void Decode_MediumRect_ProducesValidBitmap()
     {
-        var data = LoadTestFile("medium_rect.jb2");
+        byte[] data = LoadTestFile("medium_rect.jb2");
 
         var decoder = new Jbig2Decoder(data);
-        var bitmap = decoder.Decode();
+        Bitmap bitmap = decoder.Decode();
 
         Assert.NotNull(bitmap);
         Assert.True(bitmap.Width > 0);
@@ -96,10 +96,10 @@ public class IntegrationTests
     [Fact]
     public void Decode_TestSimple_ProducesValidBitmap()
     {
-        var data = LoadTestFile("test_simple.jb2");
+        byte[] data = LoadTestFile("test_simple.jb2");
 
         var decoder = new Jbig2Decoder(data);
-        var bitmap = decoder.Decode();
+        Bitmap bitmap = decoder.Decode();
 
         Assert.NotNull(bitmap);
         Assert.Equal(400, bitmap.Width);
@@ -112,20 +112,20 @@ public class IntegrationTests
     [InlineData("medium_rect.jb2", "medium_rect_ref.pbm")]
     public void Decode_MatchesReference(string jbig2File, string referenceFile)
     {
-        var data = LoadTestFile(jbig2File);
-        var referenceData = LoadReferenceFile(referenceFile);
+        byte[] data = LoadTestFile(jbig2File);
+        byte[]? referenceData = LoadReferenceFile(referenceFile);
 
         // Skip if reference doesn't exist
         if (referenceData == null)
             return;
 
         var decoder = new Jbig2Decoder(data);
-        var bitmap = decoder.Decode();
+        Bitmap bitmap = decoder.Decode();
 
         Assert.NotNull(bitmap);
 
         // Convert bitmap to PBM format and compare
-        var decodedPbm = BitmapToPbm(bitmap);
+        byte[] decodedPbm = BitmapToPbm(bitmap);
         Assert.Equal(referenceData, decodedPbm);
     }
 
@@ -134,13 +134,13 @@ public class IntegrationTests
     {
         var testFiles = new[] { "annex-h.jbig2", "simple_line.jb2", "small_rect.jb2", "medium_rect.jb2", "test_simple.jb2" };
 
-        foreach (var file in testFiles)
+        foreach (string file in testFiles)
         {
             try
             {
-                var data = LoadTestFile(file);
+                byte[] data = LoadTestFile(file);
                 var decoder = new Jbig2Decoder(data);
-                var bitmap = decoder.Decode();
+                Bitmap bitmap = decoder.Decode();
                 Assert.NotNull(bitmap);
             }
             catch (FileNotFoundException)
@@ -160,9 +160,9 @@ public class IntegrationTests
             MaxPixels = 100_000_000
         };
 
-        var data = LoadTestFile("simple_line.jb2");
+        byte[] data = LoadTestFile("simple_line.jb2");
         var decoder = new Jbig2Decoder(data, null, options);
-        var bitmap = decoder.Decode();
+        Bitmap bitmap = decoder.Decode();
 
         Assert.NotNull(bitmap);
     }
@@ -181,7 +181,7 @@ public class IntegrationTests
     [Fact]
     public void Decoder_EmptyData_ThrowsException()
     {
-        var emptyData = Array.Empty<byte>();
+        byte[] emptyData = Array.Empty<byte>();
 
         Assert.ThrowsAny<Exception>(() => new Jbig2Decoder(emptyData));
     }
@@ -189,23 +189,23 @@ public class IntegrationTests
     [Fact]
     public void DecodePage_ValidPage_ReturnsBitmap()
     {
-        var data = LoadTestFile("simple_line.jb2");
+        byte[] data = LoadTestFile("simple_line.jb2");
         var decoder = new Jbig2Decoder(data);
 
-        var bitmap = decoder.DecodePage(1);
+        Bitmap bitmap = decoder.DecodePage(1);
         Assert.NotNull(bitmap);
     }
 
     [Fact]
     public void DecodePage_NonExistentPage_ThrowsOrReturnsNull()
     {
-        var data = LoadTestFile("simple_line.jb2");
+        byte[] data = LoadTestFile("simple_line.jb2");
         var decoder = new Jbig2Decoder(data);
 
         // Either throws or returns null for non-existent page
         try
         {
-            var bitmap = decoder.DecodePage(999);
+            Bitmap? bitmap = decoder.DecodePage(999);
             Assert.Null(bitmap);
         }
         catch (Exception)
@@ -217,11 +217,11 @@ public class IntegrationTests
     [Fact]
     public void Decoder_WithGlobalData_AcceptsGlobals()
     {
-        var data = LoadTestFile("simple_line.jb2");
-        var globals = Array.Empty<byte>(); // No actual globals needed for this test
+        byte[] data = LoadTestFile("simple_line.jb2");
+        byte[] globals = Array.Empty<byte>(); // No actual globals needed for this test
 
         var decoder = new Jbig2Decoder(data, globals);
-        var bitmap = decoder.Decode();
+        Bitmap bitmap = decoder.Decode();
 
         Assert.NotNull(bitmap);
     }
@@ -229,10 +229,10 @@ public class IntegrationTests
     [Fact]
     public void Bitmap_DataIntegrity_MatchesExpectedStride()
     {
-        var data = LoadTestFile("annex-h.jbig2");
+        byte[] data = LoadTestFile("annex-h.jbig2");
 
         var decoder = new Jbig2Decoder(data);
-        var bitmap = decoder.Decode();
+        Bitmap bitmap = decoder.Decode();
 
         // Verify data array size matches expected dimensions
         int expectedStride = (bitmap.Width + 7) / 8;

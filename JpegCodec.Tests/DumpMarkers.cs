@@ -19,13 +19,13 @@ public class DumpMarkers
     public void DumpAllMarkers()
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         _output.WriteLine($"File size: {data.Length} bytes");
         _output.WriteLine("");
         _output.WriteLine("Markers found:");
 
-        int i = 0;
+        var i = 0;
         while (i < data.Length - 1)
         {
             if (data[i] == 0xFF && data[i + 1] != 0x00 && data[i + 1] != 0xFF)
@@ -54,7 +54,7 @@ public class DumpMarkers
                                 int nf = data[i + 9];
                                 _output.WriteLine($"           SOF: {width}x{height}, {nf} components");
 
-                                for (int c = 0; c < nf && i + 10 + c * 3 + 2 < data.Length; c++)
+                                for (var c = 0; c < nf && i + 10 + c * 3 + 2 < data.Length; c++)
                                 {
                                     int compId = data[i + 10 + c * 3];
                                     int sampling = data[i + 10 + c * 3 + 1];
@@ -71,7 +71,7 @@ public class DumpMarkers
                             {
                                 int ns = data[i + 4];
                                 _output.WriteLine($"           SOS: {ns} components");
-                                for (int c = 0; c < ns && i + 5 + c * 2 + 1 < data.Length; c++)
+                                for (var c = 0; c < ns && i + 5 + c * 2 + 1 < data.Length; c++)
                                 {
                                     int compId = data[i + 5 + c * 2];
                                     int tables = data[i + 5 + c * 2 + 1];

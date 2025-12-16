@@ -16,15 +16,15 @@ public class BlockCountTest
     public void AnalyzeBackhoeBlockCount()
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         _output.WriteLine($"Image: {frame.Width}x{frame.Height}");
         _output.WriteLine($"Components: {frame.ComponentCount}");
 
-        var comp = frame.Components[0];
+        JpegComponent comp = frame.Components[0];
         _output.WriteLine($"Component 0: hSamp={comp.HorizontalSamplingFactor}, vSamp={comp.VerticalSamplingFactor}");
         _output.WriteLine($"MaxHSamp={frame.MaxHorizontalSamplingFactor}, MaxVSamp={frame.MaxVerticalSamplingFactor}");
         _output.WriteLine($"MCUs: {frame.McuCountX}x{frame.McuCountY} = {frame.McuCountX * frame.McuCountY}");

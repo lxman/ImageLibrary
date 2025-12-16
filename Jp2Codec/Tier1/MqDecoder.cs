@@ -97,7 +97,7 @@ public class MqDecoder
     /// </summary>
     public void ResetContexts()
     {
-        for (int i = 0; i < NumContexts; i++)
+        for (var i = 0; i < NumContexts; i++)
         {
             _contextStates[i] = 0;
             _mps[i] = false;
@@ -180,7 +180,7 @@ public class MqDecoder
     public int Decode(int ctx)
     {
         int state = _contextStates[ctx];
-        var mqState = States[state];
+        MqState mqState = States[state];
         uint qe = mqState.Qe;
         bool mps = _mps[ctx];
 
@@ -246,7 +246,7 @@ public class MqDecoder
     private void SwitchLps(int ctx)
     {
         int state = _contextStates[ctx];
-        var mqState = States[state];
+        MqState mqState = States[state];
 
         if (mqState.SwitchMps)
         {

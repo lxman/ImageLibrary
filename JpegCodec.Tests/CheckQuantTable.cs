@@ -16,22 +16,22 @@ public class CheckQuantTable
     public void ShowQuantizationTable()
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         _output.WriteLine("Quantization table 0:");
-        var qt = frame.QuantizationTables[0];
+        ushort[]? qt = frame.QuantizationTables[0];
         if (qt != null)
         {
             _output.WriteLine($"  DC (position 0): {qt[0]}");
             _output.WriteLine("");
             _output.WriteLine("  Full table:");
-            for (int y = 0; y < 8; y++)
+            for (var y = 0; y < 8; y++)
             {
-                string row = "  ";
-                for (int x = 0; x < 8; x++)
+                var row = "  ";
+                for (var x = 0; x < 8; x++)
                 {
                     row += $"{qt[y * 8 + x],4}";
                 }
@@ -42,7 +42,7 @@ public class CheckQuantTable
         // Calculate what DC=73 means in terms of pixel values
         _output.WriteLine("");
         _output.WriteLine("DC coefficient interpretation:");
-        int dcCoeff = 73;
+        var dcCoeff = 73;
         int dcQuantValue = qt![0];
         int dequantDc = dcCoeff * dcQuantValue;
         _output.WriteLine($"  Raw DC coefficient: {dcCoeff}");
@@ -62,20 +62,20 @@ public class CheckQuantTable
     public void TraceFullPipeline()
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         _output.WriteLine("Block 0 (first block):");
         _output.WriteLine("  DCT coefficients:");
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
-            string row = "    ";
-            for (int x = 0; x < 8; x++)
+            var row = "    ";
+            for (var x = 0; x < 8; x++)
             {
                 row += $"{blocks[0][0][y * 8 + x],5}";
             }
@@ -84,14 +84,14 @@ public class CheckQuantTable
 
         // Dequantize
         var dequant = new Dequantizer(frame);
-        var dequantBlocks = dequant.DequantizeAll(blocks);
+        int[][][] dequantBlocks = dequant.DequantizeAll(blocks);
 
         _output.WriteLine("");
         _output.WriteLine("  After dequantization:");
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
-            string row = "    ";
-            for (int x = 0; x < 8; x++)
+            var row = "    ";
+            for (var x = 0; x < 8; x++)
             {
                 row += $"{dequantBlocks[0][0][y * 8 + x],5}";
             }
@@ -99,14 +99,14 @@ public class CheckQuantTable
         }
 
         // IDCT
-        var pixelBlock = InverseDct.Transform(dequantBlocks[0][0]);
+        byte[] pixelBlock = InverseDct.Transform(dequantBlocks[0][0]);
 
         _output.WriteLine("");
         _output.WriteLine("  After IDCT (pixel values):");
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
-            string row = "    ";
-            for (int x = 0; x < 8; x++)
+            var row = "    ";
+            for (var x = 0; x < 8; x++)
             {
                 row += $"{pixelBlock[y * 8 + x],5}";
             }
@@ -118,20 +118,20 @@ public class CheckQuantTable
     public void TraceBlock40()
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         _output.WriteLine("Block 40 (should be at pixel 16,8 for MCU 1 sub(0,1)):");
         _output.WriteLine("  DCT coefficients:");
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
-            string row = "    ";
-            for (int x = 0; x < 8; x++)
+            var row = "    ";
+            for (var x = 0; x < 8; x++)
             {
                 row += $"{blocks[0][40][y * 8 + x],5}";
             }
@@ -139,8 +139,8 @@ public class CheckQuantTable
         }
 
         // Check if all coefficients are 0 except DC
-        bool allAcZero = true;
-        for (int i = 1; i < 64; i++)
+        var allAcZero = true;
+        for (var i = 1; i < 64; i++)
         {
             if (blocks[0][40][i] != 0)
             {
@@ -153,15 +153,15 @@ public class CheckQuantTable
 
         // Dequantize and IDCT
         var dequant = new Dequantizer(frame);
-        var dequantBlocks = dequant.DequantizeAll(blocks);
-        var pixelBlock = InverseDct.Transform(dequantBlocks[0][40]);
+        int[][][] dequantBlocks = dequant.DequantizeAll(blocks);
+        byte[] pixelBlock = InverseDct.Transform(dequantBlocks[0][40]);
 
         _output.WriteLine("");
         _output.WriteLine("  After IDCT (pixel values):");
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
-            string row = "    ";
-            for (int x = 0; x < 8; x++)
+            var row = "    ";
+            for (var x = 0; x < 8; x++)
             {
                 row += $"{pixelBlock[y * 8 + x],5}";
             }
@@ -173,21 +173,21 @@ public class CheckQuantTable
     public void TraceBlock20()
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         _output.WriteLine("Block 20 (our first non-white, MCU 10 sub(0,0)):");
         _output.WriteLine("  DCT coefficients:");
-        bool hasNonZeroAc = false;
-        for (int y = 0; y < 8; y++)
+        var hasNonZeroAc = false;
+        for (var y = 0; y < 8; y++)
         {
-            string row = "    ";
-            for (int x = 0; x < 8; x++)
+            var row = "    ";
+            for (var x = 0; x < 8; x++)
             {
                 int idx = y * 8 + x;
                 short val = blocks[0][20][idx];
@@ -201,15 +201,15 @@ public class CheckQuantTable
 
         // Dequantize and IDCT
         var dequant = new Dequantizer(frame);
-        var dequantBlocks = dequant.DequantizeAll(blocks);
-        var pixelBlock = InverseDct.Transform(dequantBlocks[0][20]);
+        int[][][] dequantBlocks = dequant.DequantizeAll(blocks);
+        byte[] pixelBlock = InverseDct.Transform(dequantBlocks[0][20]);
 
         _output.WriteLine("");
         _output.WriteLine("  After IDCT (pixel values):");
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
-            string row = "    ";
-            for (int x = 0; x < 8; x++)
+            var row = "    ";
+            for (var x = 0; x < 8; x++)
             {
                 row += $"{pixelBlock[y * 8 + x],5}";
             }

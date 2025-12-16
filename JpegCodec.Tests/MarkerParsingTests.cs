@@ -34,11 +34,11 @@ public class MarkerParsingTests
     [InlineData("level1_simple/gray_solid_128.jpg", 8, 8)]
     public void ParseLevel1_SimplestJpegs_CorrectDimensions(string relativePath, int expectedWidth, int expectedHeight)
     {
-        var path = Path.Combine(GetTestImagesPath(), relativePath);
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), relativePath);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         Assert.Equal(expectedWidth, frame.Width);
         Assert.Equal(expectedHeight, frame.Height);
@@ -47,11 +47,11 @@ public class MarkerParsingTests
     [Fact]
     public void ParseLevel1_GrayscaleSolid_IsBaselineDCT()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         Assert.True(frame.IsBaseline);
         Assert.False(frame.IsProgressive);
@@ -61,11 +61,11 @@ public class MarkerParsingTests
     [Fact]
     public void ParseLevel1_GrayscaleSolid_SingleComponent()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         // ImageSharp creates grayscale as Y-only when using L8
         // But it might also create as 3-component YCbCr
@@ -75,11 +75,11 @@ public class MarkerParsingTests
     [Fact]
     public void ParseLevel1_GrayscaleSolid_HasQuantizationTable()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         // Should have at least one quantization table
         Assert.NotNull(frame.QuantizationTables[0]);
@@ -89,11 +89,11 @@ public class MarkerParsingTests
     [Fact]
     public void ParseLevel1_GrayscaleSolid_HasHuffmanTables()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         // Should have DC and AC Huffman tables
         Assert.NotNull(frame.DcHuffmanTables[0]);
@@ -103,11 +103,11 @@ public class MarkerParsingTests
     [Fact]
     public void ParseLevel1_GrayscaleSolid_HasEntropyData()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         Assert.True(frame.EntropyDataOffset > 0, "Entropy data offset should be positive");
         Assert.True(frame.EntropyDataLength > 0, "Entropy data length should be positive");
@@ -124,11 +124,11 @@ public class MarkerParsingTests
     [InlineData("level2_ac_coefficients/gray_checker.jpg")]
     public void ParseLevel2_GrayscalePatterns_ParsesSuccessfully(string relativePath)
     {
-        var path = Path.Combine(GetTestImagesPath(), relativePath);
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), relativePath);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         Assert.Equal(8, frame.Width);
         Assert.Equal(8, frame.Height);
@@ -147,11 +147,11 @@ public class MarkerParsingTests
     [InlineData("level3_multiple_blocks/gray_64x64_gradient.jpg", 64, 64)]
     public void ParseLevel3_MultipleBlocks_CorrectDimensions(string relativePath, int expectedWidth, int expectedHeight)
     {
-        var path = Path.Combine(GetTestImagesPath(), relativePath);
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), relativePath);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         Assert.Equal(expectedWidth, frame.Width);
         Assert.Equal(expectedHeight, frame.Height);
@@ -167,11 +167,11 @@ public class MarkerParsingTests
     [InlineData("level4_color_444/color_solid_blue.jpg")]
     public void ParseLevel4_Color444_ThreeComponents(string relativePath)
     {
-        var path = Path.Combine(GetTestImagesPath(), relativePath);
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), relativePath);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         Assert.Equal(3, frame.ComponentCount);
     }
@@ -179,14 +179,14 @@ public class MarkerParsingTests
     [Fact]
     public void ParseLevel4_Color444_SamplingFactorsAllOne()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level4_color_444/color_solid_red.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level4_color_444/color_solid_red.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         // 4:4:4 means all sampling factors are 1x1
-        foreach (var component in frame.Components)
+        foreach (JpegComponent component in frame.Components)
         {
             Assert.Equal(1, component.HorizontalSamplingFactor);
             Assert.Equal(1, component.VerticalSamplingFactor);
@@ -200,11 +200,11 @@ public class MarkerParsingTests
     [Fact]
     public void ParseLevel5_Color420_ThreeComponents()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level5_color_420/color420_solid_red.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level5_color_420/color420_solid_red.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         Assert.Equal(3, frame.ComponentCount);
     }
@@ -212,22 +212,22 @@ public class MarkerParsingTests
     [Fact]
     public void ParseLevel5_Color420_CorrectSamplingFactors()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level5_color_420/color420_solid_red.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level5_color_420/color420_solid_red.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         // 4:2:0 means Y is 2x2, Cb and Cr are 1x1
-        var yComponent = frame.Components[0];
+        JpegComponent yComponent = frame.Components[0];
         Assert.Equal(2, yComponent.HorizontalSamplingFactor);
         Assert.Equal(2, yComponent.VerticalSamplingFactor);
 
-        var cbComponent = frame.Components[1];
+        JpegComponent cbComponent = frame.Components[1];
         Assert.Equal(1, cbComponent.HorizontalSamplingFactor);
         Assert.Equal(1, cbComponent.VerticalSamplingFactor);
 
-        var crComponent = frame.Components[2];
+        JpegComponent crComponent = frame.Components[2];
         Assert.Equal(1, crComponent.HorizontalSamplingFactor);
         Assert.Equal(1, crComponent.VerticalSamplingFactor);
     }
@@ -243,11 +243,11 @@ public class MarkerParsingTests
     [InlineData("level6_non_aligned/gray_15x17.jpg", 15, 17)]
     public void ParseLevel6_NonAlignedGrayscale_CorrectDimensions(string relativePath, int expectedWidth, int expectedHeight)
     {
-        var path = Path.Combine(GetTestImagesPath(), relativePath);
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), relativePath);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         Assert.Equal(expectedWidth, frame.Width);
         Assert.Equal(expectedHeight, frame.Height);
@@ -265,11 +265,11 @@ public class MarkerParsingTests
     [InlineData("level7_quality/gray_q10.jpg")]
     public void ParseLevel7_DifferentQualities_ParsesSuccessfully(string relativePath)
     {
-        var path = Path.Combine(GetTestImagesPath(), relativePath);
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), relativePath);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         Assert.Equal(8, frame.Width);
         Assert.Equal(8, frame.Height);
@@ -279,19 +279,19 @@ public class MarkerParsingTests
     [Fact]
     public void ParseLevel7_QualityVariation_QuantizationTablesDiffer()
     {
-        var pathQ100 = Path.Combine(GetTestImagesPath(), "level7_quality/gray_q100.jpg");
-        var pathQ10 = Path.Combine(GetTestImagesPath(), "level7_quality/gray_q10.jpg");
+        string pathQ100 = Path.Combine(GetTestImagesPath(), "level7_quality/gray_q100.jpg");
+        string pathQ10 = Path.Combine(GetTestImagesPath(), "level7_quality/gray_q10.jpg");
 
-        var frameQ100 = new JpegReader(File.ReadAllBytes(pathQ100)).ReadFrame();
-        var frameQ10 = new JpegReader(File.ReadAllBytes(pathQ10)).ReadFrame();
+        JpegFrame frameQ100 = new JpegReader(File.ReadAllBytes(pathQ100)).ReadFrame();
+        JpegFrame frameQ10 = new JpegReader(File.ReadAllBytes(pathQ10)).ReadFrame();
 
         // Q10 should have larger quantization values than Q100
-        var q100Table = frameQ100.QuantizationTables[0]!;
-        var q10Table = frameQ10.QuantizationTables[0]!;
+        ushort[] q100Table = frameQ100.QuantizationTables[0]!;
+        ushort[] q10Table = frameQ10.QuantizationTables[0]!;
 
         // At least some values should differ
-        bool anyDifferent = false;
-        for (int i = 0; i < 64; i++)
+        var anyDifferent = false;
+        for (var i = 0; i < 64; i++)
         {
             if (q100Table[i] != q10Table[i])
             {
@@ -310,20 +310,20 @@ public class MarkerParsingTests
     [Fact]
     public void ParseAllTestImages_NoExceptions()
     {
-        var basePath = GetTestImagesPath();
-        var jpegFiles = Directory.GetFiles(basePath, "*.jpg", SearchOption.AllDirectories);
+        string basePath = GetTestImagesPath();
+        string[] jpegFiles = Directory.GetFiles(basePath, "*.jpg", SearchOption.AllDirectories);
 
         Assert.True(jpegFiles.Length >= 50, $"Expected at least 50 test images, found {jpegFiles.Length}");
 
         var failures = new List<string>();
 
-        foreach (var file in jpegFiles)
+        foreach (string file in jpegFiles)
         {
             try
             {
-                var data = File.ReadAllBytes(file);
+                byte[] data = File.ReadAllBytes(file);
                 var reader = new JpegReader(data);
-                var frame = reader.ReadFrame();
+                JpegFrame frame = reader.ReadFrame();
 
                 // Basic sanity checks
                 if (frame.Width == 0 || frame.Height == 0)

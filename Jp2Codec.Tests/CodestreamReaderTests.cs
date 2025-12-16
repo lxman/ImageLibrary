@@ -31,13 +31,13 @@ public class CodestreamReaderTests
     [Fact]
     public void ParseJp2File_8x8_ReadsCorrectDimensions()
     {
-        var path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         Assert.True(Jp2FileReader.IsJp2File(data), "Should be recognized as JP2 file");
 
         var fileReader = new Jp2FileReader(data);
-        var fileInfo = fileReader.Read();
+        Jp2FileInfo fileInfo = fileReader.Read();
 
         _output.WriteLine($"JP2 File Info:");
         _output.WriteLine($"  Brand: {fileInfo.Brand}");
@@ -56,14 +56,14 @@ public class CodestreamReaderTests
     [Fact]
     public void ParseCodestream_8x8_ReadsMainHeader()
     {
-        var path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         var fileReader = new Jp2FileReader(data);
-        var fileInfo = fileReader.Read();
+        Jp2FileInfo fileInfo = fileReader.Read();
 
         var codestreamReader = new CodestreamReader(fileInfo.CodestreamData!);
-        var codestream = codestreamReader.ReadMainHeader();
+        Jp2Codestream codestream = codestreamReader.ReadMainHeader();
 
         _output.WriteLine($"Codestream Info:");
         _output.WriteLine($"  Image Size: {codestream.Frame.Width}x{codestream.Frame.Height}");
@@ -84,7 +84,7 @@ public class CodestreamReaderTests
         _output.WriteLine($"  Guard Bits: {codestream.QuantizationParameters.GuardBits}");
         _output.WriteLine($"  Step Sizes: {codestream.QuantizationParameters.StepSizes.Length}");
 
-        foreach (var comment in codestream.Comments)
+        foreach (string comment in codestream.Comments)
         {
             _output.WriteLine($"\nComment: {comment}");
         }
@@ -97,14 +97,14 @@ public class CodestreamReaderTests
     [Fact]
     public void ParseCodestream_16x16_ReadsDecompositionLevels()
     {
-        var path = Path.Combine(GetTestImagesPath(), "test_16x16.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_16x16.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         var fileReader = new Jp2FileReader(data);
-        var fileInfo = fileReader.Read();
+        Jp2FileInfo fileInfo = fileReader.Read();
 
         var codestreamReader = new CodestreamReader(fileInfo.CodestreamData!);
-        var codestream = codestreamReader.ReadMainHeader();
+        Jp2Codestream codestream = codestreamReader.ReadMainHeader();
 
         _output.WriteLine($"16x16 Image:");
         _output.WriteLine($"  Decomposition Levels: {codestream.CodingParameters.DecompositionLevels}");
@@ -118,14 +118,14 @@ public class CodestreamReaderTests
     [Fact]
     public void ParseTilePart_8x8_ReadsBitstream()
     {
-        var path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         var fileReader = new Jp2FileReader(data);
-        var fileInfo = fileReader.Read();
+        Jp2FileInfo fileInfo = fileReader.Read();
 
         var codestreamReader = new CodestreamReader(fileInfo.CodestreamData!);
-        var codestream = codestreamReader.ReadMainHeader();
+        Jp2Codestream codestream = codestreamReader.ReadMainHeader();
 
         // Read tile-parts
         Jp2TilePart? tilePart;
@@ -135,7 +135,7 @@ public class CodestreamReaderTests
             _output.WriteLine($"  Bitstream Size: {tilePart.BitstreamData.Length} bytes");
 
             // Show first few bytes of bitstream
-            var preview = string.Join(" ", tilePart.BitstreamData.Take(16).Select(b => $"{b:X2}"));
+            string preview = string.Join(" ", tilePart.BitstreamData.Take(16).Select(b => $"{b:X2}"));
             _output.WriteLine($"  First bytes: {preview}");
 
             codestream.TileParts.Add(tilePart);

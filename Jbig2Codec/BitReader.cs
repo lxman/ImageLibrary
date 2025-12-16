@@ -73,7 +73,7 @@ public sealed class BitReader
             throw new ArgumentOutOfRangeException(nameof(count));
 
         uint result = 0;
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             result = (result << 1) | (uint)ReadBit();
         }

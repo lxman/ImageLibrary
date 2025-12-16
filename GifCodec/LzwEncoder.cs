@@ -70,7 +70,7 @@ internal sealed class LzwEncoder
 
         int prefixCode = indices[0];
 
-        for (int i = 1; i < indices.Length; i++)
+        for (var i = 1; i < indices.Length; i++)
         {
             byte suffix = indices[i];
 

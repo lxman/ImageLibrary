@@ -15,8 +15,8 @@ public static class TgaDecoder
             if (data.Length < TgaHeader.Size)
                 throw new TgaException("Data too small for TGA header");
 
-            int offset = 0;
-            var header = ReadHeader(data, ref offset);
+            var offset = 0;
+            TgaHeader header = ReadHeader(data, ref offset);
 
             if (header.Width == 0 || header.Height == 0)
                 throw new TgaException("Invalid image dimensions");
@@ -30,7 +30,7 @@ public static class TgaDecoder
 
             // Read color map if present
             byte[]? colorMap = null;
-            int colorMapBytesPerEntry = 0;
+            var colorMapBytesPerEntry = 0;
             if (header.HasColorMap && header.ColorMapLength > 0)
             {
                 colorMapBytesPerEntry = (header.ColorMapEntrySize + 7) / 8;
@@ -45,7 +45,7 @@ public static class TgaDecoder
             // Decode pixel data
             int width = header.Width;
             int height = header.Height;
-            byte[] pixelData = new byte[width * height * 4];
+            var pixelData = new byte[width * height * 4];
 
             switch (header.ImageType)
             {
@@ -136,9 +136,9 @@ public static class TgaDecoder
         int height = header.Height;
         int bytesPerIndex = (header.PixelDepth + 7) / 8;
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 if (offset + bytesPerIndex > data.Length)
                     throw new TgaException("Unexpected end of pixel data");
@@ -159,9 +159,9 @@ public static class TgaDecoder
         int height = header.Height;
         int bytesPerPixel = header.PixelDepth / 8;
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 if (offset + bytesPerPixel > data.Length)
                     throw new TgaException("Unexpected end of pixel data");
@@ -178,9 +178,9 @@ public static class TgaDecoder
         int height = header.Height;
         int bytesPerPixel = header.PixelDepth / 8;
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 if (offset + bytesPerPixel > data.Length)
                     throw new TgaException("Unexpected end of pixel data");
@@ -204,8 +204,8 @@ public static class TgaDecoder
         int height = header.Height;
         int totalPixels = width * height;
         int bytesPerIndex = (header.PixelDepth + 7) / 8;
-        int pixelIndex = 0;
-        int iterations = 0;
+        var pixelIndex = 0;
+        var iterations = 0;
         const int maxIterations = 100_000_000;
 
         while (pixelIndex < totalPixels)
@@ -232,10 +232,10 @@ public static class TgaDecoder
                 if (index < 0 || index >= header.ColorMapLength)
                     throw new TgaException($"Color map index out of range: {index}");
 
-                byte[] pixel = new byte[4];
+                var pixel = new byte[4];
                 ReadColorMapEntry(colorMap, index * bytesPerEntry, bytesPerEntry, pixel, 0);
 
-                for (int i = 0; i < count; i++)
+                for (var i = 0; i < count; i++)
                 {
                     int destOffset = pixelIndex * 4;
                     Array.Copy(pixel, 0, pixelData, destOffset, 4);
@@ -245,7 +245,7 @@ public static class TgaDecoder
             else
             {
                 // Raw packet
-                for (int i = 0; i < count; i++)
+                for (var i = 0; i < count; i++)
                 {
                     if (offset + bytesPerIndex > data.Length)
                         throw new TgaException("Unexpected end of RLE data");
@@ -268,8 +268,8 @@ public static class TgaDecoder
         int height = header.Height;
         int totalPixels = width * height;
         int bytesPerPixel = header.PixelDepth / 8;
-        int pixelIndex = 0;
-        int iterations = 0;
+        var pixelIndex = 0;
+        var iterations = 0;
         const int maxIterations = 100_000_000;
 
         while (pixelIndex < totalPixels)
@@ -292,10 +292,10 @@ public static class TgaDecoder
                 if (offset + bytesPerPixel > data.Length)
                     throw new TgaException("Unexpected end of RLE data");
 
-                byte[] pixel = new byte[4];
+                var pixel = new byte[4];
                 ReadPixel(data, ref offset, bytesPerPixel, header.AlphaBits, pixel, 0);
 
-                for (int i = 0; i < count; i++)
+                for (var i = 0; i < count; i++)
                 {
                     int destOffset = pixelIndex * 4;
                     Array.Copy(pixel, 0, pixelData, destOffset, 4);
@@ -305,7 +305,7 @@ public static class TgaDecoder
             else
             {
                 // Raw packet
-                for (int i = 0; i < count; i++)
+                for (var i = 0; i < count; i++)
                 {
                     if (offset + bytesPerPixel > data.Length)
                         throw new TgaException("Unexpected end of RLE data");
@@ -324,8 +324,8 @@ public static class TgaDecoder
         int height = header.Height;
         int totalPixels = width * height;
         int bytesPerPixel = header.PixelDepth / 8;
-        int pixelIndex = 0;
-        int iterations = 0;
+        var pixelIndex = 0;
+        var iterations = 0;
         const int maxIterations = 100_000_000;
 
         while (pixelIndex < totalPixels)
@@ -351,7 +351,7 @@ public static class TgaDecoder
                 byte gray = data[offset++];
                 byte alpha = bytesPerPixel == 2 ? data[offset++] : (byte)255;
 
-                for (int i = 0; i < count; i++)
+                for (var i = 0; i < count; i++)
                 {
                     int destOffset = pixelIndex * 4;
                     pixelData[destOffset] = gray;
@@ -364,7 +364,7 @@ public static class TgaDecoder
             else
             {
                 // Raw packet
-                for (int i = 0; i < count; i++)
+                for (var i = 0; i < count; i++)
                 {
                     if (offset + bytesPerPixel > data.Length)
                         throw new TgaException("Unexpected end of RLE data");
@@ -421,7 +421,7 @@ public static class TgaDecoder
         switch (bytesPerEntry)
         {
             case 2: // 16-bit
-                ushort pixel16 = (ushort)(colorMap[entryOffset] | (colorMap[entryOffset + 1] << 8));
+                var pixel16 = (ushort)(colorMap[entryOffset] | (colorMap[entryOffset + 1] << 8));
                 dest[destOffset + 2] = (byte)((pixel16 & 0x7C00) >> 7);
                 dest[destOffset + 1] = (byte)((pixel16 & 0x03E0) >> 2);
                 dest[destOffset] = (byte)((pixel16 & 0x001F) << 3);
@@ -477,9 +477,9 @@ public static class TgaDecoder
     private static void FlipVertical(byte[] pixelData, int width, int height)
     {
         int stride = width * 4;
-        byte[] temp = new byte[stride];
+        var temp = new byte[stride];
 
-        for (int y = 0; y < height / 2; y++)
+        for (var y = 0; y < height / 2; y++)
         {
             int topOffset = y * stride;
             int bottomOffset = (height - 1 - y) * stride;
@@ -492,16 +492,16 @@ public static class TgaDecoder
 
     private static void FlipHorizontal(byte[] pixelData, int width, int height)
     {
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
             int rowOffset = y * width * 4;
-            for (int x = 0; x < width / 2; x++)
+            for (var x = 0; x < width / 2; x++)
             {
                 int leftOffset = rowOffset + x * 4;
                 int rightOffset = rowOffset + (width - 1 - x) * 4;
 
                 // Swap pixels
-                for (int i = 0; i < 4; i++)
+                for (var i = 0; i < 4; i++)
                 {
                     byte temp = pixelData[leftOffset + i];
                     pixelData[leftOffset + i] = pixelData[rightOffset + i];
@@ -513,7 +513,7 @@ public static class TgaDecoder
 
     private static ushort ReadUInt16(byte[] data, ref int offset)
     {
-        ushort value = (ushort)(data[offset] | (data[offset + 1] << 8));
+        var value = (ushort)(data[offset] | (data[offset + 1] << 8));
         offset += 2;
         return value;
     }

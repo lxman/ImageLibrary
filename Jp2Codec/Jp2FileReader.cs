@@ -54,7 +54,7 @@ public class Jp2FileReader
 
         while (_position < _data.Length)
         {
-            var box = ReadBox();
+            Jp2Box? box = ReadBox();
             if (box == null) break;
 
             switch (box.Type)
@@ -93,14 +93,14 @@ public class Jp2FileReader
 
     private void ParseJp2HeaderBox(byte[] data, Jp2FileInfo info)
     {
-        int pos = 0;
+        var pos = 0;
         while (pos < data.Length)
         {
             if (pos + 8 > data.Length) break;
 
             uint boxLength = ReadUInt32BE(data, pos);
             uint boxType = ReadUInt32BE(data, pos + 4);
-            int dataOffset = 8;
+            var dataOffset = 8;
 
             if (boxLength == 1)
             {
@@ -140,7 +140,7 @@ public class Jp2FileReader
                 int nDefs = ReadUInt16BE(data, cdefOffset);
                 info.ChannelDefinitions = new ChannelDefinition[nDefs];
                 int defOffset = cdefOffset + 2;
-                for (int i = 0; i < nDefs && defOffset + 6 <= pos + (int)boxLength; i++)
+                for (var i = 0; i < nDefs && defOffset + 6 <= pos + (int)boxLength; i++)
                 {
                     info.ChannelDefinitions[i] = new ChannelDefinition
                     {
@@ -162,8 +162,8 @@ public class Jp2FileReader
                 int numEntries = ReadUInt16BE(data, pclrOffset);
                 int numColumns = data[pclrOffset + 2];
 
-                int[] bitDepths = new int[numColumns];
-                for (int c = 0; c < numColumns; c++)
+                var bitDepths = new int[numColumns];
+                for (var c = 0; c < numColumns; c++)
                 {
                     // Bit depth is stored as (actual_bits - 1) in low 7 bits, sign in bit 7
                     bitDepths[c] = (data[pclrOffset + 3 + c] & 0x7F) + 1;
@@ -179,9 +179,9 @@ public class Jp2FileReader
 
                 // Read palette entries
                 int entryOffset = pclrOffset + 3 + numColumns;
-                for (int e = 0; e < numEntries && entryOffset < pos + (int)boxLength; e++)
+                for (var e = 0; e < numEntries && entryOffset < pos + (int)boxLength; e++)
                 {
-                    for (int c = 0; c < numColumns; c++)
+                    for (var c = 0; c < numColumns; c++)
                     {
                         int bits = bitDepths[c];
                         if (bits <= 8)
@@ -205,7 +205,7 @@ public class Jp2FileReader
                 int numMappings = dataLength / 4;
                 info.ComponentMappings = new ComponentMapping[numMappings];
 
-                for (int i = 0; i < numMappings; i++)
+                for (var i = 0; i < numMappings; i++)
                 {
                     info.ComponentMappings[i] = new ComponentMapping
                     {
@@ -229,7 +229,7 @@ public class Jp2FileReader
 
         uint boxLength = ReadUInt32BE(_data, _position);
         uint boxType = ReadUInt32BE(_data, _position + 4);
-        int dataOffset = 8;
+        var dataOffset = 8;
         long actualLength = boxLength;
 
         if (boxLength == 1)

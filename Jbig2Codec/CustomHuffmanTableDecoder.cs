@@ -45,7 +45,7 @@ public static class CustomHuffmanTableDecoder
 
         // 7.4.12.2 - Read lines until we get the terminator (PREFLEN=0 and RANGELEN=0)
         var lines = new List<HuffmanLine>();
-        int bitOffset = 8; // Start after flags byte
+        var bitOffset = 8; // Start after flags byte
 
         while (true)
         {
@@ -87,7 +87,7 @@ public static class CustomHuffmanTableDecoder
         // - OOB line (last if present)
 
         // Build the HuffmanParams with the parsed lines
-        var lineArray = lines.ToArray();
+        HuffmanLine[] lineArray = lines.ToArray();
         var huffParams = new HuffmanParams(htoob, lineArray);
 
         return HuffmanTable.Build(huffParams);
@@ -98,8 +98,8 @@ public static class CustomHuffmanTableDecoder
     /// </summary>
     private static int ReadBits(byte[] data, ref int bitOffset, int count)
     {
-        int result = 0;
-        for (int i = 0; i < count; i++)
+        var result = 0;
+        for (var i = 0; i < count; i++)
         {
             int byteIdx = bitOffset >> 3;
             int bitIdx = 7 - (bitOffset & 7);
@@ -120,7 +120,7 @@ public static class CustomHuffmanTableDecoder
     private static int ReadSignedBits(byte[] data, ref int bitOffset, int count)
     {
         uint result = 0;
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             int byteIdx = bitOffset >> 3;
             int bitIdx = 7 - (bitOffset & 7);
@@ -128,7 +128,7 @@ public static class CustomHuffmanTableDecoder
             if (byteIdx >= data.Length)
                 throw new Jbig2DataException("Custom Huffman table data truncated");
 
-            uint bit = (uint)((data[byteIdx] >> bitIdx) & 1);
+            var bit = (uint)((data[byteIdx] >> bitIdx) & 1);
             result = (result << 1) | bit;
             bitOffset++;
         }

@@ -102,13 +102,13 @@ public sealed class MmrDecoder
     public Bitmap Decode()
     {
         var bitmap = new Bitmap(_width, _height);
-        var stride = (_width + 7) / 8;
+        int stride = (_width + 7) / 8;
         var refLine = new byte[stride];
         var dstLine = new byte[stride];
 
         int startBits = (_dataIndex - _startOffset) * 8 - 32 + _bitIndex;
 
-        for (int y = 0; y < _height; y++)
+        for (var y = 0; y < _height; y++)
         {
             Array.Clear(dstLine, 0, stride);
             int bitsBeforeLine = (_dataIndex - _startOffset) * 8 - 32 + _bitIndex;
@@ -116,14 +116,14 @@ public sealed class MmrDecoder
             int bitsAfterLine = (_dataIndex - _startOffset) * 8 - 32 + _bitIndex;
 
             // Copy decoded line to bitmap
-            for (int x = 0; x < _width; x++)
+            for (var x = 0; x < _width; x++)
             {
                 if (GetBit(dstLine, x))
                     bitmap.SetPixel(x, y, 1);
             }
 
             // Swap reference and destination
-            var tmp = refLine;
+            byte[] tmp = refLine;
             refLine = dstLine;
             dstLine = tmp;
 
@@ -153,8 +153,8 @@ public sealed class MmrDecoder
     private bool DecodeLine(byte[] refLine, byte[] dstLine)
     {
         uint a0 = MINUS1;
-        int c = 0; // 0 = white, 1 = black
-        int iterations = 0;
+        var c = 0; // 0 = white, 1 = black
+        var iterations = 0;
         int maxIterations = _options.MaxLoopIterations;
 
         while (true)
@@ -307,7 +307,7 @@ public sealed class MmrDecoder
 
     private int DecodeRun(MmrTableEntry[] table, int initialBits)
     {
-        int result = 0;
+        var result = 0;
         int val;
 
         do
@@ -330,8 +330,8 @@ public sealed class MmrDecoder
 
     private int DecodeCode(MmrTableEntry[] table, int initialBits)
     {
-        int index = (int)(_word >> (32 - initialBits));
-        var entry = table[index];
+        var index = (int)(_word >> (32 - initialBits));
+        MmrTableEntry entry = table[index];
         int val = entry.Value;
         int nBits = entry.Bits;
 
@@ -395,10 +395,10 @@ public sealed class MmrDecoder
     {
         if (x0 >= x1) return;
 
-        int a0 = (int)(x0 >> 3);
-        int a1 = (int)(x1 >> 3);
-        int b0 = (int)(x0 & 7);
-        int b1 = (int)(x1 & 7);
+        var a0 = (int)(x0 >> 3);
+        var a1 = (int)(x1 >> 3);
+        var b0 = (int)(x0 & 7);
+        var b1 = (int)(x1 & 7);
 
         if (a0 == a1)
         {

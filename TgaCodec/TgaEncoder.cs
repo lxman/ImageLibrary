@@ -30,9 +30,9 @@ public static class TgaEncoder
         }
 
         // Header (18 bytes) + pixel data
-        byte[] result = new byte[TgaHeader.Size + pixelData.Length];
+        var result = new byte[TgaHeader.Size + pixelData.Length];
 
-        int offset = 0;
+        var offset = 0;
 
         // ID Length
         result[offset++] = 0;
@@ -83,12 +83,12 @@ public static class TgaEncoder
 
     private static byte[] EncodeUncompressed(TgaImage image, int bytesPerPixel)
     {
-        byte[] result = new byte[image.Width * image.Height * bytesPerPixel];
-        int destOffset = 0;
+        var result = new byte[image.Width * image.Height * bytesPerPixel];
+        var destOffset = 0;
 
-        for (int y = 0; y < image.Height; y++)
+        for (var y = 0; y < image.Height; y++)
         {
-            for (int x = 0; x < image.Width; x++)
+            for (var x = 0; x < image.Width; x++)
             {
                 int srcOffset = (y * image.Width + x) * 4;
 
@@ -110,12 +110,12 @@ public static class TgaEncoder
         using var ms = new MemoryStream(image.Width * image.Height * (bytesPerPixel + 1));
 
         int totalPixels = image.Width * image.Height;
-        int pixelIndex = 0;
+        var pixelIndex = 0;
 
         while (pixelIndex < totalPixels)
         {
             // Look ahead to determine if we should use run-length or raw packet
-            int runLength = 1;
+            var runLength = 1;
             int srcOffset = pixelIndex * 4;
             byte b = image.PixelData[srcOffset];
             byte g = image.PixelData[srcOffset + 1];
@@ -153,7 +153,7 @@ public static class TgaEncoder
             else
             {
                 // Raw packet - find how many non-repeating pixels
-                int rawCount = 1;
+                var rawCount = 1;
                 while (rawCount < 128 && pixelIndex + rawCount < totalPixels)
                 {
                     int currOffset = (pixelIndex + rawCount) * 4;
@@ -179,7 +179,7 @@ public static class TgaEncoder
                 if (rawCount == 0) rawCount = 1;
 
                 ms.WriteByte((byte)(rawCount - 1));
-                for (int i = 0; i < rawCount; i++)
+                for (var i = 0; i < rawCount; i++)
                 {
                     int off = (pixelIndex + i) * 4;
                     ms.WriteByte(image.PixelData[off]);     // B

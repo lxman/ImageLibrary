@@ -8,21 +8,21 @@ public class GifRoundtripTests
     public void RoundTrip_SolidColor_PreservesPixels()
     {
         var original = new GifImage(4, 4);
-        for (int y = 0; y < 4; y++)
+        for (var y = 0; y < 4; y++)
         {
-            for (int x = 0; x < 4; x++)
+            for (var x = 0; x < 4; x++)
             {
                 original.SetPixel(x, y, 255, 0, 0);
             }
         }
 
         byte[] encoded = GifEncoder.Encode(original);
-        var decoded = GifDecoder.DecodeFirstFrame(encoded);
+        GifImage decoded = GifDecoder.DecodeFirstFrame(encoded);
 
         Assert.Equal(original.Width, decoded.Width);
         Assert.Equal(original.Height, decoded.Height);
 
-        var pixel = decoded.GetPixel(0, 0);
+        (byte R, byte G, byte B, byte A) pixel = decoded.GetPixel(0, 0);
         Assert.Equal(255, pixel.R);
         Assert.Equal(0, pixel.G);
         Assert.Equal(0, pixel.B);
@@ -41,7 +41,7 @@ public class GifRoundtripTests
         original.SetPixel(1, 1, 128, 128, 128);  // Gray
 
         byte[] encoded = GifEncoder.Encode(original);
-        var decoded = GifDecoder.DecodeFirstFrame(encoded);
+        GifImage decoded = GifDecoder.DecodeFirstFrame(encoded);
 
         Assert.Equal(original.Width, decoded.Width);
         Assert.Equal(original.Height, decoded.Height);
@@ -67,18 +67,18 @@ public class GifRoundtripTests
         var original = new GifImage(width, height);
 
         // Fill with a simple pattern
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                byte r = (byte)(x * 255 / Math.Max(1, width - 1));
-                byte g = (byte)(y * 255 / Math.Max(1, height - 1));
+                var r = (byte)(x * 255 / Math.Max(1, width - 1));
+                var g = (byte)(y * 255 / Math.Max(1, height - 1));
                 original.SetPixel(x, y, r, g, 128);
             }
         }
 
         byte[] encoded = GifEncoder.Encode(original);
-        var decoded = GifDecoder.DecodeFirstFrame(encoded);
+        GifImage decoded = GifDecoder.DecodeFirstFrame(encoded);
 
         Assert.Equal(width, decoded.Width);
         Assert.Equal(height, decoded.Height);
@@ -90,29 +90,29 @@ public class GifRoundtripTests
         // GIF only supports 256 colors, so gradient will be quantized
         var original = new GifImage(16, 16);
 
-        for (int y = 0; y < 16; y++)
+        for (var y = 0; y < 16; y++)
         {
-            for (int x = 0; x < 16; x++)
+            for (var x = 0; x < 16; x++)
             {
-                byte r = (byte)(x * 17);  // 0-255
-                byte g = (byte)(y * 17);
+                var r = (byte)(x * 17);  // 0-255
+                var g = (byte)(y * 17);
                 original.SetPixel(x, y, r, g, 128);
             }
         }
 
         byte[] encoded = GifEncoder.Encode(original);
-        var decoded = GifDecoder.DecodeFirstFrame(encoded);
+        GifImage decoded = GifDecoder.DecodeFirstFrame(encoded);
 
         Assert.Equal(16, decoded.Width);
         Assert.Equal(16, decoded.Height);
 
         // Due to color quantization, pixels won't be exact but should be close
         // Check corners
-        var topLeft = decoded.GetPixel(0, 0);
+        (byte R, byte G, byte B, byte A) topLeft = decoded.GetPixel(0, 0);
         Assert.True(topLeft.R < 30);  // Should be close to 0
         Assert.True(topLeft.G < 30);
 
-        var bottomRight = decoded.GetPixel(15, 15);
+        (byte R, byte G, byte B, byte A) bottomRight = decoded.GetPixel(15, 15);
         Assert.True(bottomRight.R > 200);  // Should be close to 255
         Assert.True(bottomRight.G > 200);
     }
@@ -123,14 +123,14 @@ public class GifHeaderTests
     [Fact]
     public void Decode_TooSmall_Throws()
     {
-        byte[] data = new byte[10];
+        var data = new byte[10];
         Assert.Throws<GifException>(() => GifDecoder.Decode(data));
     }
 
     [Fact]
     public void Decode_InvalidSignature_Throws()
     {
-        byte[] data = new byte[20];
+        var data = new byte[20];
         data[0] = (byte)'P';
         data[1] = (byte)'N';
         data[2] = (byte)'G';
@@ -218,7 +218,7 @@ public class GifImageTests
         var image = new GifImage(10, 10);
 
         image.SetPixel(5, 5, 100, 150, 200, 255);
-        var pixel = image.GetPixel(5, 5);
+        (byte R, byte G, byte B, byte A) pixel = image.GetPixel(5, 5);
 
         Assert.Equal(100, pixel.R);
         Assert.Equal(150, pixel.G);
@@ -231,7 +231,7 @@ public class GifImageTests
     {
         var image = new GifImage(5, 5);
 
-        var pixel = image.GetPixel(2, 2);
+        (byte R, byte G, byte B, byte A) pixel = image.GetPixel(2, 2);
         Assert.Equal(0, pixel.R);
         Assert.Equal(0, pixel.G);
         Assert.Equal(0, pixel.B);
@@ -293,7 +293,7 @@ public class LzwTests
         image.SetPixel(1, 1, 255, 255, 0);
 
         byte[] encoded = GifEncoder.Encode(image);
-        var decoded = GifDecoder.DecodeFirstFrame(encoded);
+        GifImage decoded = GifDecoder.DecodeFirstFrame(encoded);
 
         Assert.Equal(2, decoded.Width);
         Assert.Equal(2, decoded.Height);
@@ -304,16 +304,16 @@ public class LzwTests
     {
         // Repetitive data should compress well
         var image = new GifImage(100, 100);
-        for (int y = 0; y < 100; y++)
+        for (var y = 0; y < 100; y++)
         {
-            for (int x = 0; x < 100; x++)
+            for (var x = 0; x < 100; x++)
             {
                 image.SetPixel(x, y, 128, 64, 32);
             }
         }
 
         byte[] encoded = GifEncoder.Encode(image);
-        var decoded = GifDecoder.DecodeFirstFrame(encoded);
+        GifImage decoded = GifDecoder.DecodeFirstFrame(encoded);
 
         Assert.Equal(100, decoded.Width);
         Assert.Equal(100, decoded.Height);

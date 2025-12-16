@@ -47,7 +47,7 @@ public static class SegmentHeaderParser
                 throw new Jbig2DataException("Insufficient data for long-form segment reference count");
 
             // First read remaining 3 bytes of the 4-byte count
-            uint countHigh = (uint)(refCountByte & 0x1F);
+            var countHigh = (uint)(refCountByte & 0x1F);
             byte b1 = reader.ReadByte();
             byte b2 = reader.ReadByte();
             byte b3 = reader.ReadByte();
@@ -71,7 +71,7 @@ public static class SegmentHeaderParser
         }
 
         // 7.2.5 Referred-to segment numbers
-        uint[] referredToSegments = new uint[referredToCount];
+        var referredToSegments = new uint[referredToCount];
 
         // Segment number size depends on this segment's number
         int segmentNumberSize = segmentNumber <= 256 ? 1 : (segmentNumber <= 65536 ? 2 : 4);
@@ -81,7 +81,7 @@ public static class SegmentHeaderParser
         if (reader.RemainingBytes < refBytesNeeded)
             throw new Jbig2DataException($"Insufficient data for segment references: need {refBytesNeeded}, have {reader.RemainingBytes}");
 
-        for (int i = 0; i < referredToCount; i++)
+        for (var i = 0; i < referredToCount; i++)
         {
             referredToSegments[i] = segmentNumberSize switch
             {
@@ -160,7 +160,7 @@ public static class SegmentHeaderParser
             throw new Jbig2DataException("File header truncated: missing flags byte");
 
         // Skip magic bytes
-        int offset = 8;
+        var offset = 8;
 
         // File header flags (1 byte)
         byte flags = data[offset++];

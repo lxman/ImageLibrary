@@ -114,8 +114,8 @@ public sealed class ArithmeticDecoder
         // Read up to 4 bytes into the word buffer, like jbig2dec
         if (_bytePointer >= _dataEnd) return 0;
         uint val = 0;
-        int count = 0;
-        for (int i = 0; i < 4 && _bytePointer + i < _dataEnd; i++)
+        var count = 0;
+        for (var i = 0; i < 4 && _bytePointer + i < _dataEnd; i++)
         {
             val |= (uint)_data[_bytePointer + i] << (24 - i * 8);
             count++;
@@ -229,7 +229,7 @@ public sealed class ArithmeticDecoder
         // by setting CT=8 and not fetching more bytes.
         // The decode should produce a natural OOB (s=1, v=0) if appropriate.
 
-        int prev = 1;
+        var prev = 1;
         int s = DecodeIntBit(contexts, ref prev);
 
         // Decode the value class - trace each decision bit
@@ -314,8 +314,8 @@ public sealed class ArithmeticDecoder
         // The context index formula for value bits differs from decision bits:
         // PREV = ((PREV << 1) & 511) | (PREV & 256) | D
         // This preserves bit 8 when PREV >= 256
-        int value = 0;
-        for (int i = 0; i < count; i++)
+        var value = 0;
+        for (var i = 0; i < count; i++)
         {
             int bit = DecodeBit(contexts[prev]);
             prev = ((prev << 1) & 0x1FF) | (prev & 0x100) | bit;
@@ -347,7 +347,7 @@ public sealed class ArithmeticDecoder
             return;
         }
 
-        byte B = (byte)((_nextWord >> 24) & 0xFF);
+        var B = (byte)((_nextWord >> 24) & 0xFF);
 
         if (B == 0xFF)
         {
@@ -386,7 +386,7 @@ public sealed class ArithmeticDecoder
                 else
                 {
                     // Stuffed byte
-                    uint add = (uint)(0xFE00 - (B1 << 9));
+                    var add = (uint)(0xFE00 - (B1 << 9));
                     _c += add;
                     _ct = 7;
                 }
@@ -407,7 +407,7 @@ public sealed class ArithmeticDecoder
                     // Stuffed byte - consume the B1 byte from buffer
                     _nextWordBytes--;
                     _nextWord <<= 8;
-                    uint add = (uint)(0xFE00 - (B1 << 9));
+                    var add = (uint)(0xFE00 - (B1 << 9));
                     _c += add;
                     _ct = 7;
                 }
@@ -436,7 +436,7 @@ public sealed class ArithmeticDecoder
 
             // Read new B after shift and add its complement
             B = (byte)((_nextWord >> 24) & 0xFF);
-            uint add = (uint)(0xFF00 - (B << 8));
+            var add = (uint)(0xFF00 - (B << 8));
             _c += add;
             _ct = 8;
         }
@@ -448,7 +448,7 @@ public sealed class ArithmeticDecoder
     public static Context[] CreateIntContexts()
     {
         var contexts = new Context[512];
-        for (int i = 0; i < 512; i++)
+        for (var i = 0; i < 512; i++)
             contexts[i] = new Context();
         return contexts;
     }

@@ -65,7 +65,7 @@ public sealed class HuffmanDecoder
     private uint GetWord(int offset)
     {
         uint result = 0;
-        for (int i = 0; i < 4; i++)
+        for (var i = 0; i < 4; i++)
         {
             result <<= 8;
             int pos = offset + i;
@@ -177,14 +177,14 @@ public sealed class HuffmanDecoder
         // Look up entry using the top bits of thisWord
         int logTableSize = table.LogTableSize;
         int index = logTableSize > 0 ? (int)(_thisWord >> (32 - logTableSize)) : 0;
-        ref var entry = ref table.Entries[index];
+        ref HuffmanEntry entry = ref table.Entries[index];
 
         if (entry.PrefixLength == 0xFF)
             throw new Jbig2DataException("Encountered unpopulated Huffman table entry");
 
         int prefLen = entry.PrefixLength;
         int rangeLen = entry.RangeLength;
-        var flags = entry.Flags;
+        HuffmanFlags flags = entry.Flags;
         int result = entry.RangeLow;
 
         // Track decode operations (prefix + range bits)
@@ -218,7 +218,7 @@ public sealed class HuffmanDecoder
         // Read additional range bits if needed
         if (rangeLen > 0)
         {
-            int htOffset = (int)(_thisWord >> (32 - rangeLen));
+            var htOffset = (int)(_thisWord >> (32 - rangeLen));
 
             if ((flags & HuffmanFlags.IsLow) != 0)
                 result -= htOffset;

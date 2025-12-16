@@ -1,4 +1,5 @@
 using Jp2Codec;
+using Jp2Codec.Pipeline;
 using Jp2Codec.Tier1;
 using Jp2Codec.Tier2;
 using Xunit;
@@ -41,7 +42,7 @@ public class Tier1DecoderTests
 
         // Try to decode some bits - it should not crash
         // The actual values depend on the stream
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
             try
             {
@@ -74,15 +75,15 @@ public class Tier1DecoderTests
             Data = [],
         };
 
-        var result = ebcot.Process(block);
+        int[,] result = ebcot.Process(block);
 
         Assert.Equal(8, result.GetLength(0));
         Assert.Equal(8, result.GetLength(1));
 
         // Should be all zeros
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
                 Assert.Equal(0, result[y, x]);
             }
@@ -92,41 +93,41 @@ public class Tier1DecoderTests
     [Fact]
     public void Tier1Decoder_DecodesSimpleCodestream_8x8()
     {
-        var path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         // Parse codestream
         var fileReader = new Jp2FileReader(data);
-        var fileInfo = fileReader.Read();
+        Jp2FileInfo fileInfo = fileReader.Read();
         var codestreamReader = new CodestreamReader(fileInfo.CodestreamData!);
-        var codestream = codestreamReader.ReadMainHeader();
+        Jp2Codestream codestream = codestreamReader.ReadMainHeader();
 
         // Read tile-part
-        var tilePart = codestreamReader.ReadTilePart();
+        Jp2TilePart? tilePart = codestreamReader.ReadTilePart();
         Assert.NotNull(tilePart);
 
         // Tier-2 decode
         var tier2 = new Tier2Decoder(codestream);
-        var tier2Output = tier2.Process(tilePart);
+        Tier2Output tier2Output = tier2.Process(tilePart);
 
         _output.WriteLine($"Tier-2: {tier2Output.CodeBlocks.Sum(r => r.Sum(s => s.Length))} code-blocks");
 
         // Tier-1 decode
         var tier1 = new Tier1Decoder(codestream);
-        var subbands = tier1.DecodeToSubbands(tier2Output);
+        QuantizedSubband[] subbands = tier1.DecodeToSubbands(tier2Output);
 
         _output.WriteLine($"\nTier-1 output: {subbands.Length} subbands");
-        foreach (var subband in subbands)
+        foreach (QuantizedSubband subband in subbands)
         {
             _output.WriteLine($"  {subband.Type}: {subband.Width}x{subband.Height} @ res {subband.ResolutionLevel}");
 
             // Show some coefficient values
-            var coefs = subband.Coefficients;
-            int nonZero = 0;
-            int maxAbs = 0;
-            for (int y = 0; y < coefs.GetLength(0); y++)
+            int[,] coefs = subband.Coefficients;
+            var nonZero = 0;
+            var maxAbs = 0;
+            for (var y = 0; y < coefs.GetLength(0); y++)
             {
-                for (int x = 0; x < coefs.GetLength(1); x++)
+                for (var x = 0; x < coefs.GetLength(1); x++)
                 {
                     if (coefs[y, x] != 0) nonZero++;
                     maxAbs = Math.Max(maxAbs, Math.Abs(coefs[y, x]));
@@ -141,31 +142,31 @@ public class Tier1DecoderTests
     [Fact]
     public void Tier1Decoder_ShowsCoefficients_8x8()
     {
-        var path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         var fileReader = new Jp2FileReader(data);
-        var fileInfo = fileReader.Read();
+        Jp2FileInfo fileInfo = fileReader.Read();
         var codestreamReader = new CodestreamReader(fileInfo.CodestreamData!);
-        var codestream = codestreamReader.ReadMainHeader();
+        Jp2Codestream codestream = codestreamReader.ReadMainHeader();
 
-        var tilePart = codestreamReader.ReadTilePart();
+        Jp2TilePart? tilePart = codestreamReader.ReadTilePart();
         var tier2 = new Tier2Decoder(codestream);
-        var tier2Output = tier2.Process(tilePart);
+        Tier2Output tier2Output = tier2.Process(tilePart);
 
         var tier1 = new Tier1Decoder(codestream);
-        var subbands = tier1.DecodeToSubbands(tier2Output);
+        QuantizedSubband[] subbands = tier1.DecodeToSubbands(tier2Output);
 
         // For an 8x8 image with no decomposition, we should have just the LL subband
         Assert.True(subbands.Length >= 1);
 
-        var ll = subbands.First(s => s.Type == Pipeline.SubbandType.LL);
+        QuantizedSubband ll = subbands.First(s => s.Type == Pipeline.SubbandType.LL);
         _output.WriteLine($"LL subband ({ll.Width}x{ll.Height}):");
 
-        var coefs = ll.Coefficients;
-        for (int y = 0; y < ll.Height; y++)
+        int[,] coefs = ll.Coefficients;
+        for (var y = 0; y < ll.Height; y++)
         {
-            var row = string.Join(" ", Enumerable.Range(0, ll.Width)
+            string row = string.Join(" ", Enumerable.Range(0, ll.Width)
                 .Select(x => coefs[y, x].ToString().PadLeft(5)));
             _output.WriteLine(row);
         }
@@ -176,31 +177,31 @@ public class Tier1DecoderTests
     [Fact]
     public void Tier1Decoder_DecodesMultiResolution_16x16()
     {
-        var path = Path.Combine(GetTestImagesPath(), "test_16x16.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_16x16.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         var fileReader = new Jp2FileReader(data);
-        var fileInfo = fileReader.Read();
+        Jp2FileInfo fileInfo = fileReader.Read();
         var codestreamReader = new CodestreamReader(fileInfo.CodestreamData!);
-        var codestream = codestreamReader.ReadMainHeader();
+        Jp2Codestream codestream = codestreamReader.ReadMainHeader();
 
         _output.WriteLine($"Image: {codestream.Frame.Width}x{codestream.Frame.Height}");
         _output.WriteLine($"Decomposition: {codestream.CodingParameters.DecompositionLevels} levels");
 
-        var tilePart = codestreamReader.ReadTilePart();
+        Jp2TilePart? tilePart = codestreamReader.ReadTilePart();
         var tier2 = new Tier2Decoder(codestream);
-        var tier2Output = tier2.Process(tilePart);
+        Tier2Output tier2Output = tier2.Process(tilePart);
 
         var tier1 = new Tier1Decoder(codestream);
-        var subbands = tier1.DecodeToSubbands(tier2Output);
+        QuantizedSubband[] subbands = tier1.DecodeToSubbands(tier2Output);
 
         _output.WriteLine($"\nSubbands decoded:");
-        foreach (var subband in subbands)
+        foreach (QuantizedSubband subband in subbands)
         {
-            var coefs = subband.Coefficients;
-            int nonZero = 0;
-            for (int y = 0; y < coefs.GetLength(0); y++)
-                for (int x = 0; x < coefs.GetLength(1); x++)
+            int[,] coefs = subband.Coefficients;
+            var nonZero = 0;
+            for (var y = 0; y < coefs.GetLength(0); y++)
+                for (var x = 0; x < coefs.GetLength(1); x++)
                     if (coefs[y, x] != 0) nonZero++;
 
             _output.WriteLine($"  Res {subband.ResolutionLevel} {subband.Type}: {subband.Width}x{subband.Height}, {nonZero} non-zero");
@@ -220,13 +221,13 @@ public class Tier1DecoderTests
     [Fact]
     public void DiagnoseCodeBlockData_8x8()
     {
-        var path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         var fileReader = new Jp2FileReader(data);
-        var fileInfo = fileReader.Read();
+        Jp2FileInfo fileInfo = fileReader.Read();
         var codestreamReader = new CodestreamReader(fileInfo.CodestreamData!);
-        var codestream = codestreamReader.ReadMainHeader();
+        Jp2Codestream codestream = codestreamReader.ReadMainHeader();
 
         _output.WriteLine($"Codestream info:");
         _output.WriteLine($"  Size: {codestream.Frame.Width}x{codestream.Frame.Height}");
@@ -239,7 +240,7 @@ public class Tier1DecoderTests
         _output.WriteLine($"  Guard bits: {codestream.QuantizationParameters.GuardBits}");
         _output.WriteLine($"  Step sizes: {codestream.QuantizationParameters.StepSizes.Length}");
 
-        var tilePart = codestreamReader.ReadTilePart();
+        Jp2TilePart? tilePart = codestreamReader.ReadTilePart();
         Assert.NotNull(tilePart);
 
         _output.WriteLine($"\nTile-part:");
@@ -253,20 +254,20 @@ public class Tier1DecoderTests
 
         // Tier-2 decode
         var tier2 = new Tier2Decoder(codestream);
-        var tier2Output = tier2.Process(tilePart);
+        Tier2Output tier2Output = tier2.Process(tilePart);
 
         _output.WriteLine($"\nTier-2 output:");
         _output.WriteLine($"  Resolution levels: {tier2Output.ResolutionLevels}");
 
-        for (int r = 0; r < tier2Output.CodeBlocks.Length; r++)
+        for (var r = 0; r < tier2Output.CodeBlocks.Length; r++)
         {
             _output.WriteLine($"\n  Resolution {r}:");
-            for (int s = 0; s < tier2Output.CodeBlocks[r].Length; s++)
+            for (var s = 0; s < tier2Output.CodeBlocks[r].Length; s++)
             {
-                var subbandBlocks = tier2Output.CodeBlocks[r][s];
+                CodeBlockBitstream[] subbandBlocks = tier2Output.CodeBlocks[r][s];
                 _output.WriteLine($"    Subband {s}: {subbandBlocks.Length} code-blocks");
 
-                foreach (var cb in subbandBlocks)
+                foreach (CodeBlockBitstream cb in subbandBlocks)
                 {
                     _output.WriteLine($"      Block ({cb.BlockX},{cb.BlockY}) {cb.Width}x{cb.Height}:");
                     _output.WriteLine($"        CodingPasses: {cb.CodingPasses}");
@@ -275,7 +276,7 @@ public class Tier1DecoderTests
 
                     if (cb.Data != null && cb.Data.Length > 0)
                     {
-                        var preview = cb.Data.Take(16).ToArray();
+                        byte[] preview = cb.Data.Take(16).ToArray();
                         _output.WriteLine($"        Data preview: {BitConverter.ToString(preview)}");
                     }
                 }
@@ -284,22 +285,22 @@ public class Tier1DecoderTests
 
         // Decode with EBCOT and show coefficients
         var tier1 = new Tier1Decoder(codestream);
-        var subbands = tier1.DecodeToSubbands(tier2Output);
+        QuantizedSubband[] subbands = tier1.DecodeToSubbands(tier2Output);
 
         _output.WriteLine($"\nEBCOT decoded subbands:");
-        foreach (var subband in subbands)
+        foreach (QuantizedSubband subband in subbands)
         {
             _output.WriteLine($"  {subband.Type} ({subband.Width}x{subband.Height}):");
 
-            var coefs = subband.Coefficients;
-            int nonZero = 0;
-            int sum = 0;
-            int max = int.MinValue;
-            int min = int.MaxValue;
+            int[,] coefs = subband.Coefficients;
+            var nonZero = 0;
+            var sum = 0;
+            var max = int.MinValue;
+            var min = int.MaxValue;
 
-            for (int y = 0; y < coefs.GetLength(0); y++)
+            for (var y = 0; y < coefs.GetLength(0); y++)
             {
-                for (int x = 0; x < coefs.GetLength(1); x++)
+                for (var x = 0; x < coefs.GetLength(1); x++)
                 {
                     int v = coefs[y, x];
                     if (v != 0) nonZero++;
@@ -313,12 +314,12 @@ public class Tier1DecoderTests
         }
 
         // Manually trace MQ decoding of first few bits
-        var cbData = tier2Output.CodeBlocks[0][0][0].Data;
+        byte[]? cbData = tier2Output.CodeBlocks[0][0][0].Data;
         if (cbData != null && cbData.Length > 0)
         {
             _output.WriteLine($"\nMQ Decoder trace (first 20 symbols with context 17 - run-length):");
             var mq = new MqDecoder(cbData);
-            for (int i = 0; i < 20; i++)
+            for (var i = 0; i < 20; i++)
             {
                 try
                 {
@@ -336,7 +337,7 @@ public class Tier1DecoderTests
 
         // Trace what the EBCOT decoder actually does
         _output.WriteLine($"\nEBCOT detailed trace:");
-        var codeBlock = tier2Output.CodeBlocks[0][0][0];
+        CodeBlockBitstream codeBlock = tier2Output.CodeBlocks[0][0][0];
         _output.WriteLine($"  CodingPasses: {codeBlock.CodingPasses}");
         _output.WriteLine($"  ZeroBitPlanes: {codeBlock.ZeroBitPlanes}");
         _output.WriteLine($"  For 8-bit precision: {8 - codeBlock.ZeroBitPlanes} effective bit-planes");
@@ -344,10 +345,10 @@ public class Tier1DecoderTests
 
         // Show raw EBCOT coefficients
         _output.WriteLine($"\nRaw EBCOT coefficients (before dequantization):");
-        var llSubband = subbands.First(s => s.Type == Pipeline.SubbandType.LL);
-        for (int y = 0; y < 8; y++)
+        QuantizedSubband llSubband = subbands.First(s => s.Type == Pipeline.SubbandType.LL);
+        for (var y = 0; y < 8; y++)
         {
-            var row = string.Join(" ", Enumerable.Range(0, 8)
+            string row = string.Join(" ", Enumerable.Range(0, 8)
                 .Select(x => llSubband.Coefficients[y, x].ToString().PadLeft(5)));
             _output.WriteLine($"  {row}");
         }
@@ -360,20 +361,20 @@ public class Tier1DecoderTests
     public void CompareMqDecoders_SameInput()
     {
         // Get the actual codeblock data from test_8x8
-        var path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         var fileReader = new Jp2FileReader(data);
-        var fileInfo = fileReader.Read();
+        Jp2FileInfo fileInfo = fileReader.Read();
         var codestreamReader = new CodestreamReader(fileInfo.CodestreamData!);
-        var codestream = codestreamReader.ReadMainHeader();
-        var tilePart = codestreamReader.ReadTilePart()!;
+        Jp2Codestream codestream = codestreamReader.ReadMainHeader();
+        Jp2TilePart tilePart = codestreamReader.ReadTilePart()!;
         var tier2 = new Tier2Decoder(codestream);
-        var tier2Output = tier2.Process(tilePart);
+        Tier2Output tier2Output = tier2.Process(tilePart);
 
         // Get the first code block's data
-        var cb = tier2Output.CodeBlocks[0][0].First();
-        var cbData = cb.Data!;
+        CodeBlockBitstream cb = tier2Output.CodeBlocks[0][0].First();
+        byte[] cbData = cb.Data!;
         
         _output.WriteLine($"Code block data ({cbData.Length} bytes): {BitConverter.ToString(cbData.Take(32).ToArray())}");
 
@@ -388,17 +389,17 @@ public class Tier1DecoderTests
         // Decode first 100 symbols with both decoders and compare
         // Use a longer context sequence covering cleanup and sigprop passes
         _output.WriteLine("\nComparing MQ decoders (first 100 decodes):");
-        int mismatches = 0;
+        var mismatches = 0;
 
         // Context sequence from our MQ trace - covering cleanup pass bp=29 through early sigprop bp=28
-        var contexts = new[] {
+        int[] contexts = new[] {
             1, 0, 0, 11, 7, 2, 2, 5, 3, 2, 2, 1, 1, 1, 1, 0, 0, 11, 2, 2,  // MQ[0]-[19]
             3, 11, 9, 2, 3, 11, 9, 3, 1, 1, 0, 0, 11, 2, 2, 3, 11, 9, 2,  // MQ[20]-[38]
             3, 11, 9, 3, 4, 11, 9, 3, 2, 9, 3, 2, 2, 3, 2, 2, 2, 1,        // MQ[39]-[56] (end of cleanup)
             7, 12, 7, 12, 7, 5, 14, 9, 5, 3, 5, 14, 8, 5, 14, 8, 3, 5, 14, 8, 3, 9, 5, 14, 8, 10, 15, 9, 9, 9  // MQ[57]-[86] (sigprop)
         };
 
-        for (int i = 0; i < contexts.Length; i++)
+        for (var i = 0; i < contexts.Length; i++)
         {
             int ctx = contexts[i];
             int ourResult = ourMq.Decode(ctx);

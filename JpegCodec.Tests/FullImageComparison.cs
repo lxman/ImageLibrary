@@ -19,21 +19,21 @@ public class FullImageComparison
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
 
-        var ourImage = JpegDecoder.DecodeFile(path);
-        using var isImage = Image.Load<L8>(path);
+        DecodedImage ourImage = JpegDecoder.DecodeFile(path);
+        using Image<L8> isImage = Image.Load<L8>(path);
 
         _output.WriteLine($"Image dimensions: {ourImage.Width}x{ourImage.Height}");
 
-        int totalPixels = 0;
-        int matchingPixels = 0;
-        int maxDiff = 0;
-        int diffSum = 0;
+        var totalPixels = 0;
+        var matchingPixels = 0;
+        var maxDiff = 0;
+        var diffSum = 0;
 
-        for (int y = 0; y < ourImage.Height; y++)
+        for (var y = 0; y < ourImage.Height; y++)
         {
-            for (int x = 0; x < ourImage.Width; x++)
+            for (var x = 0; x < ourImage.Width; x++)
             {
-                var (ourVal, _, _) = ourImage.GetPixel(x, y);
+                (byte ourVal, _, _) = ourImage.GetPixel(x, y);
                 byte isVal = isImage[x, y].PackedValue;
 
                 int diff = Math.Abs(ourVal - isVal);
@@ -63,16 +63,16 @@ public class FullImageComparison
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
 
-        var ourImage = JpegDecoder.DecodeFile(path);
-        using var isImage = Image.Load<L8>(path);
+        DecodedImage ourImage = JpegDecoder.DecodeFile(path);
+        using Image<L8> isImage = Image.Load<L8>(path);
 
         _output.WriteLine("Looking for first significant mismatch (diff > 5)...");
 
-        for (int y = 0; y < ourImage.Height; y++)
+        for (var y = 0; y < ourImage.Height; y++)
         {
-            for (int x = 0; x < ourImage.Width; x++)
+            for (var x = 0; x < ourImage.Width; x++)
             {
-                var (ourVal, _, _) = ourImage.GetPixel(x, y);
+                (byte ourVal, _, _) = ourImage.GetPixel(x, y);
                 byte isVal = isImage[x, y].PackedValue;
 
                 int diff = Math.Abs(ourVal - isVal);

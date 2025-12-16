@@ -62,14 +62,14 @@ public sealed class PatternDictionaryDecoder
 
         // Slice the collective bitmap into individual patterns
         var patterns = new Bitmap[numPatterns];
-        for (int i = 0; i < numPatterns; i++)
+        for (var i = 0; i < numPatterns; i++)
         {
             int srcX = i * _params.PatternWidth;
             patterns[i] = new Bitmap(_params.PatternWidth, _params.PatternHeight);
 
-            for (int y = 0; y < _params.PatternHeight; y++)
+            for (var y = 0; y < _params.PatternHeight; y++)
             {
-                for (int x = 0; x < _params.PatternWidth; x++)
+                for (var x = 0; x < _params.PatternWidth; x++)
                 {
                     patterns[i].SetPixel(x, y, collectiveBitmap.GetPixel(srcX + x, y));
                 }

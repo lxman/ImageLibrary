@@ -104,7 +104,7 @@ public sealed class HalftoneRegionDecoder
     {
         // Calculate number of bits needed for gray values
         int numPatterns = _patternDict.Count;
-        int bitsPerGray = 0;
+        var bitsPerGray = 0;
         int temp = numPatterns - 1;
         while (temp > 0)
         {
@@ -122,8 +122,8 @@ public sealed class HalftoneRegionDecoder
         // Initialize with default pixel
         if (_params.DefaultPixel != 0)
         {
-            for (int y = 0; y < height; y++)
-                for (int x = 0; x < width; x++)
+            for (var y = 0; y < height; y++)
+                for (var x = 0; x < width; x++)
                     result.SetPixel(x, y, 1);
         }
 
@@ -135,9 +135,9 @@ public sealed class HalftoneRegionDecoder
         int patternW = _patternDict.PatternWidth;
         int patternH = _patternDict.PatternHeight;
 
-        for (int m = 0; m < _params.GridHeight; m++)
+        for (var m = 0; m < _params.GridHeight; m++)
         {
-            for (int n = 0; n < _params.GridWidth; n++)
+            for (var n = 0; n < _params.GridWidth; n++)
             {
                 // Calculate grid position (fixed-point scaled by 256)
                 // T.88 6.6.5.2: Per jbig2dec implementation:
@@ -154,15 +154,15 @@ public sealed class HalftoneRegionDecoder
                     continue;
                 }
 
-                var pattern = _patternDict[grayIdx];
+                Bitmap pattern = _patternDict[grayIdx];
 
                 // Render pattern at (gx, gy)
-                for (int py = 0; py < patternH; py++)
+                for (var py = 0; py < patternH; py++)
                 {
                     int destY = gy + py;
                     if (destY < 0 || destY >= height) continue;
 
-                    for (int px = 0; px < patternW; px++)
+                    for (var px = 0; px < patternW; px++)
                     {
                         int destX = gx + px;
                         if (destX < 0 || destX >= width) continue;
@@ -228,9 +228,9 @@ public sealed class HalftoneRegionDecoder
                 // GSPLANES[j] = GSPLANES[j+1] XOR GSPLANES[j]
                 if (b < bitsPerGray - 1)
                 {
-                    for (int y = 0; y < gridH; y++)
+                    for (var y = 0; y < gridH; y++)
                     {
-                        for (int x = 0; x < gridW; x++)
+                        for (var x = 0; x < gridW; x++)
                         {
                             int val = bitPlanes[b].GetPixel(x, y) ^ bitPlanes[b + 1].GetPixel(x, y);
                             bitPlanes[b].SetPixel(x, y, val);
@@ -240,11 +240,11 @@ public sealed class HalftoneRegionDecoder
             }
 
             // Reconstruct gray values from bit planes
-            for (int m = 0; m < gridH; m++)
+            for (var m = 0; m < gridH; m++)
             {
-                for (int n = 0; n < gridW; n++)
+                for (var n = 0; n < gridW; n++)
                 {
-                    int gray = 0;
+                    var gray = 0;
                     for (int b = bitsPerGray - 1; b >= 0; b--)
                     {
                         gray = (gray << 1) | bitPlanes[b].GetPixel(n, m);
@@ -274,9 +274,9 @@ public sealed class HalftoneRegionDecoder
                 // GSPLANES[j] = GSPLANES[j+1] XOR GSPLANES[j]
                 if (b < bitsPerGray - 1)
                 {
-                    for (int y = 0; y < gridH; y++)
+                    for (var y = 0; y < gridH; y++)
                     {
-                        for (int x = 0; x < gridW; x++)
+                        for (var x = 0; x < gridW; x++)
                         {
                             int val = bitPlanes[b].GetPixel(x, y) ^ bitPlanes[b + 1].GetPixel(x, y);
                             bitPlanes[b].SetPixel(x, y, val);
@@ -288,11 +288,11 @@ public sealed class HalftoneRegionDecoder
             // Reconstruct gray values from bit planes
             // Each bit plane contributes one bit to the gray value
             // bitPlanes[K-1] is MSB, bitPlanes[0] is LSB
-            for (int m = 0; m < gridH; m++)
+            for (var m = 0; m < gridH; m++)
             {
-                for (int n = 0; n < gridW; n++)
+                for (var n = 0; n < gridW; n++)
                 {
-                    int gray = 0;
+                    var gray = 0;
                     for (int b = bitsPerGray - 1; b >= 0; b--)
                     {
                         gray = (gray << 1) | bitPlanes[b].GetPixel(n, m);

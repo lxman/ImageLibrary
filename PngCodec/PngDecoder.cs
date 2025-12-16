@@ -53,11 +53,11 @@ public static class PngDecoder
         int offset = PngSignature.Length;
 
         // Read IHDR chunk (must be first)
-        var ihdrChunk = ReadChunk(data, ref offset);
+        PngChunk ihdrChunk = ReadChunk(data, ref offset);
         if (ihdrChunk.Type != PngChunkTypes.IHDR)
             throw new PngException("First chunk must be IHDR");
 
-        var ihdr = ReadIhdr(data, ihdrChunk);
+        IhdrChunk ihdr = ReadIhdr(data, ihdrChunk);
 
         if (ihdr.Width == 0 || ihdr.Height == 0)
             throw new PngException("Invalid image dimensions");
@@ -79,7 +79,7 @@ public static class PngDecoder
 
         while (offset < data.Length)
         {
-            var chunk = ReadChunk(data, ref offset);
+            PngChunk chunk = ReadChunk(data, ref offset);
 
             switch (chunk.Type)
             {
@@ -187,7 +187,7 @@ public static class PngDecoder
         int count = (int)chunk.Length / 3;
         var palette = new PngColor[count];
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             int offset = chunk.DataOffset + i * 3;
             palette[i] = new PngColor(data[offset], data[offset + 1], data[offset + 2]);
@@ -198,7 +198,7 @@ public static class PngDecoder
 
     private static byte[] ReadTransparency(byte[] data, PngChunk chunk)
     {
-        byte[] transparency = new byte[chunk.Length];
+        var transparency = new byte[chunk.Length];
         Array.Copy(data, chunk.DataOffset, transparency, 0, (int)chunk.Length);
         return transparency;
     }
@@ -220,20 +220,20 @@ public static class PngDecoder
     private static byte[] DecodeNonInterlaced(byte[] rawData, IhdrChunk ihdr,
         PngColor[]? palette, byte[]? transparency)
     {
-        int width = (int)ihdr.Width;
-        int height = (int)ihdr.Height;
+        var width = (int)ihdr.Width;
+        var height = (int)ihdr.Height;
         int bitsPerPixel = ihdr.BitsPerPixel;
         int bytesPerPixel = ihdr.BytesPerPixel;
         int scanlineBytes = (width * bitsPerPixel + 7) / 8;
         int stride = scanlineBytes + 1; // +1 for filter byte
 
-        byte[] pixelData = new byte[width * height * 4];
-        byte[] prevRow = new byte[scanlineBytes];
-        byte[] currRow = new byte[scanlineBytes];
+        var pixelData = new byte[width * height * 4];
+        var prevRow = new byte[scanlineBytes];
+        var currRow = new byte[scanlineBytes];
 
-        int rawOffset = 0;
+        var rawOffset = 0;
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
             if (rawOffset >= rawData.Length)
                 throw new PngException("Unexpected end of image data");
@@ -261,9 +261,9 @@ public static class PngDecoder
     private static byte[] DecodeInterlaced(byte[] rawData, IhdrChunk ihdr,
         PngColor[]? palette, byte[]? transparency)
     {
-        int width = (int)ihdr.Width;
-        int height = (int)ihdr.Height;
-        byte[] pixelData = new byte[width * height * 4];
+        var width = (int)ihdr.Width;
+        var height = (int)ihdr.Height;
+        var pixelData = new byte[width * height * 4];
 
         // Adam7 interlace pattern
         int[] startingRow = [0, 0, 4, 0, 2, 0, 1];
@@ -271,9 +271,9 @@ public static class PngDecoder
         int[] rowIncrement = [8, 8, 8, 4, 4, 2, 2];
         int[] colIncrement = [8, 8, 4, 4, 2, 2, 1];
 
-        int rawOffset = 0;
+        var rawOffset = 0;
 
-        for (int pass = 0; pass < 7; pass++)
+        for (var pass = 0; pass < 7; pass++)
         {
             int passWidth = (width - startingCol[pass] + colIncrement[pass] - 1) / colIncrement[pass];
             int passHeight = (height - startingRow[pass] + rowIncrement[pass] - 1) / rowIncrement[pass];
@@ -285,11 +285,11 @@ public static class PngDecoder
             int bytesPerPixel = ihdr.BytesPerPixel;
             int scanlineBytes = (passWidth * bitsPerPixel + 7) / 8;
 
-            byte[] prevRow = new byte[scanlineBytes];
-            byte[] currRow = new byte[scanlineBytes];
-            byte[] rowBgra = new byte[passWidth * 4];
+            var prevRow = new byte[scanlineBytes];
+            var currRow = new byte[scanlineBytes];
+            var rowBgra = new byte[passWidth * 4];
 
-            for (int passY = 0; passY < passHeight; passY++)
+            for (var passY = 0; passY < passHeight; passY++)
             {
                 if (rawOffset >= rawData.Length)
                     break;
@@ -310,7 +310,7 @@ public static class PngDecoder
 
                 // Copy to final image at correct positions
                 int destY = startingRow[pass] + passY * rowIncrement[pass];
-                for (int passX = 0; passX < passWidth; passX++)
+                for (var passX = 0; passX < passWidth; passX++)
                 {
                     int destX = startingCol[pass] + passX * colIncrement[pass];
                     int srcOffset = passX * 4;
@@ -345,14 +345,14 @@ public static class PngDecoder
                 break;
 
             case PngFilterType.Up:
-                for (int i = 0; i < currRow.Length; i++)
+                for (var i = 0; i < currRow.Length; i++)
                 {
                     currRow[i] = (byte)(currRow[i] + prevRow[i]);
                 }
                 break;
 
             case PngFilterType.Average:
-                for (int i = 0; i < currRow.Length; i++)
+                for (var i = 0; i < currRow.Length; i++)
                 {
                     int left = i >= bytesPerPixel ? currRow[i - bytesPerPixel] : 0;
                     int up = prevRow[i];
@@ -361,7 +361,7 @@ public static class PngDecoder
                 break;
 
             case PngFilterType.Paeth:
-                for (int i = 0; i < currRow.Length; i++)
+                for (var i = 0; i < currRow.Length; i++)
                 {
                     int left = i >= bytesPerPixel ? currRow[i - bytesPerPixel] : 0;
                     int up = prevRow[i];
@@ -392,7 +392,7 @@ public static class PngDecoder
     private static void ConvertRowToBgra(byte[] srcRow, byte[] destRow, int destOffset,
         IhdrChunk ihdr, PngColor[]? palette, byte[]? transparency)
     {
-        int width = (int)ihdr.Width;
+        var width = (int)ihdr.Width;
 
         switch (ihdr.ColorType)
         {
@@ -427,10 +427,10 @@ public static class PngDecoder
             transparentValue = (transparency[0] << 8) | transparency[1];
         }
 
-        int srcBit = 0;
-        int srcByte = 0;
+        var srcBit = 0;
+        var srcByte = 0;
 
-        for (int x = 0; x < width; x++)
+        for (var x = 0; x < width; x++)
         {
             int gray;
             if (bitDepth == 16)
@@ -481,8 +481,8 @@ public static class PngDecoder
             transB = (transparency[4] << 8) | transparency[5];
         }
 
-        int srcOffset = 0;
-        for (int x = 0; x < width; x++)
+        var srcOffset = 0;
+        for (var x = 0; x < width; x++)
         {
             byte r, g, b;
             if (bitDepth == 16)
@@ -515,10 +515,10 @@ public static class PngDecoder
     private static void ConvertIndexed(byte[] src, byte[] dest, int destOffset,
         int width, int bitDepth, PngColor[] palette, byte[]? transparency)
     {
-        int srcBit = 0;
-        int srcByte = 0;
+        var srcBit = 0;
+        var srcByte = 0;
 
-        for (int x = 0; x < width; x++)
+        for (var x = 0; x < width; x++)
         {
             int index;
             if (bitDepth == 8)
@@ -541,7 +541,7 @@ public static class PngDecoder
 
             if (index < palette.Length)
             {
-                var color = palette[index];
+                PngColor color = palette[index];
                 byte alpha = (transparency != null && index < transparency.Length)
                     ? transparency[index]
                     : (byte)255;
@@ -564,8 +564,8 @@ public static class PngDecoder
     private static void ConvertGrayscaleAlpha(byte[] src, byte[] dest, int destOffset,
         int width, int bitDepth)
     {
-        int srcOffset = 0;
-        for (int x = 0; x < width; x++)
+        var srcOffset = 0;
+        for (var x = 0; x < width; x++)
         {
             byte gray, alpha;
             if (bitDepth == 16)
@@ -591,8 +591,8 @@ public static class PngDecoder
     private static void ConvertRgba(byte[] src, byte[] dest, int destOffset,
         int width, int bitDepth)
     {
-        int srcOffset = 0;
-        for (int x = 0; x < width; x++)
+        var srcOffset = 0;
+        for (var x = 0; x < width; x++)
         {
             byte r, g, b, a;
             if (bitDepth == 16)

@@ -22,8 +22,8 @@ public class DirectBlockCompare
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
 
-        var ourImage = JpegDecoder.DecodeFile(path);
-        using var isImage = Image.Load<L8>(path);
+        DecodedImage ourImage = JpegDecoder.DecodeFile(path);
+        using Image<L8> isImage = Image.Load<L8>(path);
 
         _output.WriteLine($"Image: {ourImage.Width}x{ourImage.Height}");
         _output.WriteLine("");
@@ -43,17 +43,17 @@ public class DirectBlockCompare
             ("Block(1,1)", 8, 8),
         };
 
-        foreach (var (name, startX, startY) in blockRegions)
+        foreach ((string name, int startX, int startY) in blockRegions)
         {
             _output.WriteLine($"=== {name} at pixel ({startX},{startY}) ===");
 
             // Calculate sums to see overall difference
             int ourSum = 0, isSum = 0;
-            for (int y = 0; y < 8; y++)
+            for (var y = 0; y < 8; y++)
             {
-                for (int x = 0; x < 8; x++)
+                for (var x = 0; x < 8; x++)
                 {
-                    var (v, _, _) = ourImage.GetPixel(startX + x, startY + y);
+                    (byte v, _, _) = ourImage.GetPixel(startX + x, startY + y);
                     ourSum += v;
                     isSum += isImage[startX + x, startY + y].PackedValue;
                 }
@@ -62,11 +62,11 @@ public class DirectBlockCompare
 
             // Show first row of each block
             _output.WriteLine("First row:");
-            string ourRow = "  Ours: ";
-            string isRow = "  IS:   ";
-            for (int x = 0; x < 8; x++)
+            var ourRow = "  Ours: ";
+            var isRow = "  IS:   ";
+            for (var x = 0; x < 8; x++)
             {
-                var (v, _, _) = ourImage.GetPixel(startX + x, startY);
+                (byte v, _, _) = ourImage.GetPixel(startX + x, startY);
                 ourRow += $"{v,4}";
                 isRow += $"{isImage[startX + x, startY].PackedValue,4}";
             }
@@ -83,8 +83,8 @@ public class DirectBlockCompare
         // This is where the comparison showed differences
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
 
-        var ourImage = JpegDecoder.DecodeFile(path);
-        using var isImage = Image.Load<L8>(path);
+        DecodedImage ourImage = JpegDecoder.DecodeFile(path);
+        using Image<L8> isImage = Image.Load<L8>(path);
 
         _output.WriteLine("MCU row 1 (pixel rows 16-31):");
         _output.WriteLine("");
@@ -104,16 +104,16 @@ public class DirectBlockCompare
             ("Block(1,3)", 8, 24),
         };
 
-        foreach (var (name, startX, startY) in blockRegions)
+        foreach ((string name, int startX, int startY) in blockRegions)
         {
             _output.WriteLine($"=== {name} at pixel ({startX},{startY}) ===");
 
             int ourSum = 0, isSum = 0;
-            for (int y = 0; y < 8; y++)
+            for (var y = 0; y < 8; y++)
             {
-                for (int x = 0; x < 8; x++)
+                for (var x = 0; x < 8; x++)
                 {
-                    var (v, _, _) = ourImage.GetPixel(startX + x, startY + y);
+                    (byte v, _, _) = ourImage.GetPixel(startX + x, startY + y);
                     ourSum += v;
                     isSum += isImage[startX + x, startY + y].PackedValue;
                 }
@@ -129,17 +129,17 @@ public class DirectBlockCompare
         // Look for the first pixel that differs significantly
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
 
-        var ourImage = JpegDecoder.DecodeFile(path);
-        using var isImage = Image.Load<L8>(path);
+        DecodedImage ourImage = JpegDecoder.DecodeFile(path);
+        using Image<L8> isImage = Image.Load<L8>(path);
 
         _output.WriteLine("Looking for first significant mismatch...");
 
-        for (int y = 0; y < Math.Min(40, ourImage.Height); y++)
+        for (var y = 0; y < Math.Min(40, ourImage.Height); y++)
         {
-            for (int x = 0; x < Math.Min(40, ourImage.Width); x++)
+            for (var x = 0; x < Math.Min(40, ourImage.Width); x++)
             {
-                var (ourVal, _, _) = ourImage.GetPixel(x, y);
-                var isVal = isImage[x, y].PackedValue;
+                (byte ourVal, _, _) = ourImage.GetPixel(x, y);
+                byte isVal = isImage[x, y].PackedValue;
                 int diff = Math.Abs(ourVal - isVal);
 
                 if (diff > 20)
@@ -159,21 +159,21 @@ public class DirectBlockCompare
                     int baseY = blockY * 8;
                     _output.WriteLine($"Full block at ({baseX},{baseY}):");
                     _output.WriteLine("Ours:");
-                    for (int by = 0; by < 8; by++)
+                    for (var by = 0; by < 8; by++)
                     {
-                        string row = "  ";
-                        for (int bx = 0; bx < 8; bx++)
+                        var row = "  ";
+                        for (var bx = 0; bx < 8; bx++)
                         {
-                            var (v, _, _) = ourImage.GetPixel(baseX + bx, baseY + by);
+                            (byte v, _, _) = ourImage.GetPixel(baseX + bx, baseY + by);
                             row += $"{v,4}";
                         }
                         _output.WriteLine(row);
                     }
                     _output.WriteLine("ImageSharp:");
-                    for (int by = 0; by < 8; by++)
+                    for (var by = 0; by < 8; by++)
                     {
-                        string row = "  ";
-                        for (int bx = 0; bx < 8; bx++)
+                        var row = "  ";
+                        for (var bx = 0; bx < 8; bx++)
                         {
                             row += $"{isImage[baseX + bx, baseY + by].PackedValue,4}";
                         }
@@ -192,10 +192,10 @@ public class DirectBlockCompare
     public void ShowBlockIndexMapping()
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         _output.WriteLine($"Image: {frame.Width}x{frame.Height}");
         _output.WriteLine($"MCUs: {frame.McuCountX}x{frame.McuCountY}");
@@ -212,15 +212,15 @@ public class DirectBlockCompare
 
         // Show how EntropyDecoder assigns block indices for first 2 MCUs
         _output.WriteLine("EntropyDecoder block assignment for first 2 MCUs:");
-        for (int mcuY = 0; mcuY < 2; mcuY++)
+        for (var mcuY = 0; mcuY < 2; mcuY++)
         {
-            for (int mcuX = 0; mcuX < 2; mcuX++)
+            for (var mcuX = 0; mcuX < 2; mcuX++)
             {
                 _output.WriteLine($"\nMCU ({mcuX},{mcuY}):");
-                int decodeOrder = 0;
-                for (int blockY = 0; blockY < vSamp; blockY++)
+                var decodeOrder = 0;
+                for (var blockY = 0; blockY < vSamp; blockY++)
                 {
-                    for (int blockX = 0; blockX < hSamp; blockX++)
+                    for (var blockX = 0; blockX < hSamp; blockX++)
                     {
                         int globalBlockX = mcuX * hSamp + blockX;
                         int globalBlockY = mcuY * vSamp + blockY;
@@ -237,7 +237,7 @@ public class DirectBlockCompare
         _output.WriteLine("");
         _output.WriteLine("ColorConverter lookup for specific pixels:");
         var pixels = new[] { (0, 0), (8, 0), (0, 8), (8, 8), (16, 0), (16, 8), (0, 16), (8, 16) };
-        foreach (var (px, py) in pixels)
+        foreach ((int px, int py) in pixels)
         {
             int blockX = px / 8;
             int blockY = py / 8;

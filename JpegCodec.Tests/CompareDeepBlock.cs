@@ -19,23 +19,23 @@ public class CompareDeepBlock
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
 
-        using var isImage = Image.Load<L8>(path);
+        using Image<L8> isImage = Image.Load<L8>(path);
 
         // Find first block that's not all white
         int blocksX = (isImage.Width + 7) / 8;
         int blocksY = (isImage.Height + 7) / 8;
 
-        for (int by = 0; by < blocksY; by++)
+        for (var by = 0; by < blocksY; by++)
         {
-            for (int bx = 0; bx < blocksX; bx++)
+            for (var bx = 0; bx < blocksX; bx++)
             {
                 int startX = bx * 8;
                 int startY = by * 8;
 
-                bool allWhite = true;
-                for (int y = 0; y < 8 && startY + y < isImage.Height && allWhite; y++)
+                var allWhite = true;
+                for (var y = 0; y < 8 && startY + y < isImage.Height && allWhite; y++)
                 {
-                    for (int x = 0; x < 8 && startX + x < isImage.Width && allWhite; x++)
+                    for (var x = 0; x < 8 && startX + x < isImage.Width && allWhite; x++)
                     {
                         if (isImage[startX + x, startY + y].PackedValue < 250)
                         {
@@ -51,10 +51,10 @@ public class CompareDeepBlock
 
                     // Show ImageSharp values
                     _output.WriteLine("\nImageSharp values:");
-                    for (int y = 0; y < 8; y++)
+                    for (var y = 0; y < 8; y++)
                     {
-                        string row = "  ";
-                        for (int x = 0; x < 8; x++)
+                        var row = "  ";
+                        for (var x = 0; x < 8; x++)
                         {
                             if (startX + x < isImage.Width && startY + y < isImage.Height)
                                 row += $"{isImage[startX + x, startY + y].PackedValue,4}";
@@ -63,16 +63,16 @@ public class CompareDeepBlock
                     }
 
                     // Show our values
-                    var ourImage = JpegDecoder.DecodeFile(path);
+                    DecodedImage ourImage = JpegDecoder.DecodeFile(path);
                     _output.WriteLine("\nOur values:");
-                    for (int y = 0; y < 8; y++)
+                    for (var y = 0; y < 8; y++)
                     {
-                        string row = "  ";
-                        for (int x = 0; x < 8; x++)
+                        var row = "  ";
+                        for (var x = 0; x < 8; x++)
                         {
                             if (startX + x < ourImage.Width && startY + y < ourImage.Height)
                             {
-                                var (v, _, _) = ourImage.GetPixel(startX + x, startY + y);
+                                (byte v, _, _) = ourImage.GetPixel(startX + x, startY + y);
                                 row += $"{v,4}";
                             }
                         }
@@ -80,7 +80,7 @@ public class CompareDeepBlock
                     }
 
                     // Calculate block index
-                    int blocksPerRow = 38; // From our calculation
+                    var blocksPerRow = 38; // From our calculation
                     int blockIndex = by * blocksPerRow + bx;
                     _output.WriteLine($"\nBlock index: {blockIndex}");
 
@@ -95,27 +95,27 @@ public class CompareDeepBlock
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
 
-        var ourImage = JpegDecoder.DecodeFile(path);
-        using var isImage = Image.Load<L8>(path);
+        DecodedImage ourImage = JpegDecoder.DecodeFile(path);
+        using Image<L8> isImage = Image.Load<L8>(path);
 
         // For each block in first row, compare sum of pixels
         _output.WriteLine("Block-by-block comparison, first row (y=0):");
         _output.WriteLine("BlockX | OurSum | ISSum  | Match?");
         _output.WriteLine("-------|--------|--------|-------");
 
-        int blocksPerRow = 38;
-        for (int bx = 0; bx < blocksPerRow; bx++)
+        var blocksPerRow = 38;
+        for (var bx = 0; bx < blocksPerRow; bx++)
         {
             int startX = bx * 8;
             int ourSum = 0, isSum = 0;
 
-            for (int y = 0; y < 8; y++)
+            for (var y = 0; y < 8; y++)
             {
-                for (int x = 0; x < 8; x++)
+                for (var x = 0; x < 8; x++)
                 {
                     if (startX + x < ourImage.Width && y < ourImage.Height)
                     {
-                        var (v, _, _) = ourImage.GetPixel(startX + x, y);
+                        (byte v, _, _) = ourImage.GetPixel(startX + x, y);
                         ourSum += v;
                         isSum += isImage[startX + x, y].PackedValue;
                     }
@@ -132,28 +132,28 @@ public class CompareDeepBlock
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
 
-        var ourImage = JpegDecoder.DecodeFile(path);
-        using var isImage = Image.Load<L8>(path);
+        DecodedImage ourImage = JpegDecoder.DecodeFile(path);
+        using Image<L8> isImage = Image.Load<L8>(path);
 
         // For each row of blocks, compare and find where they diverge
         _output.WriteLine("Row-by-row comparison (block rows):");
         _output.WriteLine("Row | OurAvg | ISAvg  | Diff");
         _output.WriteLine("----|--------|--------|-----");
 
-        int blocksPerRow = 38;
-        int blockRows = 40;
+        var blocksPerRow = 38;
+        var blockRows = 40;
 
-        for (int blockRow = 0; blockRow < blockRows; blockRow++)
+        for (var blockRow = 0; blockRow < blockRows; blockRow++)
         {
             int startY = blockRow * 8;
             double ourSum = 0, isSum = 0;
-            int count = 0;
+            var count = 0;
 
-            for (int x = 0; x < ourImage.Width; x++)
+            for (var x = 0; x < ourImage.Width; x++)
             {
-                for (int y = 0; y < 8 && startY + y < ourImage.Height; y++)
+                for (var y = 0; y < 8 && startY + y < ourImage.Height; y++)
                 {
-                    var (v, _, _) = ourImage.GetPixel(x, startY + y);
+                    (byte v, _, _) = ourImage.GetPixel(x, startY + y);
                     ourSum += v;
                     isSum += isImage[x, startY + y].PackedValue;
                     count++;

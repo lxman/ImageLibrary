@@ -26,17 +26,17 @@ public class DequantizerTests
     [Fact]
     public void DequantizeSimpleGrayscale_NoException()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         var dequantizer = new Dequantizer(frame);
-        var dequantized = dequantizer.DequantizeAll(blocks);
+        int[][][] dequantized = dequantizer.DequantizeAll(blocks);
 
         Assert.NotNull(dequantized);
         Assert.Equal(blocks.Length, dequantized.Length);
@@ -45,21 +45,21 @@ public class DequantizerTests
     [Fact]
     public void DequantizeBlock_OutputIs64Elements()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         var dequantizer = new Dequantizer(frame);
-        var dequantized = dequantizer.DequantizeAll(blocks);
+        int[][][] dequantized = dequantizer.DequantizeAll(blocks);
 
-        foreach (var compBlocks in dequantized)
+        foreach (int[][] compBlocks in dequantized)
         {
-            foreach (var block in compBlocks)
+            foreach (int[] block in compBlocks)
             {
                 Assert.Equal(64, block.Length);
             }
@@ -69,23 +69,23 @@ public class DequantizerTests
     [Fact]
     public void DequantizeBlock_DCCoefficientScaled()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         // Get quantization table value at DC position (index 0 in zig-zag order)
-        var comp = frame.Components[0];
-        var qt = frame.QuantizationTables[comp.QuantizationTableId];
+        JpegComponent comp = frame.Components[0];
+        ushort[]? qt = frame.QuantizationTables[comp.QuantizationTableId];
         Assert.NotNull(qt);
         int dcQuantValue = qt[0]; // DC is at position 0 in zig-zag order
 
         var dequantizer = new Dequantizer(frame);
-        var dequantized = dequantizer.DequantizeAll(blocks);
+        int[][][] dequantized = dequantizer.DequantizeAll(blocks);
 
         // The dequantized DC should be the original DC * quantization value
         short originalDC = blocks[0][0][0];
@@ -101,18 +101,18 @@ public class DequantizerTests
     [Fact]
     public void QuantizationTable_HasNonZeroValues()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
-        var qt = frame.QuantizationTables[0];
+        ushort[]? qt = frame.QuantizationTables[0];
         Assert.NotNull(qt);
         Assert.Equal(64, qt.Length);
 
         // All quantization values should be > 0
-        foreach (var val in qt)
+        foreach (ushort val in qt)
         {
             Assert.True(val > 0, "Quantization values must be positive");
         }
@@ -122,13 +122,13 @@ public class DequantizerTests
     public void QuantizationTable_DCValueTypicallySmall()
     {
         // The DC quantization value (position 0) is typically small (8-16 for standard tables)
-        var path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
-        var qt = frame.QuantizationTables[0];
+        ushort[]? qt = frame.QuantizationTables[0];
         Assert.NotNull(qt);
 
         // DC value should be relatively small (typically 16 for standard luminance table)
@@ -139,13 +139,13 @@ public class DequantizerTests
     public void QuantizationTable_HighFrequencyValuesLarger()
     {
         // High frequency positions (bottom-right of 8x8) should have larger quantization values
-        var path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
-        var qt = frame.QuantizationTables[0];
+        ushort[]? qt = frame.QuantizationTables[0];
         Assert.NotNull(qt);
 
         // The last position (63 in zig-zag order) typically has a large value
@@ -161,17 +161,17 @@ public class DequantizerTests
     [Fact]
     public void DequantizeColor444_ThreeComponents()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level4_color_444/color_solid_red.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level4_color_444/color_solid_red.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         var dequantizer = new Dequantizer(frame);
-        var dequantized = dequantizer.DequantizeAll(blocks);
+        int[][][] dequantized = dequantizer.DequantizeAll(blocks);
 
         Assert.Equal(3, dequantized.Length);
     }
@@ -179,19 +179,19 @@ public class DequantizerTests
     [Fact]
     public void DequantizeColor_DifferentQuantTablesForChroma()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level4_color_444/color_solid_red.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level4_color_444/color_solid_red.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         // Y component uses table 0, Cb/Cr typically use table 1
-        var yComp = frame.Components[0];
-        var cbComp = frame.Components[1];
+        JpegComponent yComp = frame.Components[0];
+        JpegComponent cbComp = frame.Components[1];
 
         // They might use the same table, but if different, verify both exist
-        var qtY = frame.QuantizationTables[yComp.QuantizationTableId];
-        var qtCb = frame.QuantizationTables[cbComp.QuantizationTableId];
+        ushort[]? qtY = frame.QuantizationTables[yComp.QuantizationTableId];
+        ushort[]? qtCb = frame.QuantizationTables[cbComp.QuantizationTableId];
 
         Assert.NotNull(qtY);
         Assert.NotNull(qtCb);
@@ -204,23 +204,23 @@ public class DequantizerTests
     [Fact]
     public void DequantizeGradient_ACCoefficientsScaled()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level2_ac_coefficients/gray_gradient_diag.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level2_ac_coefficients/gray_gradient_diag.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         var dequantizer = new Dequantizer(frame);
-        var dequantized = dequantizer.DequantizeAll(blocks);
+        int[][][] dequantized = dequantizer.DequantizeAll(blocks);
 
         // Verify that non-zero AC coefficients are properly scaled
-        var qt = frame.QuantizationTables[0];
+        ushort[]? qt = frame.QuantizationTables[0];
         Assert.NotNull(qt);
 
-        for (int i = 1; i < 64; i++)
+        for (var i = 1; i < 64; i++)
         {
             short original = blocks[0][0][i];
             if (original != 0)
@@ -238,7 +238,7 @@ public class DequantizerTests
     private static int GetZigZagIndex(int naturalIndex)
     {
         // Build the inverse mapping
-        for (int i = 0; i < 64; i++)
+        for (var i = 0; i < 64; i++)
         {
             if (EntropyDecoder.ZigZagOrder[i] == naturalIndex)
             {
@@ -255,24 +255,24 @@ public class DequantizerTests
     [Fact]
     public void DequantizeAllTestImages_NoExceptions()
     {
-        var basePath = GetTestImagesPath();
-        var jpegFiles = Directory.GetFiles(basePath, "*.jpg", SearchOption.AllDirectories);
+        string basePath = GetTestImagesPath();
+        string[] jpegFiles = Directory.GetFiles(basePath, "*.jpg", SearchOption.AllDirectories);
 
         var failures = new List<string>();
 
-        foreach (var file in jpegFiles)
+        foreach (string file in jpegFiles)
         {
             try
             {
-                var data = File.ReadAllBytes(file);
+                byte[] data = File.ReadAllBytes(file);
                 var reader = new JpegReader(data);
-                var frame = reader.ReadFrame();
+                JpegFrame frame = reader.ReadFrame();
 
                 var decoder = new EntropyDecoder(frame, data);
-                var blocks = decoder.DecodeAllBlocks();
+                short[][][] blocks = decoder.DecodeAllBlocks();
 
                 var dequantizer = new Dequantizer(frame);
-                var dequantized = dequantizer.DequantizeAll(blocks);
+                int[][][] dequantized = dequantizer.DequantizeAll(blocks);
 
                 // Basic sanity checks
                 if (dequantized.Length != frame.ComponentCount)
@@ -281,9 +281,9 @@ public class DequantizerTests
                     continue;
                 }
 
-                foreach (var compBlocks in dequantized)
+                foreach (int[][] compBlocks in dequantized)
                 {
-                    foreach (var block in compBlocks)
+                    foreach (int[] block in compBlocks)
                     {
                         if (block.Length != 64)
                         {
@@ -314,14 +314,14 @@ public class DequantizerTests
     {
         var block = new short[64]; // All zeros
         var qt = new ushort[64];
-        for (int i = 0; i < 64; i++)
+        for (var i = 0; i < 64; i++)
         {
             qt[i] = (ushort)(i + 1); // Non-zero quantization values
         }
 
-        var result = Dequantizer.DequantizeBlock(block, qt);
+        int[] result = Dequantizer.DequantizeBlock(block, qt);
 
-        foreach (var val in result)
+        foreach (int val in result)
         {
             Assert.Equal(0, val);
         }
@@ -335,12 +335,12 @@ public class DequantizerTests
 
         var qt = new ushort[64];
         qt[0] = 16; // DC quantization value
-        for (int i = 1; i < 64; i++)
+        for (var i = 1; i < 64; i++)
         {
             qt[i] = 1;
         }
 
-        var result = Dequantizer.DequantizeBlock(block, qt);
+        int[] result = Dequantizer.DequantizeBlock(block, qt);
 
         Assert.Equal(160, result[0]); // 10 * 16
     }

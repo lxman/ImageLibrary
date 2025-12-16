@@ -22,7 +22,7 @@ public static class BmpEncoder
         int pixelDataSize = stride * image.Height;
 
         int fileSize = BitmapFileHeader.Size + BitmapInfoHeader.Size + pixelDataSize;
-        byte[] output = new byte[fileSize];
+        var output = new byte[fileSize];
 
         // Write file header
         WriteFileHeader(output, (uint)fileSize, BitmapFileHeader.Size + BitmapInfoHeader.Size);
@@ -82,13 +82,13 @@ public static class BmpEncoder
         int bytesPerPixel = bitsPerPixel / 8;
 
         // BMP stores rows bottom-up, our image is top-down
-        for (int srcY = 0; srcY < image.Height; srcY++)
+        for (var srcY = 0; srcY < image.Height; srcY++)
         {
             int dstY = image.Height - 1 - srcY;
             int srcRowOffset = srcY * image.Width * 4;
             int dstRowOffset = dstY * stride;
 
-            for (int x = 0; x < image.Width; x++)
+            for (var x = 0; x < image.Width; x++)
             {
                 int srcOffset = srcRowOffset + x * 4;
                 int dstOffset = dstRowOffset + x * bytesPerPixel;

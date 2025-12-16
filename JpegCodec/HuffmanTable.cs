@@ -23,8 +23,8 @@ public class HuffmanTable
         _symbols = spec.Symbols;
 
         // Generate Huffman codes using the algorithm from ITU-T T.81 Annex C
-        var huffSize = GenerateHuffmanSizes(spec.CodeCounts);
-        var huffCode = GenerateHuffmanCodes(huffSize);
+        byte[] huffSize = GenerateHuffmanSizes(spec.CodeCounts);
+        ushort[] huffCode = GenerateHuffmanCodes(huffSize);
 
         // Build the lookup tables
         BuildLookupTable(spec.CodeCounts, huffCode);
@@ -38,18 +38,18 @@ public class HuffmanTable
     private static byte[] GenerateHuffmanSizes(byte[] codeCounts)
     {
         // Count total symbols
-        int total = 0;
-        for (int i = 0; i < 16; i++)
+        var total = 0;
+        for (var i = 0; i < 16; i++)
         {
             total += codeCounts[i];
         }
 
         var huffSize = new byte[total + 1]; // +1 for terminating 0
-        int k = 0;
+        var k = 0;
 
-        for (int i = 1; i <= 16; i++)
+        for (var i = 1; i <= 16; i++)
         {
-            for (int j = 0; j < codeCounts[i - 1]; j++)
+            for (var j = 0; j < codeCounts[i - 1]; j++)
             {
                 huffSize[k++] = (byte)i;
             }
@@ -68,8 +68,8 @@ public class HuffmanTable
     {
         var huffCode = new ushort[huffSize.Length];
 
-        int k = 0;
-        int code = 0;
+        var k = 0;
+        var code = 0;
         int si = huffSize[0];
 
         while (huffSize[k] != 0)
@@ -93,11 +93,11 @@ public class HuffmanTable
     /// </summary>
     private void BuildLookupTable(byte[] codeCounts, ushort[] huffCode)
     {
-        int symbolIndex = 0;
+        var symbolIndex = 0;
 
-        for (int codeLen = 1; codeLen <= 8; codeLen++)
+        for (var codeLen = 1; codeLen <= 8; codeLen++)
         {
-            for (int i = 0; i < codeCounts[codeLen - 1]; i++)
+            for (var i = 0; i < codeCounts[codeLen - 1]; i++)
             {
                 // Get the code and symbol for this entry
                 ushort code = huffCode[symbolIndex];
@@ -109,7 +109,7 @@ public class HuffmanTable
                 int baseIndex = code << shift;
                 int count = 1 << shift;
 
-                for (int j = 0; j < count; j++)
+                for (var j = 0; j < count; j++)
                 {
                     // Store symbol in high byte, length in low byte
                     _lookupTable[baseIndex + j] = (ushort)((symbol << 8) | codeLen);
@@ -121,7 +121,7 @@ public class HuffmanTable
 
         // Skip symbols with code length > 8 (handled by slow path)
         // But we still need to count them to track symbolIndex
-        for (int codeLen = 9; codeLen <= 16; codeLen++)
+        for (var codeLen = 9; codeLen <= 16; codeLen++)
         {
             symbolIndex += codeCounts[codeLen - 1];
         }
@@ -133,9 +133,9 @@ public class HuffmanTable
     /// </summary>
     private void BuildDecodeTables(byte[] codeCounts, ushort[] huffCode)
     {
-        int symbolIndex = 0;
+        var symbolIndex = 0;
 
-        for (int i = 1; i <= 16; i++)
+        for (var i = 1; i <= 16; i++)
         {
             if (codeCounts[i - 1] != 0)
             {
@@ -180,7 +180,7 @@ public class HuffmanTable
         int code = reader.PeekBits(8);
         reader.SkipBits(8);
 
-        int codeLen = 8;
+        var codeLen = 8;
 
         while (code > _maxCode[codeLen] || _maxCode[codeLen] == -1)
         {

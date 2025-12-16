@@ -59,7 +59,7 @@ public sealed class SymbolDictionaryDecoder
         {
             int grContextCount = _params.RefinementTemplate == 0 ? 8192 : 1024; // 13 bits or 10 bits
             _grContexts = new ArithmeticDecoder.Context[grContextCount];
-            for (int i = 0; i < grContextCount; i++)
+            for (var i = 0; i < grContextCount; i++)
                 _grContexts[i] = new ArithmeticDecoder.Context();
 
             // Link GR contexts to text region shared contexts for multi-agg to use
@@ -82,9 +82,9 @@ public sealed class SymbolDictionaryDecoder
             throw new Jbig2ResourceException($"Symbol dictionary size {_params.NumNewSymbols} exceeds limit {_options.MaxSymbols}");
 
         var newSymbols = new SymbolDictionary();
-        int heightClassHeight = 0;
-        int symbolsDecoded = 0;
-        int loopIterations = 0;
+        var heightClassHeight = 0;
+        var symbolsDecoded = 0;
+        var loopIterations = 0;
 
         // Decode height classes
         while (symbolsDecoded < _params.NumNewSymbols)
@@ -101,13 +101,13 @@ public sealed class SymbolDictionaryDecoder
             if (heightClassHeight < 0)
                 throw new Jbig2DataException($"Invalid symbol height: {heightClassHeight}");
 
-            int symbolWidth = 0;
+            var symbolWidth = 0;
             int heightClassFirstSymbol = symbolsDecoded;
 
             // 6.5.7 - Decode symbols in this height class
             // Height class is terminated by OOB from DW, but we also exit if we've
             // decoded all expected symbols (the outer loop will handle this).
-            int innerIterations = 0;
+            var innerIterations = 0;
             while (true)
             {
                 if (++innerIterations > _options.MaxLoopIterations)
@@ -199,14 +199,14 @@ public sealed class SymbolDictionaryDecoder
         // Build combined symbol dictionary for text region decoder
         // T.88 6.5.8.2.3: SBSYMS = SDINSYMS + new symbols decoded so far
         var combinedSymbols = new SymbolDictionary();
-        for (int i = 0; i < _inputSymbols.Count; i++)
+        for (var i = 0; i < _inputSymbols.Count; i++)
         {
-            var sym = _inputSymbols.GetSymbol(i);
+            Bitmap? sym = _inputSymbols.GetSymbol(i);
             if (sym != null) combinedSymbols.Add(sym);
         }
-        for (int i = 0; i < newSymbols.Count; i++)
+        for (var i = 0; i < newSymbols.Count; i++)
         {
-            var sym = newSymbols.GetSymbol(i);
+            Bitmap? sym = newSymbols.GetSymbol(i);
             if (sym != null) combinedSymbols.Add(sym);
         }
 
@@ -291,14 +291,14 @@ public sealed class SymbolDictionaryDecoder
     {
         // IAID procedure - decode symbol ID using shared contexts
         // T.88 Section 6.4.6 / Annex A.3
-        int bits = 0;
+        var bits = 0;
         int n = numSymbols - 1;
         while (n > 0) { bits++; n >>= 1; }
 
-        int prev = 1;  // PREV starts at 1 per T.88 A.3
-        int id = 0;
+        var prev = 1;  // PREV starts at 1 per T.88 A.3
+        var id = 0;
 
-        for (int i = 0; i < bits; i++)
+        for (var i = 0; i < bits; i++)
         {
             int bit = _decoder.DecodeBit(_textRegionContexts!.IaIdContexts[prev]);
             prev = (prev << 1) | bit;
@@ -317,7 +317,7 @@ public sealed class SymbolDictionaryDecoder
         var exportFlags = new bool[totalSymbols];
 
         int currentExport = false ? 1 : 0; // Start with non-export
-        int i = 0;
+        var i = 0;
 
         while (i < totalSymbols)
         {
@@ -335,7 +335,7 @@ public sealed class SymbolDictionaryDecoder
                 if (i == 0 && _params.NumExportedSymbols == newSymbols.Count)
                 {
                     var exported = new SymbolDictionary();
-                    for (int k = 0; k < newSymbols.Count; k++)
+                    for (var k = 0; k < newSymbols.Count; k++)
                         exported.Add(newSymbols[k]);
                     return exported;
                 }
@@ -351,14 +351,14 @@ public sealed class SymbolDictionaryDecoder
                 _params.NumExportedSymbols == newSymbols.Count && _inputSymbols.Count == 0)
             {
                 var exported = new SymbolDictionary();
-                for (int k = 0; k < newSymbols.Count; k++)
+                for (var k = 0; k < newSymbols.Count; k++)
                     exported.Add(newSymbols[k]);
                 return exported;
             }
 
             // Set flags for this run
             bool exporting = (currentExport == 1);
-            for (int j = 0; j < runLength && i < totalSymbols; j++, i++)
+            for (var j = 0; j < runLength && i < totalSymbols; j++, i++)
             {
                 exportFlags[i] = exporting;
             }

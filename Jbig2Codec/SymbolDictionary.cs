@@ -46,7 +46,7 @@ public sealed class SymbolDictionary
         {
             if (dict != null)
             {
-                for (int i = 0; i < dict.Count; i++)
+                for (var i = 0; i < dict.Count; i++)
                     result.Add(dict[i]);
             }
         }
@@ -59,7 +59,7 @@ public sealed class SymbolDictionary
     public static SymbolDictionary FromExported(SymbolDictionary source, bool[] exportFlags)
     {
         var result = new SymbolDictionary();
-        for (int i = 0; i < Math.Min(source.Count, exportFlags.Length); i++)
+        for (var i = 0; i < Math.Min(source.Count, exportFlags.Length); i++)
         {
             if (exportFlags[i])
                 result.Add(source[i]);

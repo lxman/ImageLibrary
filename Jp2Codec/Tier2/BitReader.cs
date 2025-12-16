@@ -78,8 +78,8 @@ public class BitReader
     /// </summary>
     public int ReadBits(int count)
     {
-        int value = 0;
-        for (int i = 0; i < count; i++)
+        var value = 0;
+        for (var i = 0; i < count; i++)
         {
             value = (value << 1) | ReadBit();
         }

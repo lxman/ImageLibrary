@@ -33,28 +33,28 @@ public class CompareAllImages
     [Fact]
     public void CompareAllTestImages_AgainstImageSharp()
     {
-        var testPath = GetTestImagesPath();
-        var jpegFiles = Directory.GetFiles(testPath, "*.jpg", SearchOption.AllDirectories)
+        string testPath = GetTestImagesPath();
+        List<string> jpegFiles = Directory.GetFiles(testPath, "*.jpg", SearchOption.AllDirectories)
             .OrderBy(f => f)
             .ToList();
 
         _output.WriteLine($"Found {jpegFiles.Count} JPEG files");
         _output.WriteLine("");
 
-        int passed = 0;
-        int failed = 0;
+        var passed = 0;
+        var failed = 0;
         var failures = new List<string>();
 
-        foreach (var jpegPath in jpegFiles)
+        foreach (string jpegPath in jpegFiles)
         {
-            var relativePath = Path.GetRelativePath(testPath, jpegPath);
+            string relativePath = Path.GetRelativePath(testPath, jpegPath);
 
             try
             {
-                var ourImage = JpegDecoder.DecodeFile(jpegPath);
+                DecodedImage ourImage = JpegDecoder.DecodeFile(jpegPath);
 
                 // Load with ImageSharp - use Rgba32 for color images
-                using var isImage = Image.Load<Rgba32>(jpegPath);
+                using Image<Rgba32> isImage = Image.Load<Rgba32>(jpegPath);
 
                 if (ourImage.Width != isImage.Width || ourImage.Height != isImage.Height)
                 {
@@ -65,16 +65,16 @@ public class CompareAllImages
 
                 // Compare pixels
                 int totalPixels = ourImage.Width * ourImage.Height;
-                int matchingPixels = 0;
-                int maxDiff = 0;
+                var matchingPixels = 0;
+                var maxDiff = 0;
                 long diffSum = 0;
 
-                for (int y = 0; y < ourImage.Height; y++)
+                for (var y = 0; y < ourImage.Height; y++)
                 {
-                    for (int x = 0; x < ourImage.Width; x++)
+                    for (var x = 0; x < ourImage.Width; x++)
                     {
-                        var (ourR, ourG, ourB) = ourImage.GetPixel(x, y);
-                        var isPixel = isImage[x, y];
+                        (byte ourR, byte ourG, byte ourB) = ourImage.GetPixel(x, y);
+                        Rgba32 isPixel = isImage[x, y];
 
                         int diffR = Math.Abs(ourR - isPixel.R);
                         int diffG = Math.Abs(ourG - isPixel.G);
@@ -120,7 +120,7 @@ public class CompareAllImages
         {
             _output.WriteLine("");
             _output.WriteLine("Failures:");
-            foreach (var f in failures)
+            foreach (string f in failures)
             {
                 _output.WriteLine($"  FAIL: {f}");
             }

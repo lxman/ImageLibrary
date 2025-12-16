@@ -16,9 +16,9 @@ public static class InverseDct
     private static double[,] BuildCosineTable()
     {
         var table = new double[8, 8];
-        for (int x = 0; x < 8; x++)
+        for (var x = 0; x < 8; x++)
         {
-            for (int u = 0; u < 8; u++)
+            for (var u = 0; u < 8; u++)
             {
                 table[x, u] = Math.Cos((2 * x + 1) * u * Math.PI / 16.0);
             }
@@ -30,7 +30,7 @@ public static class InverseDct
     {
         var factors = new double[8];
         factors[0] = 1.0 / Math.Sqrt(2);
-        for (int i = 1; i < 8; i++)
+        for (var i = 1; i < 8; i++)
         {
             factors[i] = 1.0;
         }
@@ -46,11 +46,11 @@ public static class InverseDct
     {
         var result = new byte[dequantized.Length][][];
 
-        for (int c = 0; c < dequantized.Length; c++)
+        for (var c = 0; c < dequantized.Length; c++)
         {
             result[c] = new byte[dequantized[c].Length][];
 
-            for (int b = 0; b < dequantized[c].Length; b++)
+            for (var b = 0; b < dequantized[c].Length; b++)
             {
                 result[c][b] = Transform(dequantized[c][b]);
             }
@@ -71,15 +71,15 @@ public static class InverseDct
         var temp = new double[64];
 
         // Step 1: 1D IDCT on each row
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
             int rowOffset = y * 8;
 
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
                 double sum = 0;
 
-                for (int u = 0; u < 8; u++)
+                for (var u = 0; u < 8; u++)
                 {
                     sum += ScaleFactors[u] * coefficients[rowOffset + u] * CosineTable[x, u];
                 }
@@ -91,13 +91,13 @@ public static class InverseDct
         // Step 2: 1D IDCT on each column
         var result = new byte[64];
 
-        for (int x = 0; x < 8; x++)
+        for (var x = 0; x < 8; x++)
         {
-            for (int y = 0; y < 8; y++)
+            for (var y = 0; y < 8; y++)
             {
                 double sum = 0;
 
-                for (int v = 0; v < 8; v++)
+                for (var v = 0; v < 8; v++)
                 {
                     sum += ScaleFactors[v] * temp[v * 8 + x] * CosineTable[y, v];
                 }
@@ -121,15 +121,15 @@ public static class InverseDct
     {
         var result = new byte[64];
 
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
                 double sum = 0;
 
-                for (int v = 0; v < 8; v++)
+                for (var v = 0; v < 8; v++)
                 {
-                    for (int u = 0; u < 8; u++)
+                    for (var u = 0; u < 8; u++)
                     {
                         double cu = (u == 0) ? 1.0 / Math.Sqrt(2) : 1.0;
                         double cv = (v == 0) ? 1.0 / Math.Sqrt(2) : 1.0;
@@ -159,15 +159,15 @@ public static class InverseDct
         var temp = new double[64];
 
         // Step 1: 1D IDCT on each row
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
             int rowOffset = y * 8;
 
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
                 double sum = 0;
 
-                for (int u = 0; u < 8; u++)
+                for (var u = 0; u < 8; u++)
                 {
                     sum += ScaleFactors[u] * coefficients[rowOffset + u] * CosineTable[x, u];
                 }
@@ -179,13 +179,13 @@ public static class InverseDct
         // Step 2: 1D IDCT on each column
         var result = new int[64];
 
-        for (int x = 0; x < 8; x++)
+        for (var x = 0; x < 8; x++)
         {
-            for (int y = 0; y < 8; y++)
+            for (var y = 0; y < 8; y++)
             {
                 double sum = 0;
 
-                for (int v = 0; v < 8; v++)
+                for (var v = 0; v < 8; v++)
                 {
                     sum += ScaleFactors[v] * temp[v * 8 + x] * CosineTable[y, v];
                 }

@@ -40,15 +40,15 @@ public class Tier1Decoder
 
         // Apply component subsampling
         int compIndex = tier2Output.ComponentIndex;
-        var comp = _codestream.Frame.Components[compIndex];
+        Jp2Component comp = _codestream.Frame.Components[compIndex];
         int compTileWidth = (tileWidth + comp.XSubsampling - 1) / comp.XSubsampling;
         int compTileHeight = (tileHeight + comp.YSubsampling - 1) / comp.YSubsampling;
 
         // Get quantization step sizes
-        var qParams = _codestream.QuantizationParameters;
-        int stepIdx = 0;
+        QuantizationParameters qParams = _codestream.QuantizationParameters;
+        var stepIdx = 0;
 
-        for (int r = 0; r < numResolutions; r++)
+        for (var r = 0; r < numResolutions; r++)
         {
             int numSubbands = (r == 0) ? 1 : 3;
 
@@ -59,7 +59,7 @@ public class Tier1Decoder
             if (resWidth == 0) resWidth = 1;
             if (resHeight == 0) resHeight = 1;
 
-            for (int s = 0; s < numSubbands; s++)
+            for (var s = 0; s < numSubbands; s++)
             {
                 SubbandType type;
                 int subbandWidth, subbandHeight;
@@ -111,26 +111,26 @@ public class Tier1Decoder
                 }
 
                 // Decode code-blocks and assemble into subband
-                int[,] subbandCoefs = new int[subbandHeight, subbandWidth];
+                var subbandCoefs = new int[subbandHeight, subbandWidth];
 
                 if (r < tier2Output.CodeBlocks.Length && s < tier2Output.CodeBlocks[r].Length)
                 {
-                    var codeBlocks = tier2Output.CodeBlocks[r][s];
+                    CodeBlockBitstream[] codeBlocks = tier2Output.CodeBlocks[r][s];
                     int cbWidth = _codestream.CodingParameters.CodeBlockWidth;
                     int cbHeight = _codestream.CodingParameters.CodeBlockHeight;
 
-                    foreach (var cb in codeBlocks)
+                    foreach (CodeBlockBitstream cb in codeBlocks)
                     {
                         // Decode the code-block
-                        var decoded = _ebcot.Process(cb);
+                        int[,] decoded = _ebcot.Process(cb);
 
                         // Copy into subband array
                         int startX = cb.BlockX * cbWidth;
                         int startY = cb.BlockY * cbHeight;
 
-                        for (int y = 0; y < decoded.GetLength(0) && startY + y < subbandHeight; y++)
+                        for (var y = 0; y < decoded.GetLength(0) && startY + y < subbandHeight; y++)
                         {
-                            for (int x = 0; x < decoded.GetLength(1) && startX + x < subbandWidth; x++)
+                            for (var x = 0; x < decoded.GetLength(1) && startX + x < subbandWidth; x++)
                             {
                                 subbandCoefs[startY + y, startX + x] = decoded[y, x];
                             }

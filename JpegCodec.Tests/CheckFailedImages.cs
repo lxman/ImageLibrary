@@ -28,7 +28,7 @@ public class CheckFailedImages
     [Fact]
     public void CheckSamplingFactors()
     {
-        var testPath = GetTestImagesPath();
+        string testPath = GetTestImagesPath();
 
         var failedImages = new[]
         {
@@ -40,27 +40,27 @@ public class CheckFailedImages
             "backhoe-006.jpg"  // This one works
         };
 
-        foreach (var relativePath in failedImages)
+        foreach (string relativePath in failedImages)
         {
-            var path = Path.Combine(testPath, relativePath);
+            string path = Path.Combine(testPath, relativePath);
             if (!File.Exists(path))
             {
                 _output.WriteLine($"{relativePath}: FILE NOT FOUND");
                 continue;
             }
 
-            var data = File.ReadAllBytes(path);
+            byte[] data = File.ReadAllBytes(path);
             var reader = new JpegReader(data);
-            var frame = reader.ReadFrame();
+            JpegFrame frame = reader.ReadFrame();
 
             _output.WriteLine($"{relativePath}:");
             _output.WriteLine($"  Size: {frame.Width}x{frame.Height}");
             _output.WriteLine($"  Components: {frame.ComponentCount}");
             _output.WriteLine($"  Max sampling: {frame.MaxHorizontalSamplingFactor}x{frame.MaxVerticalSamplingFactor}");
 
-            for (int i = 0; i < frame.ComponentCount; i++)
+            for (var i = 0; i < frame.ComponentCount; i++)
             {
-                var comp = frame.Components[i];
+                JpegComponent comp = frame.Components[i];
                 _output.WriteLine($"  Component {i}: {comp.HorizontalSamplingFactor}x{comp.VerticalSamplingFactor}");
             }
             _output.WriteLine("");

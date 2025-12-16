@@ -1,5 +1,6 @@
 using CoreJ2K;
 using Jp2Codec;
+using Jp2Codec.Pipeline;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -33,8 +34,8 @@ public class FullPipelineTests
     [Fact]
     public void Decoder_ParsesImage_8x8()
     {
-        var path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         var decoder = new Jp2Decoder(data);
 
@@ -50,19 +51,19 @@ public class FullPipelineTests
     [Fact]
     public void Decoder_DecodesImage_8x8()
     {
-        var path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         var decoder = new Jp2Decoder(data);
-        var pixels = decoder.DecodeGrayscale();
+        byte[] pixels = decoder.DecodeGrayscale();
 
         _output.WriteLine($"Decoded {pixels.Length} bytes");
 
         // Show decoded values
         _output.WriteLine("\nDecoded pixel values:");
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
-            var row = string.Join(" ", Enumerable.Range(0, 8)
+            string row = string.Join(" ", Enumerable.Range(0, 8)
                 .Select(x => pixels[y * 8 + x].ToString().PadLeft(4)));
             _output.WriteLine(row);
         }
@@ -73,12 +74,12 @@ public class FullPipelineTests
     [Fact]
     public void Decoder_ComparesWithReference_8x8()
     {
-        var path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         // Decode with our decoder
         var decoder = new Jp2Decoder(data);
-        var ourPixels = decoder.DecodeGrayscale();
+        byte[] ourPixels = decoder.DecodeGrayscale();
 
         // Decode with reference (CoreJ2K)
         var refImage = J2kImage.FromBytes(data);
@@ -87,13 +88,13 @@ public class FullPipelineTests
         _output.WriteLine("Reference vs Our decoder:");
         _output.WriteLine("Position  Reference  Ours  Diff");
 
-        int totalDiff = 0;
-        int maxDiff = 0;
-        int mismatches = 0;
+        var totalDiff = 0;
+        var maxDiff = 0;
+        var mismatches = 0;
 
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
                 int refVal = refComp[y * 8 + x];
                 int ourVal = ourPixels[y * 8 + x];
@@ -116,18 +117,18 @@ public class FullPipelineTests
 
         // For lossless compression, we expect exact match
         // For lossy, some small difference is acceptable
-        var isLossless = decoder.Codestream.CodingParameters.WaveletType == WaveletTransform.Reversible_5_3;
+        bool isLossless = decoder.Codestream.CodingParameters.WaveletType == WaveletTransform.Reversible_5_3;
         _output.WriteLine($"Compression: {(isLossless ? "Lossless" : "Lossy")}");
     }
 
     [Fact]
     public void Decoder_ShowsIntermediateData_8x8()
     {
-        var path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         var decoder = new Jp2Decoder(data);
-        var intermediate = decoder.GetIntermediateData();
+        IntermediateData intermediate = decoder.GetIntermediateData();
 
         _output.WriteLine("Intermediate data:");
 
@@ -141,7 +142,7 @@ public class FullPipelineTests
         if (intermediate.Subbands != null)
         {
             _output.WriteLine($"  Subbands: {intermediate.Subbands.Length}");
-            foreach (var sub in intermediate.Subbands)
+            foreach (QuantizedSubband sub in intermediate.Subbands)
             {
                 _output.WriteLine($"    {sub.Type}: {sub.Width}x{sub.Height}");
             }
@@ -157,11 +158,11 @@ public class FullPipelineTests
     [Fact]
     public void Decoder_DecodesImage_16x16()
     {
-        var path = Path.Combine(GetTestImagesPath(), "test_16x16.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_16x16.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         var decoder = new Jp2Decoder(data);
-        var pixels = decoder.DecodeGrayscale();
+        byte[] pixels = decoder.DecodeGrayscale();
 
         _output.WriteLine($"Image: {decoder.Width}x{decoder.Height}");
         _output.WriteLine($"Decomposition: {decoder.Codestream.CodingParameters.DecompositionLevels} levels");
@@ -169,9 +170,9 @@ public class FullPipelineTests
 
         // Show a subset
         _output.WriteLine("\nTop-left 8x8 of decoded image:");
-        for (int y = 0; y < Math.Min(8, decoder.Height); y++)
+        for (var y = 0; y < Math.Min(8, decoder.Height); y++)
         {
-            var row = string.Join(" ", Enumerable.Range(0, Math.Min(8, decoder.Width))
+            string row = string.Join(" ", Enumerable.Range(0, Math.Min(8, decoder.Width))
                 .Select(x => pixels[y * decoder.Width + x].ToString().PadLeft(4)));
             _output.WriteLine(row);
         }
@@ -182,14 +183,14 @@ public class FullPipelineTests
     [Fact]
     public void Decoder_DecodesConformanceImage()
     {
-        var path = Path.Combine(GetTestImagesPath(), "conformance_test.jp2");
+        string path = Path.Combine(GetTestImagesPath(), "conformance_test.jp2");
         if (!File.Exists(path))
         {
             _output.WriteLine("Conformance test file not found, skipping");
             return;
         }
 
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var decoder = new Jp2Decoder(data);
 
@@ -200,7 +201,7 @@ public class FullPipelineTests
         _output.WriteLine($"  Decomposition: {decoder.Codestream.CodingParameters.DecompositionLevels} levels");
 
         // Try to decode
-        var pixels = decoder.Decode();
+        byte[] pixels = decoder.Decode();
 
         _output.WriteLine($"  Decoded: {pixels.Length} bytes");
 

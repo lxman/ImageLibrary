@@ -40,14 +40,14 @@ public class TagTree
 
         w = width;
         h = height;
-        for (int level = 0; level < _numLevels; level++)
+        for (var level = 0; level < _numLevels; level++)
         {
             int size = w * h;
             _values[level] = new int[size];
             _states[level] = new int[size];
 
             // Initialize values to int.MaxValue (unknown)
-            for (int i = 0; i < size; i++)
+            for (var i = 0; i < size; i++)
             {
                 _values[level][i] = int.MaxValue;
                 _states[level][i] = 0;
@@ -65,9 +65,9 @@ public class TagTree
     /// </summary>
     public void Reset()
     {
-        for (int level = 0; level < _numLevels; level++)
+        for (var level = 0; level < _numLevels; level++)
         {
-            for (int i = 0; i < _states[level].Length; i++)
+            for (var i = 0; i < _states[level].Length; i++)
             {
                 _states[level][i] = 0;
             }
@@ -91,7 +91,7 @@ public class TagTree
         int px = x;
         int py = y;
 
-        for (int level = 0; level < _numLevels - 1; level++)
+        for (var level = 0; level < _numLevels - 1; level++)
         {
             int parentX = px >> 1;
             int parentY = py >> 1;
@@ -99,7 +99,7 @@ public class TagTree
             int parentIndex = parentY * parentW + parentX;
 
             // Parent value is minimum of children
-            int minVal = int.MaxValue;
+            var minVal = int.MaxValue;
             for (int cy = parentY * 2; cy <= parentY * 2 + 1 && cy < h; cy++)
             {
                 for (int cx = parentX * 2; cx <= parentX * 2 + 1 && cx < w; cx++)
@@ -141,7 +141,7 @@ public class TagTree
         int w = _width, h = _height;
 
         // Build path from leaf to root
-        for (int level = 0; level < _numLevels; level++)
+        for (var level = 0; level < _numLevels; level++)
         {
             stack.Push((level, px, py));
             px >>= 1;
@@ -149,18 +149,18 @@ public class TagTree
         }
 
         // Pop stack and decode from root to leaf
-        int currentMin = 0;
+        var currentMin = 0;
         w = 1;
         h = 1;
 
         while (stack.Count > 0)
         {
-            var (level, cx, cy) = stack.Pop();
+            (int level, int cx, int cy) = stack.Pop();
 
             // Calculate width at this level
             int levelW = _width;
             int levelH = _height;
-            for (int l = 0; l < level; l++)
+            for (var l = 0; l < level; l++)
             {
                 levelW = (levelW + 1) >> 1;
                 levelH = (levelH + 1) >> 1;
@@ -233,7 +233,7 @@ public class TagTree
         var path = new List<(int level, int index, int levelW)>();
         int px = x, py = y;
 
-        for (int level = 0; level < _numLevels; level++)
+        for (var level = 0; level < _numLevels; level++)
         {
             int levelW = _width >> level;
             if (levelW == 0) levelW = 1;
@@ -243,7 +243,7 @@ public class TagTree
             // Recalculate properly
             levelW = _width;
             levelH = _height;
-            for (int l = 0; l < level; l++)
+            for (var l = 0; l < level; l++)
             {
                 levelW = (levelW + 1) >> 1;
                 levelH = (levelH + 1) >> 1;
@@ -259,10 +259,10 @@ public class TagTree
         }
 
         // Decode from root to leaf
-        int currentMin = 0;
+        var currentMin = 0;
         for (int i = path.Count - 1; i >= 0; i--)
         {
-            var (level, index, levelW) = path[i];
+            (int level, int index, int levelW) = path[i];
 
             int state = _states[level][index];
             if (state > currentMin)

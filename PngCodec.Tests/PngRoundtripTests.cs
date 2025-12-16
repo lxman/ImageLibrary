@@ -17,7 +17,7 @@ public class PngRoundtripTests
         original.SetPixel(2, 1, 255, 0, 0, 128);      // Semi-transparent red
 
         byte[] encoded = PngEncoder.Encode(original, PngColorType.Rgba);
-        var decoded = PngDecoder.Decode(encoded);
+        PngImage decoded = PngDecoder.Decode(encoded);
 
         Assert.Equal(original.Width, decoded.Width);
         Assert.Equal(original.Height, decoded.Height);
@@ -41,7 +41,7 @@ public class PngRoundtripTests
         original.SetPixel(3, 0, 255, 255, 255);  // White
 
         byte[] encoded = PngEncoder.Encode(original, PngColorType.Rgb);
-        var decoded = PngDecoder.Decode(encoded);
+        PngImage decoded = PngDecoder.Decode(encoded);
 
         Assert.Equal(original.Width, decoded.Width);
         Assert.Equal(original.Height, decoded.Height);
@@ -62,7 +62,7 @@ public class PngRoundtripTests
         original.SetPixel(3, 0, 255, 255, 255);  // White
 
         byte[] encoded = PngEncoder.Encode(original, PngColorType.Grayscale);
-        var decoded = PngDecoder.Decode(encoded);
+        PngImage decoded = PngDecoder.Decode(encoded);
 
         Assert.Equal(original.Width, decoded.Width);
         Assert.Equal(original.Height, decoded.Height);
@@ -85,30 +85,30 @@ public class PngRoundtripTests
         var original = new PngImage(width, height);
 
         // Fill with gradient
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                byte r = (byte)(x * 255 / Math.Max(1, width - 1));
-                byte g = (byte)(y * 255 / Math.Max(1, height - 1));
-                byte b = (byte)((x + y) * 127 / Math.Max(1, width + height - 2));
+                var r = (byte)(x * 255 / Math.Max(1, width - 1));
+                var g = (byte)(y * 255 / Math.Max(1, height - 1));
+                var b = (byte)((x + y) * 127 / Math.Max(1, width + height - 2));
                 original.SetPixel(x, y, r, g, b);
             }
         }
 
         byte[] encoded = PngEncoder.Encode(original);
-        var decoded = PngDecoder.Decode(encoded);
+        PngImage decoded = PngDecoder.Decode(encoded);
 
         Assert.Equal(width, decoded.Width);
         Assert.Equal(height, decoded.Height);
 
         // Verify all pixels
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                var expected = original.GetPixel(x, y);
-                var actual = decoded.GetPixel(x, y);
+                (byte R, byte G, byte B, byte A) expected = original.GetPixel(x, y);
+                (byte R, byte G, byte B, byte A) actual = decoded.GetPixel(x, y);
                 Assert.Equal(expected.R, actual.R);
                 Assert.Equal(expected.G, actual.G);
                 Assert.Equal(expected.B, actual.B);
@@ -123,25 +123,25 @@ public class PngRoundtripTests
         var original = new PngImage(16, 16);
 
         // Horizontal gradient (good for Sub filter)
-        for (int x = 0; x < 16; x++)
+        for (var x = 0; x < 16; x++)
         {
             original.SetPixel(x, 0, (byte)(x * 16), 0, 0);
         }
 
         // Vertical gradient (good for Up filter)
-        for (int y = 0; y < 16; y++)
+        for (var y = 0; y < 16; y++)
         {
             original.SetPixel(0, y, 0, (byte)(y * 16), 0);
         }
 
         // Diagonal (good for Average/Paeth)
-        for (int i = 0; i < 16; i++)
+        for (var i = 0; i < 16; i++)
         {
             original.SetPixel(i, i, (byte)(i * 16), (byte)(i * 16), (byte)(i * 16));
         }
 
         byte[] encoded = PngEncoder.Encode(original);
-        var decoded = PngDecoder.Decode(encoded);
+        PngImage decoded = PngDecoder.Decode(encoded);
 
         // Verify specific pixels
         Assert.Equal((0, 0, 0, 255), decoded.GetPixel(0, 0));
@@ -155,14 +155,14 @@ public class PngHeaderTests
     [Fact]
     public void Decode_TooSmall_Throws()
     {
-        byte[] data = new byte[10];
+        var data = new byte[10];
         Assert.Throws<PngException>(() => PngDecoder.Decode(data));
     }
 
     [Fact]
     public void Decode_InvalidSignature_Throws()
     {
-        byte[] data = new byte[50];
+        var data = new byte[50];
         data[0] = (byte)'G';
         data[1] = (byte)'I';
         data[2] = (byte)'F';
@@ -257,7 +257,7 @@ public class PngImageTests
         var image = new PngImage(10, 10);
 
         image.SetPixel(5, 5, 100, 150, 200, 255);
-        var pixel = image.GetPixel(5, 5);
+        (byte R, byte G, byte B, byte A) pixel = image.GetPixel(5, 5);
 
         Assert.Equal(100, pixel.R);
         Assert.Equal(150, pixel.G);
@@ -270,7 +270,7 @@ public class PngImageTests
     {
         var image = new PngImage(5, 5);
 
-        var pixel = image.GetPixel(2, 2);
+        (byte R, byte G, byte B, byte A) pixel = image.GetPixel(2, 2);
         Assert.Equal(0, pixel.R);
         Assert.Equal(0, pixel.G);
         Assert.Equal(0, pixel.B);

@@ -30,10 +30,10 @@ public class CheckSamplingInterpretation
         // even without chroma. So 2x2 means 16x16 pixel MCUs.
 
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         _output.WriteLine($"Header says: {frame.Components[0].HorizontalSamplingFactor}x{frame.Components[0].VerticalSamplingFactor}");
         _output.WriteLine($"Max sampling: {frame.MaxHorizontalSamplingFactor}x{frame.MaxVerticalSamplingFactor}");
@@ -69,20 +69,20 @@ public class CheckSamplingInterpretation
     {
         // Try reading with different block layout assumptions
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         _output.WriteLine($"Total blocks decoded: {blocks[0].Length}");
         _output.WriteLine("");
 
         // Find first non-white block assuming OUR layout (38 blocks per row)
         _output.WriteLine("Our layout (38 blocks/row):");
-        for (int i = 0; i < blocks[0].Length; i++)
+        for (var i = 0; i < blocks[0].Length; i++)
         {
             if (blocks[0][i][0] != 73)
             {
@@ -104,7 +104,7 @@ public class CheckSamplingInterpretation
 
         _output.WriteLine("");
         _output.WriteLine("Alternative: if 40 blocks per row:");
-        int idx = 20;
+        var idx = 20;
         int altBlockX = idx % 40;
         int altBlockY = idx / 40;
         _output.WriteLine($"  Index 20 would be block ({altBlockX},{altBlockY}), pixel ({altBlockX * 8},{altBlockY * 8})");
@@ -141,10 +141,10 @@ public class CheckSamplingInterpretation
         // What if ImageSharp stores blocks in decode order, not spatial order?
 
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         _output.WriteLine("Analyzing the index mismatch:");
         _output.WriteLine("");
@@ -190,13 +190,13 @@ public class CheckSamplingInterpretation
     {
         // Let's decode the file and track actual DC values by decode order
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         _output.WriteLine("Checking if decode order 40 has different DC than storage 40:");
         _output.WriteLine("");
@@ -209,14 +209,14 @@ public class CheckSamplingInterpretation
 
         // Now let's manually track decode order by re-reading with instrumentation
         _output.WriteLine("First 50 decode positions and their DC values:");
-        int decodePos = 0;
-        for (int mcuY = 0; mcuY < frame.McuCountY && decodePos < 50; mcuY++)
+        var decodePos = 0;
+        for (var mcuY = 0; mcuY < frame.McuCountY && decodePos < 50; mcuY++)
         {
-            for (int mcuX = 0; mcuX < frame.McuCountX && decodePos < 50; mcuX++)
+            for (var mcuX = 0; mcuX < frame.McuCountX && decodePos < 50; mcuX++)
             {
-                for (int subY = 0; subY < 2 && decodePos < 50; subY++)
+                for (var subY = 0; subY < 2 && decodePos < 50; subY++)
                 {
-                    for (int subX = 0; subX < 2 && decodePos < 50; subX++)
+                    for (var subX = 0; subX < 2 && decodePos < 50; subX++)
                     {
                         int gx = mcuX * 2 + subX;
                         int gy = mcuY * 2 + subY;

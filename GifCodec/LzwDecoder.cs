@@ -66,7 +66,7 @@ internal sealed class LzwDecoder
         _nextCode = _endCode + 1;
 
         // Initialize table with single-byte entries
-        for (int i = 0; i < _clearCode; i++)
+        for (var i = 0; i < _clearCode; i++)
         {
             _prefix[i] = -1;
             _suffix[i] = (byte)i;
@@ -76,9 +76,9 @@ internal sealed class LzwDecoder
 
     public byte[] Decode(int expectedSize)
     {
-        byte[] output = new byte[expectedSize];
-        int outputOffset = 0;
-        int iterations = 0;
+        var output = new byte[expectedSize];
+        var outputOffset = 0;
+        var iterations = 0;
 
         int prevCode = -1;
         byte firstChar = 0;

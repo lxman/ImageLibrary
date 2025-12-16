@@ -112,7 +112,7 @@ public class CodestreamReader
         int csiz = ReadUInt16();  // Number of components
 
         var components = new Jp2Component[csiz];
-        for (int i = 0; i < csiz; i++)
+        for (var i = 0; i < csiz; i++)
         {
             byte ssiz = _data[_position++];
             byte xrsiz = _data[_position++];
@@ -162,7 +162,7 @@ public class CodestreamReader
         if ((scod & 0x01) != 0)
         {
             // Precinct sizes for each resolution level (NL + 1 levels)
-            for (int r = 0; r <= decompositionLevels; r++)
+            for (var r = 0; r <= decompositionLevels; r++)
             {
                 if (_position < _data.Length)
                 {
@@ -359,14 +359,14 @@ public class CodestreamReader
         {
             throw new Jp2Exception("Unexpected end of codestream");
         }
-        ushort marker = (ushort)((_data[_position] << 8) | _data[_position + 1]);
+        var marker = (ushort)((_data[_position] << 8) | _data[_position + 1]);
         _position += 2;
         return marker;
     }
 
     private ushort ReadUInt16()
     {
-        ushort value = (ushort)((_data[_position] << 8) | _data[_position + 1]);
+        var value = (ushort)((_data[_position] << 8) | _data[_position + 1]);
         _position += 2;
         return value;
     }

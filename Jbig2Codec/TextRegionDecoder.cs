@@ -88,7 +88,7 @@ public sealed class TextRegionDecoder
             // Symbol ID contexts - use _symbolCountForIaid for context size
             int idContextSize = GetIdContextSize(_symbolCountForIaid);
             _iaIdContexts = new ArithmeticDecoder.Context[idContextSize];
-            for (int i = 0; i < idContextSize; i++)
+            for (var i = 0; i < idContextSize; i++)
                 _iaIdContexts[i] = new ArithmeticDecoder.Context();
         }
     }
@@ -96,7 +96,7 @@ public sealed class TextRegionDecoder
     private static int GetIdContextSize(int numSymbols)
     {
         if (numSymbols <= 1) return 512;
-        int bits = 0;
+        var bits = 0;
         int n = numSymbols - 1;
         while (n > 0) { bits++; n >>= 1; }
         return Math.Max(512, 1 << bits);
@@ -125,10 +125,10 @@ public sealed class TextRegionDecoder
         // Apply the strip size multiplier with sign from SBDSOFFSET
         int stripT = initialStripT * (-_params.StripSize);
 
-        int firstS = 0;
-        int instancesDecoded = 0;
+        var firstS = 0;
+        var instancesDecoded = 0;
 
-        int loopIterations = 0;
+        var loopIterations = 0;
 
         while (instancesDecoded < _params.NumInstances)
         {
@@ -151,8 +151,8 @@ public sealed class TextRegionDecoder
             int curS = firstS;
 
             // Decode symbols in this strip
-            bool firstSymbolInStrip = true;
-            int innerIterations = 0;
+            var firstSymbolInStrip = true;
+            var innerIterations = 0;
             while (true)
             {
                 if (++innerIterations > _options.MaxLoopIterations)
@@ -237,16 +237,16 @@ public sealed class TextRegionDecoder
     private int DecodeSymbolId()
     {
         // IAID procedure - use _symbolCountForIaid for bit count
-        int bits = 0;
+        var bits = 0;
         int n = _symbolCountForIaid - 1;
         while (n > 0) { bits++; n >>= 1; }
 
-        int id = 0;
-        int contextIndex = 1;
+        var id = 0;
+        var contextIndex = 1;
 
-        for (int i = 0; i < bits; i++)
+        for (var i = 0; i < bits; i++)
         {
-            var ctx = _iaIdContexts[contextIndex];
+            ArithmeticDecoder.Context ctx = _iaIdContexts[contextIndex];
             int bit = _decoder.DecodeBit(ctx);
             contextIndex = (contextIndex << 1) | bit;
             id = (id << 1) | bit;
@@ -486,14 +486,14 @@ public sealed class TextRegionSharedContexts
         // Symbol ID contexts - size based on total symbols
         int idContextSize = GetIdContextSize(totalSymbols);
         IaIdContexts = new ArithmeticDecoder.Context[idContextSize];
-        for (int i = 0; i < idContextSize; i++)
+        for (var i = 0; i < idContextSize; i++)
             IaIdContexts[i] = new ArithmeticDecoder.Context();
     }
 
     private static int GetIdContextSize(int numSymbols)
     {
         if (numSymbols <= 1) return 512;
-        int bits = 0;
+        var bits = 0;
         int n = numSymbols - 1;
         while (n > 0) { bits++; n >>= 1; }
         return Math.Max(512, 1 << bits);

@@ -41,7 +41,7 @@ public sealed class HuffmanSymbolDictionaryDecoder
             throw new ArgumentException("Parameters must have UseHuffman=true", nameof(parameters));
 
         // Custom tables are used in order of reference
-        int customTableIndex = 0;
+        var customTableIndex = 0;
 
         // Select Huffman tables based on parameters (7.4.2.1.1)
         // DH: 0 = B.4, 1 = B.5, 3 = custom
@@ -101,14 +101,14 @@ public sealed class HuffmanSymbolDictionaryDecoder
     public SymbolDictionary Decode()
     {
         var newSymbols = new SymbolDictionary();
-        int heightClassHeight = 0;
-        int symbolsDecoded = 0;
+        var heightClassHeight = 0;
+        var symbolsDecoded = 0;
 
         // For SDHUFF && !SDREFAGG, we need to track symbol widths per height class
         // to slice them from the collective bitmap later
         int[]? symbolWidths = !_params.UseRefinementAgg ? new int[_params.NumNewSymbols] : null;
 
-        int loopIterations = 0;
+        var loopIterations = 0;
 
         // Decode height classes (6.5.5)
         while (symbolsDecoded < _params.NumNewSymbols)
@@ -126,13 +126,13 @@ public sealed class HuffmanSymbolDictionaryDecoder
             if (heightClassHeight < 0)
                 throw new Jbig2DataException($"Invalid symbol height: {heightClassHeight}");
 
-            int symbolWidth = 0;
-            int totalWidthThisClass = 0;
+            var symbolWidth = 0;
+            var totalWidthThisClass = 0;
             int heightClassFirstSymbol = symbolsDecoded;
 
             // 6.5.7 - Decode symbols in this height class
             // The height class is always terminated by OOB, so loop until we get it
-            int innerIterations = 0;
+            var innerIterations = 0;
             while (true)
             {
                 if (++innerIterations > _options.MaxLoopIterations)
@@ -220,12 +220,12 @@ public sealed class HuffmanSymbolDictionaryDecoder
                 throw new Jbig2DataException($"Not enough data for uncompressed collective bitmap: need {expectedBytes}, have {_decoder.RemainingBytes}");
 
             // Read the bitmap data row by row
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                for (int byteX = 0; byteX < stride; byteX++)
+                for (var byteX = 0; byteX < stride; byteX++)
                 {
                     int b = _decoder.ReadBits(8);
-                    for (int bit = 0; bit < 8 && (byteX * 8 + bit) < totalWidth; bit++)
+                    for (var bit = 0; bit < 8 && (byteX * 8 + bit) < totalWidth; bit++)
                     {
                         int pixelX = byteX * 8 + bit;
                         int pixel = (b >> (7 - bit)) & 1;
@@ -251,16 +251,16 @@ public sealed class HuffmanSymbolDictionaryDecoder
             _decoder.Advance(bmsize);
 
         // Slice the collective bitmap into individual symbols
-        int x = 0;
+        var x = 0;
         for (int i = firstSymbol; i < lastSymbol; i++)
         {
             int symbolWidth = symbolWidths[i];
             var symbolBitmap = new Bitmap(symbolWidth, height, _options);
 
             // Copy pixels from collective bitmap
-            for (int sy = 0; sy < height; sy++)
+            for (var sy = 0; sy < height; sy++)
             {
-                for (int sx = 0; sx < symbolWidth; sx++)
+                for (var sx = 0; sx < symbolWidth; sx++)
                 {
                     int pixel = collectiveBitmap.GetPixel(x + sx, sy);
                     symbolBitmap.SetPixel(sx, sy, pixel);
@@ -342,7 +342,7 @@ public sealed class HuffmanSymbolDictionaryDecoder
             _params.RefinementAdaptivePixels,
             _options);
 
-        var result = refinementDecoder.Decode(width, height);
+        Bitmap result = refinementDecoder.Decode(width, height);
 
         // Advance past the refinement data
         if (rsize > 0)
@@ -355,7 +355,7 @@ public sealed class HuffmanSymbolDictionaryDecoder
     {
         // For Huffman coding, symbol IDs are coded directly using a simple code
         // based on the number of bits needed to represent the symbol count
-        int bits = 0;
+        var bits = 0;
         int n = numSymbols - 1;
         while (n > 0) { bits++; n >>= 1; }
 
@@ -369,12 +369,12 @@ public sealed class HuffmanSymbolDictionaryDecoder
         int totalSymbols = _inputSymbols.Count + newSymbols.Count;
         var exportFlags = new bool[totalSymbols];
 
-        int currentExport = 0; // Start with non-export
-        int i = 0;
+        var currentExport = 0; // Start with non-export
+        var i = 0;
 
         // Use Table B.1 for export run lengths
-        var tableExport = StandardHuffmanTables.TableA;
-        int emptyRuns = 0;
+        HuffmanTable tableExport = StandardHuffmanTables.TableA;
+        var emptyRuns = 0;
 
         while (i < totalSymbols)
         {
@@ -397,7 +397,7 @@ public sealed class HuffmanSymbolDictionaryDecoder
 
             // Set flags for this run
             bool exporting = (currentExport == 1);
-            for (int j = 0; j < runLength && i < totalSymbols; j++, i++)
+            for (var j = 0; j < runLength && i < totalSymbols; j++, i++)
             {
                 exportFlags[i] = exporting;
             }

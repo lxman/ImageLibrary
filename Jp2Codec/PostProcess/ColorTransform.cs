@@ -27,8 +27,8 @@ public class PostProcessor : IPostProcessor
         // Maps output position (by Association) to codestream component index
         if (channelDefinitions != null && channelDefinitions.Length > 0)
         {
-            int maxAssoc = 0;
-            foreach (var def in channelDefinitions)
+            var maxAssoc = 0;
+            foreach (ChannelDefinition def in channelDefinitions)
             {
                 if (def.Association > 0 && def.Association > maxAssoc)
                     maxAssoc = def.Association;
@@ -36,9 +36,9 @@ public class PostProcessor : IPostProcessor
             if (maxAssoc > 0)
             {
                 _channelMapping = new int[maxAssoc];
-                for (int i = 0; i < _channelMapping.Length; i++)
+                for (var i = 0; i < _channelMapping.Length; i++)
                     _channelMapping[i] = i; // Default: identity mapping
-                foreach (var def in channelDefinitions)
+                foreach (ChannelDefinition def in channelDefinitions)
                 {
                     if (def.Association > 0 && def.Association <= maxAssoc && def.Type == 0)
                     {
@@ -70,7 +70,7 @@ public class PostProcessor : IPostProcessor
         if (_channelMapping != null && _channelMapping.Length <= numComponents)
         {
             remappedComponents = new double[_channelMapping.Length][,];
-            for (int i = 0; i < _channelMapping.Length; i++)
+            for (var i = 0; i < _channelMapping.Length; i++)
             {
                 int srcIndex = _channelMapping[i];
                 if (srcIndex < numComponents)
@@ -101,19 +101,19 @@ public class PostProcessor : IPostProcessor
         }
 
         // Apply level shift and clamping, then interleave
-        byte[] result = new byte[width * height * numComponents];
-        int idx = 0;
+        var result = new byte[width * height * numComponents];
+        var idx = 0;
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                for (int c = 0; c < numComponents; c++)
+                for (var c = 0; c < numComponents; c++)
                 {
                     double val = components[c][y, x];
 
                     // Apply level shift (add 2^(bitdepth-1) for signed components)
-                    var comp = _codestream.Frame.Components[c];
+                    Jp2Component comp = _codestream.Frame.Components[c];
                     if (!comp.IsSigned)
                     {
                         val += 1 << (comp.Precision - 1);
@@ -121,7 +121,7 @@ public class PostProcessor : IPostProcessor
 
                     // Clamp to valid range for this component's precision
                     int maxVal = (1 << comp.Precision) - 1;
-                    int intVal = (int)Math.Round(val);
+                    var intVal = (int)Math.Round(val);
                     intVal = Math.Max(0, Math.Min(maxVal, intVal));
 
                     // Scale down to 8-bit if precision > 8
@@ -147,9 +147,9 @@ public class PostProcessor : IPostProcessor
         int height = ycc[0].GetLength(0);
         int width = ycc[0].GetLength(1);
 
-        var y = ycc[0];
-        var cb = ycc[1];
-        var cr = ycc[2];
+        double[,] y = ycc[0];
+        double[,] cb = ycc[1];
+        double[,] cr = ycc[2];
 
         // Handle subsampled chroma components (e.g., 4:2:0, 4:2:2)
         // Upsample Cb and Cr to match Y dimensions if needed
@@ -177,9 +177,9 @@ public class PostProcessor : IPostProcessor
             // G = Y - floor((Cb + Cr) / 4)
             // R = Cr + G
             // B = Cb + G
-            for (int py = 0; py < height; py++)
+            for (var py = 0; py < height; py++)
             {
-                for (int px = 0; px < width; px++)
+                for (var px = 0; px < width; px++)
                 {
                     double yVal = y[py, px];
                     double cbVal = cb[py, px];
@@ -198,9 +198,9 @@ public class PostProcessor : IPostProcessor
             // R = Y + 1.402 * Cr
             // G = Y - 0.34413 * Cb - 0.71414 * Cr
             // B = Y + 1.772 * Cb
-            for (int py = 0; py < height; py++)
+            for (var py = 0; py < height; py++)
             {
-                for (int px = 0; px < width; px++)
+                for (var px = 0; px < width; px++)
                 {
                     double yVal = y[py, px];
                     double cbVal = cb[py, px];
@@ -230,14 +230,14 @@ public class PostProcessor : IPostProcessor
         double scaleY = (double)srcHeight / targetHeight;
         double scaleX = (double)srcWidth / targetWidth;
 
-        for (int y = 0; y < targetHeight; y++)
+        for (var y = 0; y < targetHeight; y++)
         {
             double srcY = y * scaleY;
             int y0 = Math.Min((int)srcY, srcHeight - 1);
             int y1 = Math.Min(y0 + 1, srcHeight - 1);
             double fy = srcY - y0;
 
-            for (int x = 0; x < targetWidth; x++)
+            for (var x = 0; x < targetWidth; x++)
             {
                 double srcX = x * scaleX;
                 int x0 = Math.Min((int)srcX, srcWidth - 1);
@@ -279,14 +279,14 @@ public class GrayscalePostProcessor
     {
         int height = reconstructed.GetLength(0);
         int width = reconstructed.GetLength(1);
-        var comp = _codestream.Frame.Components[0];
+        Jp2Component comp = _codestream.Frame.Components[0];
 
-        byte[] result = new byte[width * height];
-        int idx = 0;
+        var result = new byte[width * height];
+        var idx = 0;
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 double val = reconstructed[y, x];
 
@@ -298,7 +298,7 @@ public class GrayscalePostProcessor
 
                 // Clamp
                 int maxVal = (1 << comp.Precision) - 1;
-                int intVal = (int)Math.Round(val);
+                var intVal = (int)Math.Round(val);
                 intVal = Math.Max(0, Math.Min(maxVal, intVal));
 
                 result[idx++] = (byte)intVal;

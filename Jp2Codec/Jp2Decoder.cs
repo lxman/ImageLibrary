@@ -48,12 +48,7 @@ public class Jp2Decoder
             var fileReader = new Jp2FileReader(data);
             fileInfo = fileReader.Read();
 
-            if (fileInfo.CodestreamData == null)
-            {
-                throw new Jp2Exception("No codestream found in data");
-            }
-
-            _codestreamData = fileInfo.CodestreamData;
+            _codestreamData = fileInfo.CodestreamData ?? throw new Jp2Exception("No codestream found in data");
             _jp2ColorSpace = fileInfo.ColorSpace;
             _palette = fileInfo.Palette;
             _componentMappings = fileInfo.ComponentMappings;
@@ -66,7 +61,7 @@ public class Jp2Decoder
         // Read tile-parts
         while (true)
         {
-            var tilePart = codestreamReader.ReadTilePart();
+            Jp2TilePart? tilePart = codestreamReader.ReadTilePart();
             if (tilePart == null) break;
             _codestream.TileParts.Add(tilePart);
         }
@@ -125,16 +120,10 @@ public class Jp2Decoder
         }
 
         // For single-tile images, decode directly
-        byte[] result;
-        if (_codestream.Frame.TileCount == 1)
-        {
-            result = DecodeTile(0);
-        }
-        else
-        {
+        byte[] result = _codestream.Frame.TileCount == 1
+            ? DecodeTile(0)
             // For multi-tile images, decode each tile and assemble
-            result = DecodeAllTiles();
-        }
+            : DecodeAllTiles();
 
         // Apply palette mapping if present
         if (_palette != null && _componentMappings != null)
@@ -150,7 +139,7 @@ public class Jp2Decoder
     /// </summary>
     public byte[] DecodeTile(int tileIndex)
     {
-        var tilePart = _codestream.TileParts.FirstOrDefault(tp => tp.TileIndex == tileIndex);
+        Jp2TilePart? tilePart = _codestream.TileParts.FirstOrDefault(tp => tp.TileIndex == tileIndex);
         if (tilePart == null)
         {
             throw new Jp2Exception($"Tile {tileIndex} not found");
@@ -171,21 +160,21 @@ public class Jp2Decoder
         // Decode each component through the pipeline
         var reconstructedComponents = new double[_codestream.Frame.ComponentCount][,];
 
-        var tier2Outputs = _tier2.DecodeAllComponents(tilePart);
+        Tier2Output[] tier2Outputs = _tier2.DecodeAllComponents(tilePart);
 
-        for (int c = 0; c < _codestream.Frame.ComponentCount; c++)
+        for (var c = 0; c < _codestream.Frame.ComponentCount; c++)
         {
             // Tier-2: packet parsing
-            var tier2Output = tier2Outputs[c];
+            Tier2Output tier2Output = tier2Outputs[c];
 
             // Tier-1: EBCOT decoding
-            var subbands = _tier1.DecodeToSubbands(tier2Output);
+            QuantizedSubband[] subbands = _tier1.DecodeToSubbands(tier2Output);
 
             // Dequantization
-            var dwtCoefs = _dequantizer.DequantizeAll(subbands, c);
+            DwtCoefficients dwtCoefs = _dequantizer.DequantizeAll(subbands, c);
 
             // Inverse DWT
-            var reconstructed = _inverseDwt.Process(dwtCoefs);
+            double[,] reconstructed = _inverseDwt.Process(dwtCoefs);
 
             reconstructedComponents[c] = reconstructed;
         }
@@ -216,11 +205,11 @@ public class Jp2Decoder
         int numTilesX = _codestream.Frame.NumTilesX;
         int numTilesY = _codestream.Frame.NumTilesY;
 
-        byte[] result = new byte[width * height * numComponents];
+        var result = new byte[width * height * numComponents];
 
-        for (int ty = 0; ty < numTilesY; ty++)
+        for (var ty = 0; ty < numTilesY; ty++)
         {
-            for (int tx = 0; tx < numTilesX; tx++)
+            for (var tx = 0; tx < numTilesX; tx++)
             {
                 int tileIndex = ty * numTilesX + tx;
 
@@ -236,7 +225,7 @@ public class Jp2Decoder
                 int tileHeight = tileEndY - tileStartY;
 
                 // Copy tile data to result
-                for (int y = 0; y < tileHeight; y++)
+                for (var y = 0; y < tileHeight; y++)
                 {
                     int srcOffset = y * tileWidth * numComponents;
                     int dstOffset = ((tileStartY + y) * width + tileStartX) * numComponents;
@@ -258,13 +247,13 @@ public class Jp2Decoder
             throw new Jp2Exception("No tile-parts found in codestream");
         }
 
-        var tilePart = _codestream.TileParts[0];
+        Jp2TilePart tilePart = _codestream.TileParts[0];
 
-        // Decode first component only
-        var tier2Output = _tier2.Process(tilePart);
-        var subbands = _tier1.DecodeToSubbands(tier2Output);
-        var dwtCoefs = _dequantizer.DequantizeAll(subbands, 0);
-        var reconstructed = _inverseDwt.Process(dwtCoefs);
+        // Decode the first component only
+        Tier2Output tier2Output = _tier2.Process(tilePart);
+        QuantizedSubband[] subbands = _tier1.DecodeToSubbands(tier2Output);
+        DwtCoefficients dwtCoefs = _dequantizer.DequantizeAll(subbands, 0);
+        double[,] reconstructed = _inverseDwt.Process(dwtCoefs);
 
         // Post-process to bytes
         var grayscaleProcessor = new GrayscalePostProcessor(_codestream);
@@ -282,14 +271,9 @@ public class Jp2Decoder
         }
 
         // For single-tile images, decode directly
-        if (_codestream.Frame.TileCount == 1)
-        {
-            return DecodeTile(0);
-        }
-        else
-        {
-            return DecodeAllTiles();
-        }
+        return _codestream.Frame.TileCount == 1
+            ? DecodeTile(0)
+            : DecodeAllTiles();
     }
 
     /// <summary>
@@ -297,15 +281,15 @@ public class Jp2Decoder
     /// </summary>
     public IntermediateData GetIntermediateData(int tileIndex = 0)
     {
-        var tilePart = _codestream.TileParts.FirstOrDefault(tp => tp.TileIndex == tileIndex);
+        Jp2TilePart? tilePart = _codestream.TileParts.FirstOrDefault(tp => tp.TileIndex == tileIndex);
         if (tilePart == null)
         {
             return new IntermediateData();
         }
 
-        var tier2Output = _tier2.Process(tilePart);
-        var subbands = _tier1.DecodeToSubbands(tier2Output);
-        var dwtCoefs = _dequantizer.DequantizeAll(subbands, 0);
+        Tier2Output tier2Output = _tier2.Process(tilePart);
+        QuantizedSubband[] subbands = _tier1.DecodeToSubbands(tier2Output);
+        DwtCoefficients dwtCoefs = _dequantizer.DequantizeAll(subbands, 0);
 
         return new IntermediateData
         {
@@ -324,21 +308,21 @@ public class Jp2Decoder
         int height = _codestream.Frame.Height;
         int numPixels = width * height;
 
-        // Determine output format based on component mappings
+        // Determine the output format based on component mappings
         // Each mapping produces one output component
         int numOutputComponents = _componentMappings!.Length;
-        byte[] result = new byte[numPixels * numOutputComponents];
+        var result = new byte[numPixels * numOutputComponents];
 
         // For each pixel
-        for (int i = 0; i < numPixels; i++)
+        for (var i = 0; i < numPixels; i++)
         {
             // The input is a single-component image containing palette indices
             byte paletteIndex = indexData[i];
 
             // Apply each component mapping
-            for (int m = 0; m < _componentMappings.Length; m++)
+            for (var m = 0; m < _componentMappings.Length; m++)
             {
-                var mapping = _componentMappings[m];
+                ComponentMapping mapping = _componentMappings[m];
 
                 int value;
                 if (mapping.MappingType == 1)

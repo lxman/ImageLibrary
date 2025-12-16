@@ -223,7 +223,7 @@ public class BitReaderTests
         var data = new byte[] { 0x11, 0x22, 0x33, 0x44 };
         var reader = new BitReader(data);
 
-        var result = reader.ReadBytes(3);
+        byte[] result = reader.ReadBytes(3);
         Assert.Equal(new byte[] { 0x11, 0x22, 0x33 }, result);
         Assert.Equal(3, reader.BytePosition);
     }

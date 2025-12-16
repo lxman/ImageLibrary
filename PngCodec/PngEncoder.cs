@@ -50,7 +50,7 @@ public static class PngEncoder
 
     private static bool ImageHasAlpha(PngImage image)
     {
-        for (int i = 3; i < image.PixelData.Length; i += 4)
+        for (var i = 3; i < image.PixelData.Length; i += 4)
         {
             if (image.PixelData[i] != 255)
                 return true;
@@ -60,7 +60,7 @@ public static class PngEncoder
 
     private static bool ImageIsGrayscale(PngImage image)
     {
-        for (int i = 0; i < image.PixelData.Length; i += 4)
+        for (var i = 0; i < image.PixelData.Length; i += 4)
         {
             byte b = image.PixelData[i];
             byte g = image.PixelData[i + 1];
@@ -73,7 +73,7 @@ public static class PngEncoder
 
     private static void WriteIhdr(Stream stream, PngImage image, PngColorType colorType)
     {
-        byte[] data = new byte[IhdrChunk.Size];
+        var data = new byte[IhdrChunk.Size];
 
         WriteUInt32BE(data, 0, (uint)image.Width);
         WriteUInt32BE(data, 4, (uint)image.Height);
@@ -100,17 +100,17 @@ public static class PngEncoder
         int scanlineBytes = image.Width * bytesPerPixel;
         int stride = scanlineBytes + 1; // +1 for filter byte
 
-        byte[] rawData = new byte[stride * image.Height];
-        byte[] currRow = new byte[scanlineBytes];
-        byte[] prevRow = new byte[scanlineBytes];
+        var rawData = new byte[stride * image.Height];
+        var currRow = new byte[scanlineBytes];
+        var prevRow = new byte[scanlineBytes];
 
-        for (int y = 0; y < image.Height; y++)
+        for (var y = 0; y < image.Height; y++)
         {
             // Convert row to target format
             ConvertRow(image, y, currRow, colorType);
 
             // Choose best filter for this row
-            var (filterType, filteredRow) = ChooseBestFilter(currRow, prevRow, bytesPerPixel);
+            (PngFilterType filterType, byte[] filteredRow) = ChooseBestFilter(currRow, prevRow, bytesPerPixel);
 
             // Write filter byte and filtered row
             int rowOffset = y * stride;
@@ -127,9 +127,9 @@ public static class PngEncoder
     private static void ConvertRow(PngImage image, int y, byte[] dest, PngColorType colorType)
     {
         int srcOffset = y * image.Width * 4;
-        int destOffset = 0;
+        var destOffset = 0;
 
-        for (int x = 0; x < image.Width; x++)
+        for (var x = 0; x < image.Width; x++)
         {
             byte b = image.PixelData[srcOffset++];
             byte g = image.PixelData[srcOffset++];
@@ -168,15 +168,15 @@ public static class PngEncoder
         // Try all filters and pick the one with lowest sum of absolute values
         // (heuristic for best compression)
 
-        byte[][] filtered = new byte[5][];
-        long[] sums = new long[5];
+        var filtered = new byte[5][];
+        var sums = new long[5];
 
-        for (int f = 0; f < 5; f++)
+        for (var f = 0; f < 5; f++)
         {
             filtered[f] = new byte[currRow.Length];
             var filterType = (PngFilterType)f;
 
-            for (int i = 0; i < currRow.Length; i++)
+            for (var i = 0; i < currRow.Length; i++)
             {
                 byte filtered_byte = filterType switch
                 {
@@ -198,9 +198,9 @@ public static class PngEncoder
         }
 
         // Find minimum sum
-        int bestFilter = 0;
+        var bestFilter = 0;
         long minSum = sums[0];
-        for (int f = 1; f < 5; f++)
+        for (var f = 1; f < 5; f++)
         {
             if (sums[f] < minSum)
             {
@@ -268,12 +268,12 @@ public static class PngEncoder
     {
         // Write in chunks of up to 32KB
         const int maxChunkSize = 32768;
-        int offset = 0;
+        var offset = 0;
 
         while (offset < compressedData.Length)
         {
             int chunkSize = Math.Min(maxChunkSize, compressedData.Length - offset);
-            byte[] chunkData = new byte[chunkSize];
+            var chunkData = new byte[chunkSize];
             Array.Copy(compressedData, offset, chunkData, 0, chunkSize);
             WriteChunk(stream, PngChunkTypes.IDAT, chunkData);
             offset += chunkSize;

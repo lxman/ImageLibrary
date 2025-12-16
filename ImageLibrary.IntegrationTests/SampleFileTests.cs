@@ -24,17 +24,17 @@ public class SampleFileTests
     private static string FindTestImagesRoot()
     {
         // Look for TestImages directory relative to the test assembly
-        var dir = AppContext.BaseDirectory;
+        string? dir = AppContext.BaseDirectory;
         while (dir != null)
         {
-            var testImagesPath = Path.Combine(dir, "TestImages");
+            string testImagesPath = Path.Combine(dir, "TestImages");
             if (Directory.Exists(testImagesPath))
                 return testImagesPath;
             dir = Path.GetDirectoryName(dir);
         }
 
         // Fall back to home directory path
-        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         return Path.Combine(home, "RiderProjects", "ImageLibrary", "TestImages");
     }
 
@@ -43,9 +43,9 @@ public class SampleFileTests
         if (!Directory.Exists(TestImagesRoot))
             yield break;
 
-        foreach (var file in Directory.EnumerateFiles(TestImagesRoot, "*.bmp", SearchOption.AllDirectories))
+        foreach (string file in Directory.EnumerateFiles(TestImagesRoot, "*.bmp", SearchOption.AllDirectories))
             yield return [file];
-        foreach (var file in Directory.EnumerateFiles(TestImagesRoot, "*.BMP", SearchOption.AllDirectories))
+        foreach (string file in Directory.EnumerateFiles(TestImagesRoot, "*.BMP", SearchOption.AllDirectories))
             yield return [file];
     }
 
@@ -54,9 +54,9 @@ public class SampleFileTests
         if (!Directory.Exists(TestImagesRoot))
             yield break;
 
-        foreach (var file in Directory.EnumerateFiles(TestImagesRoot, "*.tga", SearchOption.AllDirectories))
+        foreach (string file in Directory.EnumerateFiles(TestImagesRoot, "*.tga", SearchOption.AllDirectories))
             yield return [file];
-        foreach (var file in Directory.EnumerateFiles(TestImagesRoot, "*.TGA", SearchOption.AllDirectories))
+        foreach (string file in Directory.EnumerateFiles(TestImagesRoot, "*.TGA", SearchOption.AllDirectories))
             yield return [file];
     }
 
@@ -65,9 +65,9 @@ public class SampleFileTests
         if (!Directory.Exists(TestImagesRoot))
             yield break;
 
-        foreach (var file in Directory.EnumerateFiles(TestImagesRoot, "*.gif", SearchOption.AllDirectories))
+        foreach (string file in Directory.EnumerateFiles(TestImagesRoot, "*.gif", SearchOption.AllDirectories))
             yield return [file];
-        foreach (var file in Directory.EnumerateFiles(TestImagesRoot, "*.GIF", SearchOption.AllDirectories))
+        foreach (string file in Directory.EnumerateFiles(TestImagesRoot, "*.GIF", SearchOption.AllDirectories))
             yield return [file];
     }
 
@@ -76,9 +76,9 @@ public class SampleFileTests
         if (!Directory.Exists(TestImagesRoot))
             yield break;
 
-        foreach (var file in Directory.EnumerateFiles(TestImagesRoot, "*.png", SearchOption.AllDirectories))
+        foreach (string file in Directory.EnumerateFiles(TestImagesRoot, "*.png", SearchOption.AllDirectories))
             yield return [file];
-        foreach (var file in Directory.EnumerateFiles(TestImagesRoot, "*.PNG", SearchOption.AllDirectories))
+        foreach (string file in Directory.EnumerateFiles(TestImagesRoot, "*.PNG", SearchOption.AllDirectories))
             yield return [file];
     }
 
@@ -87,13 +87,13 @@ public class SampleFileTests
         if (!Directory.Exists(TestImagesRoot))
             yield break;
 
-        foreach (var file in Directory.EnumerateFiles(TestImagesRoot, "*.jb2", SearchOption.AllDirectories))
+        foreach (string file in Directory.EnumerateFiles(TestImagesRoot, "*.jb2", SearchOption.AllDirectories))
             yield return [file];
-        foreach (var file in Directory.EnumerateFiles(TestImagesRoot, "*.jbig2", SearchOption.AllDirectories))
+        foreach (string file in Directory.EnumerateFiles(TestImagesRoot, "*.jbig2", SearchOption.AllDirectories))
             yield return [file];
-        foreach (var file in Directory.EnumerateFiles(TestImagesRoot, "*.JB2", SearchOption.AllDirectories))
+        foreach (string file in Directory.EnumerateFiles(TestImagesRoot, "*.JB2", SearchOption.AllDirectories))
             yield return [file];
-        foreach (var file in Directory.EnumerateFiles(TestImagesRoot, "*.JBIG2", SearchOption.AllDirectories))
+        foreach (string file in Directory.EnumerateFiles(TestImagesRoot, "*.JBIG2", SearchOption.AllDirectories))
             yield return [file];
     }
 
@@ -101,8 +101,8 @@ public class SampleFileTests
     [MemberData(nameof(GetBmpFiles))]
     public void DecodeBmpFile(string filePath)
     {
-        var fileName = Path.GetFileName(filePath);
-        var relativePath = Path.GetRelativePath(TestImagesRoot, filePath);
+        string fileName = Path.GetFileName(filePath);
+        string relativePath = Path.GetRelativePath(TestImagesRoot, filePath);
 
         // Some files in test suites are intentionally invalid
         // Files starting with 'x' in bmpsuite are corrupt
@@ -111,7 +111,7 @@ public class SampleFileTests
         try
         {
             byte[] data = File.ReadAllBytes(filePath);
-            var image = BmpDecoder.Decode(data);
+            BmpImage image = BmpDecoder.Decode(data);
 
             Assert.True(image.Width > 0, $"Width should be positive: {relativePath}");
             Assert.True(image.Height > 0, $"Height should be positive: {relativePath}");
@@ -139,12 +139,12 @@ public class SampleFileTests
     [MemberData(nameof(GetTgaFiles))]
     public void DecodeTgaFile(string filePath)
     {
-        var relativePath = Path.GetRelativePath(TestImagesRoot, filePath);
+        string relativePath = Path.GetRelativePath(TestImagesRoot, filePath);
 
         try
         {
             byte[] data = File.ReadAllBytes(filePath);
-            var image = TgaDecoder.Decode(data);
+            TgaImage image = TgaDecoder.Decode(data);
 
             Assert.True(image.Width > 0, $"Width should be positive: {relativePath}");
             Assert.True(image.Height > 0, $"Height should be positive: {relativePath}");
@@ -163,18 +163,18 @@ public class SampleFileTests
     [MemberData(nameof(GetGifFiles))]
     public void DecodeGifFile(string filePath)
     {
-        var relativePath = Path.GetRelativePath(TestImagesRoot, filePath);
+        string relativePath = Path.GetRelativePath(TestImagesRoot, filePath);
 
         try
         {
             byte[] data = File.ReadAllBytes(filePath);
-            var gif = GifDecoder.Decode(data);
+            GifFile gif = GifDecoder.Decode(data);
 
             Assert.True(gif.Width > 0, $"Width should be positive: {relativePath}");
             Assert.True(gif.Height > 0, $"Height should be positive: {relativePath}");
             Assert.True(gif.Frames.Count > 0, $"Should have at least one frame: {relativePath}");
 
-            var firstFrame = gif.Frames[0];
+            GifImage firstFrame = gif.Frames[0];
             Assert.NotNull(firstFrame.PixelData);
 
             _output.WriteLine($"OK: {relativePath} ({gif.Width}x{gif.Height}, {gif.Frames.Count} frames)");
@@ -189,8 +189,8 @@ public class SampleFileTests
     [MemberData(nameof(GetPngFiles))]
     public void DecodePngFile(string filePath)
     {
-        var fileName = Path.GetFileName(filePath);
-        var relativePath = Path.GetRelativePath(TestImagesRoot, filePath);
+        string fileName = Path.GetFileName(filePath);
+        string relativePath = Path.GetRelativePath(TestImagesRoot, filePath);
 
         // In PngSuite, files starting with 'x' are intentionally corrupt
         bool expectFailure = fileName.StartsWith("x", StringComparison.OrdinalIgnoreCase);
@@ -198,7 +198,7 @@ public class SampleFileTests
         try
         {
             byte[] data = File.ReadAllBytes(filePath);
-            var image = PngDecoder.Decode(data);
+            PngImage image = PngDecoder.Decode(data);
 
             Assert.True(image.Width > 0, $"Width should be positive: {relativePath}");
             Assert.True(image.Height > 0, $"Height should be positive: {relativePath}");
@@ -224,13 +224,13 @@ public class SampleFileTests
     [MemberData(nameof(GetJbig2Files))]
     public void DecodeJbig2File(string filePath)
     {
-        var relativePath = Path.GetRelativePath(TestImagesRoot, filePath);
+        string relativePath = Path.GetRelativePath(TestImagesRoot, filePath);
 
         try
         {
             byte[] data = File.ReadAllBytes(filePath);
             var decoder = new Jbig2Decoder(data);
-            var bitmap = decoder.Decode();
+            Bitmap bitmap = decoder.Decode();
 
             Assert.True(bitmap.Width > 0, $"Width should be positive: {relativePath}");
             Assert.True(bitmap.Height > 0, $"Height should be positive: {relativePath}");
@@ -260,7 +260,7 @@ public class SampleFileSummaryTests
 
     private static string FindTestImagesRoot()
     {
-        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         return Path.Combine(home, "RiderProjects", "ImageLibrary", "TestImages");
     }
 
@@ -273,19 +273,19 @@ public class SampleFileSummaryTests
             return;
         }
 
-        var files = Directory.EnumerateFiles(TestImagesRoot, "*.bmp", SearchOption.AllDirectories)
+        List<string> files = Directory.EnumerateFiles(TestImagesRoot, "*.bmp", SearchOption.AllDirectories)
             .Concat(Directory.EnumerateFiles(TestImagesRoot, "*.BMP", SearchOption.AllDirectories))
             .ToList();
 
         int success = 0, failed = 0, unsupported = 0;
         var failures = new List<string>();
 
-        foreach (var file in files)
+        foreach (string file in files)
         {
             try
             {
                 byte[] data = File.ReadAllBytes(file);
-                var image = BmpDecoder.Decode(data);
+                BmpImage image = BmpDecoder.Decode(data);
                 if (image.Width > 0 && image.Height > 0)
                     success++;
                 else
@@ -305,7 +305,7 @@ public class SampleFileSummaryTests
         _output.WriteLine($"BMP Summary: {success} success, {unsupported} unsupported, {failed} failed out of {files.Count} files");
         _output.WriteLine($"Success rate: {100.0 * success / files.Count:F1}%");
 
-        foreach (var f in failures.Take(10))
+        foreach (string f in failures.Take(10))
             _output.WriteLine($"  Failed: {f}");
 
         Assert.True(success > files.Count * 0.5, "At least 50% of BMP files should decode successfully");
@@ -320,19 +320,19 @@ public class SampleFileSummaryTests
             return;
         }
 
-        var files = Directory.EnumerateFiles(TestImagesRoot, "*.tga", SearchOption.AllDirectories)
+        List<string> files = Directory.EnumerateFiles(TestImagesRoot, "*.tga", SearchOption.AllDirectories)
             .Concat(Directory.EnumerateFiles(TestImagesRoot, "*.TGA", SearchOption.AllDirectories))
             .ToList();
 
         int success = 0, failed = 0, unsupported = 0;
         var failures = new List<string>();
 
-        foreach (var file in files)
+        foreach (string file in files)
         {
             try
             {
                 byte[] data = File.ReadAllBytes(file);
-                var image = TgaDecoder.Decode(data);
+                TgaImage image = TgaDecoder.Decode(data);
                 if (image.Width > 0 && image.Height > 0)
                     success++;
                 else
@@ -352,7 +352,7 @@ public class SampleFileSummaryTests
         _output.WriteLine($"TGA Summary: {success} success, {unsupported} unsupported, {failed} failed out of {files.Count} files");
         _output.WriteLine($"Success rate: {100.0 * success / files.Count:F1}%");
 
-        foreach (var f in failures.Take(10))
+        foreach (string f in failures.Take(10))
             _output.WriteLine($"  Failed: {f}");
 
         Assert.True(success > files.Count * 0.5, "At least 50% of TGA files should decode successfully");
@@ -367,19 +367,19 @@ public class SampleFileSummaryTests
             return;
         }
 
-        var files = Directory.EnumerateFiles(TestImagesRoot, "*.gif", SearchOption.AllDirectories)
+        List<string> files = Directory.EnumerateFiles(TestImagesRoot, "*.gif", SearchOption.AllDirectories)
             .Concat(Directory.EnumerateFiles(TestImagesRoot, "*.GIF", SearchOption.AllDirectories))
             .ToList();
 
         int success = 0, failed = 0, unsupported = 0;
         var failures = new List<string>();
 
-        foreach (var file in files)
+        foreach (string file in files)
         {
             try
             {
                 byte[] data = File.ReadAllBytes(file);
-                var gif = GifDecoder.Decode(data);
+                GifFile gif = GifDecoder.Decode(data);
                 if (gif.Width > 0 && gif.Height > 0 && gif.Frames.Count > 0)
                     success++;
                 else
@@ -399,7 +399,7 @@ public class SampleFileSummaryTests
         _output.WriteLine($"GIF Summary: {success} success, {unsupported} unsupported, {failed} failed out of {files.Count} files");
         _output.WriteLine($"Success rate: {100.0 * success / files.Count:F1}%");
 
-        foreach (var f in failures.Take(10))
+        foreach (string f in failures.Take(10))
             _output.WriteLine($"  Failed: {f}");
 
         Assert.True(success > files.Count * 0.5, "At least 50% of GIF files should decode successfully");
@@ -414,22 +414,22 @@ public class SampleFileSummaryTests
             return;
         }
 
-        var files = Directory.EnumerateFiles(TestImagesRoot, "*.png", SearchOption.AllDirectories)
+        List<string> files = Directory.EnumerateFiles(TestImagesRoot, "*.png", SearchOption.AllDirectories)
             .Concat(Directory.EnumerateFiles(TestImagesRoot, "*.PNG", SearchOption.AllDirectories))
             .ToList();
 
         // Filter out intentionally corrupt files (start with 'x')
-        var validFiles = files.Where(f => !Path.GetFileName(f).StartsWith("x", StringComparison.OrdinalIgnoreCase)).ToList();
+        List<string> validFiles = files.Where(f => !Path.GetFileName(f).StartsWith("x", StringComparison.OrdinalIgnoreCase)).ToList();
 
         int success = 0, failed = 0, unsupported = 0;
         var failures = new List<string>();
 
-        foreach (var file in validFiles)
+        foreach (string file in validFiles)
         {
             try
             {
                 byte[] data = File.ReadAllBytes(file);
-                var image = PngDecoder.Decode(data);
+                PngImage image = PngDecoder.Decode(data);
                 if (image.Width > 0 && image.Height > 0)
                     success++;
                 else
@@ -449,7 +449,7 @@ public class SampleFileSummaryTests
         _output.WriteLine($"PNG Summary: {success} success, {unsupported} unsupported, {failed} failed out of {validFiles.Count} valid files ({files.Count - validFiles.Count} intentionally corrupt skipped)");
         _output.WriteLine($"Success rate: {100.0 * success / validFiles.Count:F1}%");
 
-        foreach (var f in failures.Take(10))
+        foreach (string f in failures.Take(10))
             _output.WriteLine($"  Failed: {f}");
 
         Assert.True(success > validFiles.Count * 0.5, "At least 50% of PNG files should decode successfully");
@@ -464,7 +464,7 @@ public class SampleFileSummaryTests
             return;
         }
 
-        var files = Directory.EnumerateFiles(TestImagesRoot, "*.jb2", SearchOption.AllDirectories)
+        List<string> files = Directory.EnumerateFiles(TestImagesRoot, "*.jb2", SearchOption.AllDirectories)
             .Concat(Directory.EnumerateFiles(TestImagesRoot, "*.jbig2", SearchOption.AllDirectories))
             .Concat(Directory.EnumerateFiles(TestImagesRoot, "*.JB2", SearchOption.AllDirectories))
             .Concat(Directory.EnumerateFiles(TestImagesRoot, "*.JBIG2", SearchOption.AllDirectories))
@@ -479,13 +479,13 @@ public class SampleFileSummaryTests
         int success = 0, failed = 0, unsupported = 0;
         var failures = new List<string>();
 
-        foreach (var file in files)
+        foreach (string file in files)
         {
             try
             {
                 byte[] data = File.ReadAllBytes(file);
                 var decoder = new Jbig2Decoder(data);
-                var bitmap = decoder.Decode();
+                Bitmap bitmap = decoder.Decode();
                 if (bitmap.Width > 0 && bitmap.Height > 0)
                     success++;
                 else
@@ -505,7 +505,7 @@ public class SampleFileSummaryTests
         _output.WriteLine($"JBIG2 Summary: {success} success, {unsupported} unsupported, {failed} failed out of {files.Count} files");
         _output.WriteLine($"Success rate: {100.0 * success / files.Count:F1}%");
 
-        foreach (var f in failures.Take(10))
+        foreach (string f in failures.Take(10))
             _output.WriteLine($"  Failed: {f}");
 
         Assert.True(success > files.Count * 0.5, "At least 50% of JBIG2 files should decode successfully");

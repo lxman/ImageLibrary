@@ -13,7 +13,7 @@ public static class PngSignature
         if (data.Length < offset + Length)
             return false;
 
-        for (int i = 0; i < Length; i++)
+        for (var i = 0; i < Length; i++)
         {
             if (data[offset + i] != Bytes[i])
                 return false;

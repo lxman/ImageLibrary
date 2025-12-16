@@ -94,13 +94,13 @@ internal class TilePartDecoder
         int tileWidth = tileEndX - tileStartX;
         int tileHeight = tileEndY - tileStartY;
 
-        for (int c = 0; c < _numComponents; c++)
+        for (var c = 0; c < _numComponents; c++)
         {
-            var comp = _frame.Components[c];
+            Jp2Component comp = _frame.Components[c];
             int compTileWidth = (tileWidth + comp.XSubsampling - 1) / comp.XSubsampling;
             int compTileHeight = (tileHeight + comp.YSubsampling - 1) / comp.YSubsampling;
 
-            for (int r = 0; r < _numResolutions; r++)
+            for (var r = 0; r < _numResolutions; r++)
             {
                 // Calculate subband dimensions at this resolution using ceiling division
                 int shift = _numResolutions - 1 - r;
@@ -112,7 +112,7 @@ internal class TilePartDecoder
                 // Number of subbands at this resolution
                 int numSubbands = (r == 0) ? 1 : 3;
 
-                for (int s = 0; s < numSubbands; s++)
+                for (var s = 0; s < numSubbands; s++)
                 {
                     int subbandWidth, subbandHeight;
                     if (r == 0)
@@ -157,9 +157,9 @@ internal class TilePartDecoder
                     _zeroBitPlaneTrees[c, r, s] = [new TagTree(numCbX, numCbY)];
                     _firstInclusion[c, r, s] = new int[numCbY, numCbX];
 
-                    for (int by = 0; by < numCbY; by++)
+                    for (var by = 0; by < numCbY; by++)
                     {
-                        for (int bx = 0; bx < numCbX; bx++)
+                        for (var bx = 0; bx < numCbX; bx++)
                         {
                             int idx = by * numCbX + bx;
                             _codeBlocks[c, r, s][idx] = [];
@@ -185,7 +185,7 @@ internal class TilePartDecoder
         ParseAllPackets();
 
         // Then build output for each component
-        for (int c = 0; c < _numComponents; c++)
+        for (var c = 0; c < _numComponents; c++)
         {
             results[c] = BuildComponentOutput(c);
         }
@@ -223,11 +223,11 @@ internal class TilePartDecoder
 
     private void ParseLRCP(BitReader reader)
     {
-        for (int l = 0; l < _numLayers; l++)
+        for (var l = 0; l < _numLayers; l++)
         {
-            for (int r = 0; r < _numResolutions; r++)
+            for (var r = 0; r < _numResolutions; r++)
             {
-                for (int c = 0; c < _numComponents; c++)
+                for (var c = 0; c < _numComponents; c++)
                 {
                     // For each precinct (assuming 1 precinct per resolution for now)
                     ParsePacket(reader, c, r, l);
@@ -238,11 +238,11 @@ internal class TilePartDecoder
 
     private void ParseRLCP(BitReader reader)
     {
-        for (int r = 0; r < _numResolutions; r++)
+        for (var r = 0; r < _numResolutions; r++)
         {
-            for (int l = 0; l < _numLayers; l++)
+            for (var l = 0; l < _numLayers; l++)
             {
-                for (int c = 0; c < _numComponents; c++)
+                for (var c = 0; c < _numComponents; c++)
                 {
                     ParsePacket(reader, c, r, l);
                 }
@@ -252,12 +252,12 @@ internal class TilePartDecoder
 
     private void ParseRPCL(BitReader reader)
     {
-        for (int r = 0; r < _numResolutions; r++)
+        for (var r = 0; r < _numResolutions; r++)
         {
             // Single precinct assumed
-            for (int c = 0; c < _numComponents; c++)
+            for (var c = 0; c < _numComponents; c++)
             {
-                for (int l = 0; l < _numLayers; l++)
+                for (var l = 0; l < _numLayers; l++)
                 {
                     ParsePacket(reader, c, r, l);
                 }
@@ -268,11 +268,11 @@ internal class TilePartDecoder
     private void ParsePCRL(BitReader reader)
     {
         // Single precinct assumed
-        for (int c = 0; c < _numComponents; c++)
+        for (var c = 0; c < _numComponents; c++)
         {
-            for (int r = 0; r < _numResolutions; r++)
+            for (var r = 0; r < _numResolutions; r++)
             {
-                for (int l = 0; l < _numLayers; l++)
+                for (var l = 0; l < _numLayers; l++)
                 {
                     ParsePacket(reader, c, r, l);
                 }
@@ -282,12 +282,12 @@ internal class TilePartDecoder
 
     private void ParseCPRL(BitReader reader)
     {
-        for (int c = 0; c < _numComponents; c++)
+        for (var c = 0; c < _numComponents; c++)
         {
             // Single precinct assumed
-            for (int r = 0; r < _numResolutions; r++)
+            for (var r = 0; r < _numResolutions; r++)
             {
-                for (int l = 0; l < _numLayers; l++)
+                for (var l = 0; l < _numLayers; l++)
                 {
                     ParsePacket(reader, c, r, l);
                 }
@@ -335,22 +335,22 @@ internal class TilePartDecoder
 
         var contributions = new List<(int cbx, int cby, int subband, int passes, int length, int zeroBitPlanes)>();
 
-        for (int s = 0; s < numSubbands; s++)
+        for (var s = 0; s < numSubbands; s++)
         {
-            var blockList = _codeBlocks[component, resolution, s];
+            List<CodeBlockInfo>[]? blockList = _codeBlocks[component, resolution, s];
             if (blockList == null || blockList.Length == 0)
                 continue;
 
-            var inclusionTree = _inclusionTrees[component, resolution, s][0];
-            var zeroBpTree = _zeroBitPlaneTrees[component, resolution, s][0];
-            var firstIncl = _firstInclusion[component, resolution, s];
+            TagTree inclusionTree = _inclusionTrees[component, resolution, s][0];
+            TagTree zeroBpTree = _zeroBitPlaneTrees[component, resolution, s][0];
+            int[,] firstIncl = _firstInclusion[component, resolution, s];
 
             int numCbX = GetNumCodeBlocksX(component, resolution, s);
             int numCbY = GetNumCodeBlocksY(component, resolution, s);
 
-            for (int cby = 0; cby < numCbY; cby++)
+            for (var cby = 0; cby < numCbY; cby++)
             {
-                for (int cbx = 0; cbx < numCbX; cbx++)
+                for (var cbx = 0; cbx < numCbX; cbx++)
                 {
                     bool included;
 
@@ -407,9 +407,9 @@ internal class TilePartDecoder
         reader.AlignToByte();
 
         // Read code-block data
-        foreach (var (cbx, cby, s, passes, length, zeroBp) in contributions)
+        foreach ((int cbx, int cby, int s, int passes, int length, int zeroBp) in contributions)
         {
-            var data = reader.ReadBytes(length);
+            byte[] data = reader.ReadBytes(length);
 
             int idx = cby * GetNumCodeBlocksX(component, resolution, s) + cbx;
             _codeBlocks[component, resolution, s][idx].Add(new CodeBlockInfo
@@ -433,7 +433,7 @@ internal class TilePartDecoder
         // 1,1,11,xxxxx: +1+1+3+xxxxx (total 6+xxxxx, range 6-37)
         // 1,1,11,11111,xxxxxxx: +1+1+3+31+xxxxxxx (total 37+xxxxxxx)
 
-        int passes = 1;
+        var passes = 1;
 
         // Read first bit: if 0, done with 1 pass
         if (reader.ReadBit() == 0)
@@ -473,7 +473,7 @@ internal class TilePartDecoder
     {
         // Decode code-block data length per JPEG2000 spec
         // lblock starts at 3 and increments for each leading 1 bit
-        int lblock = 3;
+        var lblock = 3;
 
         // Count leading 1s to increase lblock
         while (reader.ReadBit() == 1)
@@ -483,7 +483,7 @@ internal class TilePartDecoder
 
         // Total bits for length = lblock + floor(log2(passes))
         // For passes=1, add 0; for passes=2, add 1; for passes=3-4, add 2; etc.
-        int passAdd = 0;
+        var passAdd = 0;
         if (passes > 1)
         {
             passAdd = (int)Math.Floor(Math.Log2(passes));
@@ -501,18 +501,18 @@ internal class TilePartDecoder
 
     private int GetNumCodeBlocksX(int component, int resolution, int subband)
     {
-        var blocks = _codeBlocks[component, resolution, subband];
+        List<CodeBlockInfo>[]? blocks = _codeBlocks[component, resolution, subband];
         if (blocks == null) return 0;
 
         // Infer from first inclusion array dimensions
-        var firstIncl = _firstInclusion[component, resolution, subband];
+        int[,]? firstIncl = _firstInclusion[component, resolution, subband];
         if (firstIncl == null) return 0;
         return firstIncl.GetLength(1);
     }
 
     private int GetNumCodeBlocksY(int component, int resolution, int subband)
     {
-        var firstIncl = _firstInclusion[component, resolution, subband];
+        int[,]? firstIncl = _firstInclusion[component, resolution, subband];
         if (firstIncl == null) return 0;
         return firstIncl.GetLength(0);
     }
@@ -520,7 +520,7 @@ internal class TilePartDecoder
     private int GetStoredZeroBitPlanes(int component, int resolution, int subband, int cbx, int cby)
     {
         int idx = cby * GetNumCodeBlocksX(component, resolution, subband) + cbx;
-        var list = _codeBlocks[component, resolution, subband][idx];
+        List<CodeBlockInfo> list = _codeBlocks[component, resolution, subband][idx];
         if (list.Count > 0)
             return list[0].ZeroBitPlanes;
         return 0;
@@ -550,11 +550,11 @@ internal class TilePartDecoder
         int tileHeight = tileEndY - tileStartY;
 
         // Apply component subsampling
-        var comp = _frame.Components[component];
+        Jp2Component comp = _frame.Components[component];
         int compTileWidth = (tileWidth + comp.XSubsampling - 1) / comp.XSubsampling;
         int compTileHeight = (tileHeight + comp.YSubsampling - 1) / comp.YSubsampling;
 
-        for (int r = 0; r < _numResolutions; r++)
+        for (var r = 0; r < _numResolutions; r++)
         {
             int numSubbands = (r == 0) ? 1 : 3;
             resolutionBlocks[r] = new CodeBlockBitstream[numSubbands][];
@@ -567,9 +567,9 @@ internal class TilePartDecoder
             if (resWidth == 0) resWidth = 1;
             if (resHeight == 0) resHeight = 1;
 
-            for (int s = 0; s < numSubbands; s++)
+            for (var s = 0; s < numSubbands; s++)
             {
-                var blockList = _codeBlocks[component, r, s];
+                List<CodeBlockInfo>[]? blockList = _codeBlocks[component, r, s];
                 if (blockList == null)
                 {
                     resolutionBlocks[r][s] = [];
@@ -613,12 +613,12 @@ internal class TilePartDecoder
 
                 var subbandBlocks = new List<CodeBlockBitstream>();
 
-                for (int cby = 0; cby < numCbY; cby++)
+                for (var cby = 0; cby < numCbY; cby++)
                 {
-                    for (int cbx = 0; cbx < numCbX; cbx++)
+                    for (var cbx = 0; cbx < numCbX; cbx++)
                     {
                         int idx = cby * numCbX + cbx;
-                        var layerData = blockList[idx];
+                        List<CodeBlockInfo> layerData = blockList[idx];
 
                         // Calculate actual code-block dimensions (may be smaller at edges)
                         int startX = cbx * maxCbWidth;
@@ -628,11 +628,11 @@ internal class TilePartDecoder
                         if (actualWidth <= 0 || actualHeight <= 0) continue;
 
                         // Merge all layer contributions
-                        int totalPasses = 0;
-                        int zeroBp = 0;
+                        var totalPasses = 0;
+                        var zeroBp = 0;
                         var allData = new List<byte>();
 
-                        foreach (var info in layerData)
+                        foreach (CodeBlockInfo info in layerData)
                         {
                             totalPasses += info.CodingPasses;
                             if (info.ZeroBitPlanes > 0)

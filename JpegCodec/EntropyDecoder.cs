@@ -42,7 +42,7 @@ public class EntropyDecoder
 
     private void BuildHuffmanTables()
     {
-        for (int i = 0; i < 4; i++)
+        for (var i = 0; i < 4; i++)
         {
             if (_frame.DcHuffmanTables[i] != null)
             {
@@ -68,9 +68,9 @@ public class EntropyDecoder
         // Calculate blocks per component
         // Formula: ceil(dimension / (maxSamp * 8)) * componentSamp
         var blocksPerComponent = new (int width, int height)[_frame.ComponentCount];
-        for (int c = 0; c < _frame.ComponentCount; c++)
+        for (var c = 0; c < _frame.ComponentCount; c++)
         {
-            var comp = _frame.Components[c];
+            JpegComponent comp = _frame.Components[c];
             int hBlocks = (_frame.Width + _frame.MaxHorizontalSamplingFactor * 8 - 1)
                           / (_frame.MaxHorizontalSamplingFactor * 8) * comp.HorizontalSamplingFactor;
             int vBlocks = (_frame.Height + _frame.MaxVerticalSamplingFactor * 8 - 1)
@@ -80,12 +80,12 @@ public class EntropyDecoder
 
         // Allocate result arrays
         var result = new short[_frame.ComponentCount][][];
-        for (int c = 0; c < _frame.ComponentCount; c++)
+        for (var c = 0; c < _frame.ComponentCount; c++)
         {
-            var (w, h) = blocksPerComponent[c];
+            (int w, int h) = blocksPerComponent[c];
             int totalBlocks = w * h;
             result[c] = new short[totalBlocks][];
-            for (int b = 0; b < totalBlocks; b++)
+            for (var b = 0; b < totalBlocks; b++)
             {
                 result[c][b] = new short[64];
             }
@@ -98,9 +98,9 @@ public class EntropyDecoder
         // Reset decode position counter for sequential storage mode
         _decodePosition = 0;
 
-        for (int mcuY = 0; mcuY < mcuCountY; mcuY++)
+        for (var mcuY = 0; mcuY < mcuCountY; mcuY++)
         {
-            for (int mcuX = 0; mcuX < mcuCountX; mcuX++)
+            for (var mcuX = 0; mcuX < mcuCountX; mcuX++)
             {
                 DecodeMcu(mcuX, mcuY, result, blocksPerComponent);
             }
@@ -115,9 +115,9 @@ public class EntropyDecoder
     private void DecodeMcu(int mcuX, int mcuY, short[][][] result, (int width, int height)[] blocksPerComponent)
     {
         // Decode each component in the MCU
-        for (int c = 0; c < _frame.ComponentCount; c++)
+        for (var c = 0; c < _frame.ComponentCount; c++)
         {
-            var comp = _frame.Components[c];
+            JpegComponent comp = _frame.Components[c];
             int hSamp = comp.HorizontalSamplingFactor;
             int vSamp = comp.VerticalSamplingFactor;
 
@@ -126,9 +126,9 @@ public class EntropyDecoder
             bool useDecodeOrder = _frame.ComponentCount == 1 && (hSamp > 1 || vSamp > 1);
 
             // Decode the blocks for this component within the MCU
-            for (int blockY = 0; blockY < vSamp; blockY++)
+            for (var blockY = 0; blockY < vSamp; blockY++)
             {
-                for (int blockX = 0; blockX < hSamp; blockX++)
+                for (var blockX = 0; blockX < hSamp; blockX++)
                 {
                     int blockIndex;
                     if (useDecodeOrder)
@@ -142,7 +142,7 @@ public class EntropyDecoder
                         int globalBlockX = mcuX * hSamp + blockX;
                         int globalBlockY = mcuY * vSamp + blockY;
 
-                        var (compWidth, _) = blocksPerComponent[c];
+                        (int compWidth, _) = blocksPerComponent[c];
                         blockIndex = globalBlockY * compWidth + globalBlockX;
                     }
 
@@ -158,9 +158,9 @@ public class EntropyDecoder
     /// </summary>
     private void DecodeBlock(int componentIndex, short[] block)
     {
-        var comp = _frame.Components[componentIndex];
-        var dcTable = _dcTables[comp.DcTableId];
-        var acTable = _acTables[comp.AcTableId];
+        JpegComponent comp = _frame.Components[componentIndex];
+        HuffmanTable dcTable = _dcTables[comp.DcTableId];
+        HuffmanTable acTable = _acTables[comp.AcTableId];
 
         // Clear the block
         Array.Clear(block);
@@ -173,7 +173,7 @@ public class EntropyDecoder
         block[0] = (short)dcValue;
 
         // Decode AC coefficients
-        int k = 1;
+        var k = 1;
         while (k < 64)
         {
             byte symbol = acTable.DecodeSymbol(_bitReader);

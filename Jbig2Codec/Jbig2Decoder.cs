@@ -45,7 +45,7 @@ public sealed class Jbig2Decoder
         ProcessSegments(_data, isGlobal: false);
 
         // Return first page (page 1)
-        if (_pages.TryGetValue(1, out var page))
+        if (_pages.TryGetValue(1, out Bitmap? page))
             return page;
 
         throw new Jbig2DataException("No page found in JBIG2 data");
@@ -64,7 +64,7 @@ public sealed class Jbig2Decoder
             ProcessSegments(_data, isGlobal: false);
         }
 
-        if (_pages.TryGetValue(pageNumber, out var page))
+        if (_pages.TryGetValue(pageNumber, out Bitmap? page))
             return page;
 
         throw new Jbig2DataException($"Page {pageNumber} not found in JBIG2 data");
@@ -83,7 +83,7 @@ public sealed class Jbig2Decoder
     private void ProcessSegments(byte[] data, bool isGlobal)
     {
         // Check for file header
-        var (offset, sequential, pageCount) = SegmentHeaderParser.ParseFileHeader(data);
+        (int offset, bool sequential, uint pageCount) = SegmentHeaderParser.ParseFileHeader(data);
 
         if (pageCount > _options.MaxPages)
             throw new Jbig2ResourceException($"Page count {pageCount} exceeds limit {_options.MaxPages}");
@@ -98,7 +98,7 @@ public sealed class Jbig2Decoder
 
             try
             {
-                var header = SegmentHeaderParser.Parse(reader, _options);
+                SegmentHeader header = SegmentHeaderParser.Parse(reader, _options);
 
                 if (header.Type == SegmentType.EndOfFile)
                     break;
@@ -235,7 +235,7 @@ public sealed class Jbig2Decoder
 
         // Validate dimensions
         // Height of 0xFFFFFFFF means unknown height (streaming) - use 1 initially
-        int pageWidth = (int)width;
+        var pageWidth = (int)width;
         int pageHeight = height == 0xFFFFFFFF ? 1 : (int)height;
 
         // Validate against limits (use 1 for unknown height validation)
@@ -307,8 +307,8 @@ public sealed class Jbig2Decoder
             else
             {
                 // 1 adaptive template pixel for templates 1-3
-                sbyte atx = (sbyte)reader.ReadByte();
-                sbyte aty = (sbyte)reader.ReadByte();
+                var atx = (sbyte)reader.ReadByte();
+                var aty = (sbyte)reader.ReadByte();
                 adaptivePixels = new (int, int)[] { ((int)atx, (int)aty) };
             }
 
@@ -333,7 +333,7 @@ public sealed class Jbig2Decoder
         if (immediate)
         {
             // Composite onto page
-            if (_pages.TryGetValue(header.PageAssociation, out var pageBitmap))
+            if (_pages.TryGetValue(header.PageAssociation, out Bitmap? pageBitmap))
             {
                 // Validate blit coordinates
                 if (x > int.MaxValue || y > int.MaxValue)
@@ -423,11 +423,11 @@ public sealed class Jbig2Decoder
         var customTables = new List<HuffmanTable>();
         foreach (uint refSegNum in header.ReferredToSegments)
         {
-            if (_segments.TryGetValue(refSegNum, out var refSeg))
+            if (_segments.TryGetValue(refSegNum, out object? refSeg))
             {
                 if (refSeg is SymbolDictionary refDict)
                 {
-                    for (int i = 0; i < refDict.Count; i++)
+                    for (var i = 0; i < refDict.Count; i++)
                     {
                         inputSymbols.Add(refDict[i]);
                     }
@@ -470,7 +470,7 @@ public sealed class Jbig2Decoder
         {
             // Use Huffman decoder
             var huffmanDecoder = new HuffmanDecoder(data, dataOffset, dataLength);
-            var customTablesArray = customTables.Count > 0 ? customTables.ToArray() : null;
+            HuffmanTable[]? customTablesArray = customTables.Count > 0 ? customTables.ToArray() : null;
             var sdDecoder = new HuffmanSymbolDictionaryDecoder(huffmanDecoder, sdParams, inputSymbols, _options, customTablesArray);
             exportedSymbols = sdDecoder.Decode();
         }
@@ -558,7 +558,7 @@ public sealed class Jbig2Decoder
         var customTables = new List<HuffmanTable>();
         foreach (uint refSegNum in header.ReferredToSegments)
         {
-            if (_segments.TryGetValue(refSegNum, out var refSeg))
+            if (_segments.TryGetValue(refSegNum, out object? refSeg))
             {
                 if (refSeg is SymbolDictionary refDict)
                 {
@@ -611,7 +611,7 @@ public sealed class Jbig2Decoder
         {
             // Use Huffman decoder
             var huffDecoder = new HuffmanDecoder(data, dataOffset, dataLength);
-            var customTablesArray = customTables.Count > 0 ? customTables.ToArray() : null;
+            HuffmanTable[]? customTablesArray = customTables.Count > 0 ? customTables.ToArray() : null;
             var textDecoder = new HuffmanTextRegionDecoder(huffDecoder, textParams, symbolDicts.ToArray(), _options, customTablesArray);
             regionBitmap = textDecoder.Decode((int)width, (int)height);
         }
@@ -626,7 +626,7 @@ public sealed class Jbig2Decoder
         if (immediate)
         {
             // Composite onto page
-            if (_pages.TryGetValue(header.PageAssociation, out var pageBitmap))
+            if (_pages.TryGetValue(header.PageAssociation, out Bitmap? pageBitmap))
             {
                 if (x > int.MaxValue || y > int.MaxValue)
                     throw new Jbig2DataException($"Region position overflow: ({x}, {y})");
@@ -647,7 +647,7 @@ public sealed class Jbig2Decoder
         if (data.Length < 1)
             throw new Jbig2DataException("Tables segment too short");
 
-        var table = CustomHuffmanTableDecoder.Decode(data);
+        HuffmanTable table = CustomHuffmanTableDecoder.Decode(data);
 
         // Store the table for later reference by symbol dictionaries and text regions
         _segments[header.SegmentNumber] = table;
@@ -716,7 +716,7 @@ public sealed class Jbig2Decoder
             throw new Jbig2DataException("No data in pattern dictionary segment");
 
         var pdDecoder = new PatternDictionaryDecoder(data, dataOffset, dataLength, pdParams, _options);
-        var patternDict = pdDecoder.Decode();
+        PatternDictionary patternDict = pdDecoder.Decode();
 
         // Store the pattern dictionary
         _segments[header.SegmentNumber] = patternDict;
@@ -785,7 +785,7 @@ public sealed class Jbig2Decoder
         PatternDictionary? patternDict = null;
         foreach (uint refSegNum in header.ReferredToSegments)
         {
-            if (_segments.TryGetValue(refSegNum, out var refSeg) && refSeg is PatternDictionary pd)
+            if (_segments.TryGetValue(refSegNum, out object? refSeg) && refSeg is PatternDictionary pd)
             {
                 patternDict = pd;
                 break;
@@ -820,12 +820,12 @@ public sealed class Jbig2Decoder
             throw new Jbig2DataException("No data in halftone region segment");
 
         var htDecoder = new HalftoneRegionDecoder(data, dataOffset, dataLength, htParams, patternDict, _options);
-        var regionBitmap = htDecoder.Decode((int)width, (int)height);
+        Bitmap regionBitmap = htDecoder.Decode((int)width, (int)height);
 
         if (immediate)
         {
             // Composite onto page
-            if (_pages.TryGetValue(header.PageAssociation, out var pageBitmap))
+            if (_pages.TryGetValue(header.PageAssociation, out Bitmap? pageBitmap))
             {
                 if (x > int.MaxValue || y > int.MaxValue)
                     throw new Jbig2DataException($"Region position overflow: ({x}, {y})");
@@ -881,7 +881,7 @@ public sealed class Jbig2Decoder
         Bitmap? reference = null;
         foreach (uint refSegNum in header.ReferredToSegments)
         {
-            if (_segments.TryGetValue(refSegNum, out var refSeg) && refSeg is Bitmap refBitmap)
+            if (_segments.TryGetValue(refSegNum, out object? refSeg) && refSeg is Bitmap refBitmap)
             {
                 reference = refBitmap;
                 break;
@@ -923,12 +923,12 @@ public sealed class Jbig2Decoder
             adaptivePixels,
             _options);
 
-        var regionBitmap = refinementDecoder.Decode((int)width, (int)height);
+        Bitmap regionBitmap = refinementDecoder.Decode((int)width, (int)height);
 
         if (immediate)
         {
             // Composite onto page
-            if (_pages.TryGetValue(header.PageAssociation, out var pageBitmap))
+            if (_pages.TryGetValue(header.PageAssociation, out Bitmap? pageBitmap))
             {
                 if (x > int.MaxValue || y > int.MaxValue)
                     throw new Jbig2DataException($"Region position overflow: ({x}, {y})");

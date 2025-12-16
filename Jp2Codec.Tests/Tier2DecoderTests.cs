@@ -1,4 +1,5 @@
 using Jp2Codec;
+using Jp2Codec.Pipeline;
 using Jp2Codec.Tier2;
 using Xunit;
 using Xunit.Abstractions;
@@ -101,17 +102,17 @@ public class Tier2DecoderTests
     [Fact]
     public void Tier2Decoder_ParsesSimpleCodestream_8x8()
     {
-        var path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         // Parse codestream
         var fileReader = new Jp2FileReader(data);
-        var fileInfo = fileReader.Read();
+        Jp2FileInfo fileInfo = fileReader.Read();
         var codestreamReader = new CodestreamReader(fileInfo.CodestreamData!);
-        var codestream = codestreamReader.ReadMainHeader();
+        Jp2Codestream codestream = codestreamReader.ReadMainHeader();
 
         // Read tile-part
-        var tilePart = codestreamReader.ReadTilePart();
+        Jp2TilePart? tilePart = codestreamReader.ReadTilePart();
         Assert.NotNull(tilePart);
 
         _output.WriteLine($"Tile-part bitstream: {tilePart.BitstreamData.Length} bytes");
@@ -122,25 +123,25 @@ public class Tier2DecoderTests
 
         // Try to decode
         var decoder = new Tier2Decoder(codestream);
-        var output = decoder.Process(tilePart);
+        Tier2Output output = decoder.Process(tilePart);
 
         _output.WriteLine($"\nTier-2 output:");
         _output.WriteLine($"  Tile index: {output.TileIndex}");
         _output.WriteLine($"  Component: {output.ComponentIndex}");
         _output.WriteLine($"  Resolution levels: {output.ResolutionLevels}");
 
-        for (int r = 0; r < output.ResolutionLevels; r++)
+        for (var r = 0; r < output.ResolutionLevels; r++)
         {
-            var resBlocks = output.CodeBlocks[r];
+            CodeBlockBitstream[][] resBlocks = output.CodeBlocks[r];
             int numSubbands = resBlocks.Length;
             _output.WriteLine($"  Resolution {r}: {numSubbands} subbands");
 
-            for (int s = 0; s < numSubbands; s++)
+            for (var s = 0; s < numSubbands; s++)
             {
-                var subbandBlocks = resBlocks[s];
+                CodeBlockBitstream[] subbandBlocks = resBlocks[s];
                 _output.WriteLine($"    Subband {s}: {subbandBlocks.Length} code-blocks");
 
-                foreach (var block in subbandBlocks)
+                foreach (CodeBlockBitstream block in subbandBlocks)
                 {
                     _output.WriteLine($"      Block ({block.BlockX},{block.BlockY}): {block.Data.Length} bytes, {block.CodingPasses} passes, {block.ZeroBitPlanes} zero bp");
                 }
@@ -157,15 +158,15 @@ public class Tier2DecoderTests
     [Fact]
     public void Tier2Decoder_ParsesSimpleCodestream_16x16()
     {
-        var path = Path.Combine(GetTestImagesPath(), "test_16x16.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_16x16.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         var fileReader = new Jp2FileReader(data);
-        var fileInfo = fileReader.Read();
+        Jp2FileInfo fileInfo = fileReader.Read();
         var codestreamReader = new CodestreamReader(fileInfo.CodestreamData!);
-        var codestream = codestreamReader.ReadMainHeader();
+        Jp2Codestream codestream = codestreamReader.ReadMainHeader();
 
-        var tilePart = codestreamReader.ReadTilePart();
+        Jp2TilePart? tilePart = codestreamReader.ReadTilePart();
         Assert.NotNull(tilePart);
 
         _output.WriteLine($"16x16 image:");
@@ -173,10 +174,10 @@ public class Tier2DecoderTests
         _output.WriteLine($"  Decomposition: {codestream.CodingParameters.DecompositionLevels} levels");
 
         var decoder = new Tier2Decoder(codestream);
-        var output = decoder.Process(tilePart);
+        Tier2Output output = decoder.Process(tilePart);
 
         _output.WriteLine($"\nTier-2 output:");
-        for (int r = 0; r < output.ResolutionLevels; r++)
+        for (var r = 0; r < output.ResolutionLevels; r++)
         {
             int numBlocks = output.CodeBlocks[r].Sum(s => s.Length);
             _output.WriteLine($"  Resolution {r}: {numBlocks} total code-blocks");
@@ -191,35 +192,35 @@ public class Tier2DecoderTests
     [Fact]
     public void Tier2Decoder_AllComponents()
     {
-        var path = Path.Combine(GetTestImagesPath(), "conformance_test.jp2");
+        string path = Path.Combine(GetTestImagesPath(), "conformance_test.jp2");
         if (!File.Exists(path))
         {
             _output.WriteLine("Conformance test file not found, skipping");
             return;
         }
 
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
         var fileReader = new Jp2FileReader(data);
-        var fileInfo = fileReader.Read();
+        Jp2FileInfo fileInfo = fileReader.Read();
         var codestreamReader = new CodestreamReader(fileInfo.CodestreamData!);
-        var codestream = codestreamReader.ReadMainHeader();
+        Jp2Codestream codestream = codestreamReader.ReadMainHeader();
 
         _output.WriteLine($"Conformance image: {codestream.Frame.Width}x{codestream.Frame.Height}");
         _output.WriteLine($"Components: {codestream.Frame.ComponentCount}");
         _output.WriteLine($"Decomposition: {codestream.CodingParameters.DecompositionLevels} levels");
 
-        var tilePart = codestreamReader.ReadTilePart();
+        Jp2TilePart? tilePart = codestreamReader.ReadTilePart();
         Assert.NotNull(tilePart);
 
         _output.WriteLine($"Bitstream: {tilePart.BitstreamData.Length} bytes");
 
         var decoder = new Tier2Decoder(codestream);
-        var outputs = decoder.DecodeAllComponents(tilePart);
+        Tier2Output[] outputs = decoder.DecodeAllComponents(tilePart);
 
         _output.WriteLine($"\nDecoded {outputs.Length} components:");
-        for (int c = 0; c < outputs.Length; c++)
+        for (var c = 0; c < outputs.Length; c++)
         {
-            var output = outputs[c];
+            Tier2Output output = outputs[c];
             int totalBlocks = output.CodeBlocks.Sum(r => r.Sum(s => s.Length));
             int totalBytes = output.CodeBlocks.Sum(r => r.Sum(s => s.Sum(b => b.Data.Length)));
             _output.WriteLine($"  Component {c}: {totalBlocks} blocks, {totalBytes} bytes data");

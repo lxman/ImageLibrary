@@ -125,15 +125,15 @@ public sealed class HuffmanTable
     /// </summary>
     public static HuffmanTable Build(HuffmanParams parameters)
     {
-        var lines = parameters.Lines;
+        HuffmanLine[] lines = parameters.Lines;
         int nLines = lines.Length;
 
         // B.3 step 1: Find LENMAX and count codes per length
-        int lenMax = 0;
+        var lenMax = 0;
         var lenCount = new int[257]; // Index 0-256
-        int logTableSize = 0;
+        var logTableSize = 0;
 
-        for (int i = 0; i < nLines; i++)
+        for (var i = 0; i < nLines; i++)
         {
             int prefLen = lines[i].PrefixLength;
             if (prefLen > lenMax)
@@ -153,7 +153,7 @@ public sealed class HuffmanTable
         var entries = new HuffmanEntry[tableSize];
 
         // Initialize entries with invalid marker
-        for (int i = 0; i < tableSize; i++)
+        for (var i = 0; i < tableSize; i++)
         {
             entries[i].PrefixLength = 0xFF;
             entries[i].RangeLength = 0xFF;
@@ -163,8 +163,8 @@ public sealed class HuffmanTable
         lenCount[0] = 0;
 
         // B.3 step 3: Assign codes
-        int firstCode = 0;
-        for (int curLen = 1; curLen <= lenMax; curLen++)
+        var firstCode = 0;
+        for (var curLen = 1; curLen <= lenMax; curLen++)
         {
             int shift = logTableSize - curLen;
 
@@ -173,7 +173,7 @@ public sealed class HuffmanTable
             int curCode = firstCode;
 
             // B.3 3.(b)
-            for (int curTemp = 0; curTemp < nLines; curTemp++)
+            for (var curTemp = 0; curTemp < nLines; curTemp++)
             {
                 int prefLen = lines[curTemp].PrefixLength;
                 if (prefLen == curLen)
@@ -186,7 +186,7 @@ public sealed class HuffmanTable
                         throw new Jbig2DataException($"Huffman table overflow: {endJ} > {tableSize}");
 
                     // Determine flags
-                    HuffmanFlags eflags = HuffmanFlags.None;
+                    var eflags = HuffmanFlags.None;
                     if (parameters.HasOOB && curTemp == nLines - 1)
                         eflags |= HuffmanFlags.IsOOB;
                     if (curTemp == nLines - (parameters.HasOOB ? 3 : 2))

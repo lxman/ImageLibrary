@@ -40,7 +40,7 @@ public class ColorConverter
         int height = _frame.Height;
         var result = new byte[width * height * 3];
 
-        var yComp = _frame.Components[0];
+        JpegComponent yComp = _frame.Components[0];
         int hSamp = yComp.HorizontalSamplingFactor;
         int vSamp = yComp.VerticalSamplingFactor;
 
@@ -52,9 +52,9 @@ public class ColorConverter
         // where each block covers 8x8 pixels regardless of MCU structure
         int blocksPerRow = (width + 7) / 8;
 
-        for (int imgY = 0; imgY < height; imgY++)
+        for (var imgY = 0; imgY < height; imgY++)
         {
-            for (int imgX = 0; imgX < width; imgX++)
+            for (var imgX = 0; imgX < width; imgX++)
             {
                 // Calculate which block this pixel belongs to
                 int blockX = imgX / 8;
@@ -92,9 +92,9 @@ public class ColorConverter
         var result = new byte[width * height * 3];
 
         // Get sampling factors
-        var yComp = _frame.Components[0];
-        var cbComp = _frame.Components[1];
-        var crComp = _frame.Components[2];
+        JpegComponent yComp = _frame.Components[0];
+        JpegComponent cbComp = _frame.Components[1];
+        JpegComponent crComp = _frame.Components[2];
 
         int yBlocksPerRow = (_frame.Width + _frame.MaxHorizontalSamplingFactor * 8 - 1)
                            / (_frame.MaxHorizontalSamplingFactor * 8) * yComp.HorizontalSamplingFactor;
@@ -106,9 +106,9 @@ public class ColorConverter
         int chromaHRatio = yComp.HorizontalSamplingFactor / cbComp.HorizontalSamplingFactor;
         int chromaVRatio = yComp.VerticalSamplingFactor / cbComp.VerticalSamplingFactor;
 
-        for (int imgY = 0; imgY < height; imgY++)
+        for (var imgY = 0; imgY < height; imgY++)
         {
-            for (int imgX = 0; imgX < width; imgX++)
+            for (var imgX = 0; imgX < width; imgX++)
             {
                 // Find Y value
                 int yBlockX = imgX / 8;
@@ -139,7 +139,7 @@ public class ColorConverter
                     : (byte)128;
 
                 // Convert YCbCr to RGB
-                var (r, g, b) = YCbCrToRgb(y, cb, cr);
+                (byte r, byte g, byte b) = YCbCrToRgb(y, cb, cr);
 
                 int pixelOffset = (imgY * width + imgX) * 3;
                 result[pixelOffset] = r;

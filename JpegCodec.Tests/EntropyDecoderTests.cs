@@ -26,14 +26,14 @@ public class EntropyDecoderTests
     [Fact]
     public void DecodeSimpleGrayscale_NoException()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         Assert.NotNull(blocks);
         Assert.True(blocks.Length > 0, "Should have at least one component");
@@ -44,19 +44,19 @@ public class EntropyDecoderTests
     [Fact]
     public void DecodeGradient_HasNonZeroAC()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level2_ac_coefficients/gray_gradient_diag.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level2_ac_coefficients/gray_gradient_diag.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         // Gradient should have non-zero AC coefficients
-        var firstBlock = blocks[0][0];
-        bool hasNonZeroAC = false;
-        for (int i = 1; i < 64; i++)
+        short[] firstBlock = blocks[0][0];
+        var hasNonZeroAC = false;
+        for (var i = 1; i < 64; i++)
         {
             if (firstBlock[i] != 0)
             {
@@ -71,19 +71,19 @@ public class EntropyDecoderTests
     [Fact]
     public void DecodeSolidColor_ACCoefficientsNearZero()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level1_simple/gray_solid_128.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         // Solid color should have minimal AC coefficients (mostly zero)
-        var firstBlock = blocks[0][0];
-        int nonZeroAC = 0;
-        for (int i = 1; i < 64; i++)
+        short[] firstBlock = blocks[0][0];
+        var nonZeroAC = 0;
+        for (var i = 1; i < 64; i++)
         {
             if (firstBlock[i] != 0)
             {
@@ -103,14 +103,14 @@ public class EntropyDecoderTests
     public void DecodeGradient_DCValueMatchesReference()
     {
         // From ImageSharp instrumentation, the diagonal gradient's first block has DC = -8
-        var path = Path.Combine(GetTestImagesPath(), "level2_ac_coefficients/gray_gradient_diag.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level2_ac_coefficients/gray_gradient_diag.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         // The first Y component block DC value
         short dcValue = blocks[0][0][0];
@@ -126,16 +126,16 @@ public class EntropyDecoderTests
     public void DecodeGradient_ACPatternCorrect()
     {
         // From ImageSharp instrumentation, diagonal gradient has significant AC at (0,1) and (1,0)
-        var path = Path.Combine(GetTestImagesPath(), "level2_ac_coefficients/gray_gradient_diag.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level2_ac_coefficients/gray_gradient_diag.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
-        var firstBlock = blocks[0][0];
+        short[] firstBlock = blocks[0][0];
 
         // Position [1] in zig-zag order is (0,1), position [8] is (1,0)
         // For diagonal gradient, both should be significant
@@ -154,14 +154,14 @@ public class EntropyDecoderTests
     [Fact]
     public void Decode16x16_FourBlocks()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level3_multiple_blocks/gray_16x16_solid.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level3_multiple_blocks/gray_16x16_solid.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         // 16x16 grayscale should have 4 blocks (2x2)
         // But with subsampling it might be different
@@ -171,14 +171,14 @@ public class EntropyDecoderTests
     [Fact]
     public void Decode64x64_ManyBlocks()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level3_multiple_blocks/gray_64x64_gradient.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level3_multiple_blocks/gray_64x64_gradient.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         // 64x64 should have 64 blocks (8x8) for Y component
         Assert.True(blocks[0].Length >= 64, $"Expected at least 64 blocks, got {blocks[0].Length}");
@@ -191,14 +191,14 @@ public class EntropyDecoderTests
     [Fact]
     public void DecodeColor444_ThreeComponents()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level4_color_444/color_solid_red.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level4_color_444/color_solid_red.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         Assert.Equal(3, blocks.Length); // Y, Cb, Cr
     }
@@ -206,14 +206,14 @@ public class EntropyDecoderTests
     [Fact]
     public void DecodeColor420_SubsampledChroma()
     {
-        var path = Path.Combine(GetTestImagesPath(), "level5_color_420/color420_solid_red.jpg");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "level5_color_420/color420_solid_red.jpg");
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         Assert.Equal(3, blocks.Length);
 
@@ -233,21 +233,21 @@ public class EntropyDecoderTests
     [Fact]
     public void DecodeAllTestImages_NoExceptions()
     {
-        var basePath = GetTestImagesPath();
-        var jpegFiles = Directory.GetFiles(basePath, "*.jpg", SearchOption.AllDirectories);
+        string basePath = GetTestImagesPath();
+        string[] jpegFiles = Directory.GetFiles(basePath, "*.jpg", SearchOption.AllDirectories);
 
         var failures = new List<string>();
 
-        foreach (var file in jpegFiles)
+        foreach (string file in jpegFiles)
         {
             try
             {
-                var data = File.ReadAllBytes(file);
+                byte[] data = File.ReadAllBytes(file);
                 var reader = new JpegReader(data);
-                var frame = reader.ReadFrame();
+                JpegFrame frame = reader.ReadFrame();
 
                 var decoder = new EntropyDecoder(frame, data);
-                var blocks = decoder.DecodeAllBlocks();
+                short[][][] blocks = decoder.DecodeAllBlocks();
 
                 // Basic sanity checks
                 if (blocks.Length != frame.ComponentCount)
@@ -256,9 +256,9 @@ public class EntropyDecoderTests
                     continue;
                 }
 
-                foreach (var compBlocks in blocks)
+                foreach (short[][] compBlocks in blocks)
                 {
-                    foreach (var block in compBlocks)
+                    foreach (short[] block in compBlocks)
                     {
                         if (block.Length != 64)
                         {
@@ -293,7 +293,7 @@ public class EntropyDecoderTests
     [Fact]
     public void ZigZagOrder_AllIndicesPresent()
     {
-        var indices = EntropyDecoder.ZigZagOrder.ToHashSet();
+        HashSet<byte> indices = EntropyDecoder.ZigZagOrder.ToHashSet();
         Assert.Equal(64, indices.Count);
 
         for (byte i = 0; i < 64; i++)

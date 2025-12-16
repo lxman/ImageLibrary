@@ -43,9 +43,9 @@ public class BitmapTests
     {
         var bitmap = new Bitmap(16, 16);
 
-        for (int y = 0; y < 16; y++)
+        for (var y = 0; y < 16; y++)
         {
-            for (int x = 0; x < 16; x++)
+            for (var x = 0; x < 16; x++)
             {
                 Assert.Equal(0, bitmap.GetPixel(x, y));
             }
@@ -106,9 +106,9 @@ public class BitmapTests
         bitmap.SetPixel(0, 10, 1);
 
         // All pixels should still be 0
-        for (int y = 0; y < 10; y++)
+        for (var y = 0; y < 10; y++)
         {
-            for (int x = 0; x < 10; x++)
+            for (var x = 0; x < 10; x++)
             {
                 Assert.Equal(0, bitmap.GetPixel(x, y));
             }
@@ -121,18 +121,18 @@ public class BitmapTests
         var bitmap = new Bitmap(16, 16);
 
         bitmap.Fill(1);
-        for (int y = 0; y < 16; y++)
+        for (var y = 0; y < 16; y++)
         {
-            for (int x = 0; x < 16; x++)
+            for (var x = 0; x < 16; x++)
             {
                 Assert.Equal(1, bitmap.GetPixel(x, y));
             }
         }
 
         bitmap.Fill(0);
-        for (int y = 0; y < 16; y++)
+        for (var y = 0; y < 16; y++)
         {
-            for (int x = 0; x < 16; x++)
+            for (var x = 0; x < 16; x++)
             {
                 Assert.Equal(0, bitmap.GetPixel(x, y));
             }
@@ -146,7 +146,7 @@ public class BitmapTests
         original.SetPixel(5, 5, 1);
         original.SetPixel(10, 10, 1);
 
-        var clone = original.Clone();
+        Bitmap clone = original.Clone();
 
         Assert.Equal(original.Width, clone.Width);
         Assert.Equal(original.Height, clone.Height);
@@ -160,7 +160,7 @@ public class BitmapTests
         var original = new Bitmap(16, 16);
         original.SetPixel(5, 5, 1);
 
-        var clone = original.Clone();
+        Bitmap clone = original.Clone();
         clone.SetPixel(5, 5, 0);
         clone.SetPixel(7, 7, 1);
 
@@ -179,9 +179,9 @@ public class BitmapTests
         dest.Blit(src, 2, 2, CombinationOperator.Or);
 
         // Check the 4x4 region at (2,2) is set
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
                 int expected = (x >= 2 && x < 6 && y >= 2 && y < 6) ? 1 : 0;
                 Assert.Equal(expected, dest.GetPixel(x, y));
@@ -201,9 +201,9 @@ public class BitmapTests
         dest.Blit(src, 2, 2, CombinationOperator.And);
 
         // Check the 4x4 region at (2,2) is cleared, rest is still 1
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
                 int expected = (x >= 2 && x < 6 && y >= 2 && y < 6) ? 0 : 1;
                 Assert.Equal(expected, dest.GetPixel(x, y));
@@ -246,9 +246,9 @@ public class BitmapTests
         dest.Blit(src, 2, 2, CombinationOperator.Replace);
 
         // The 4x4 region at (2,2) should be 0, rest should be 1
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
                 int expected = (x >= 2 && x < 6 && y >= 2 && y < 6) ? 0 : 1;
                 Assert.Equal(expected, dest.GetPixel(x, y));
@@ -266,9 +266,9 @@ public class BitmapTests
         dest.Blit(src, -2, -2, CombinationOperator.Or);
 
         // Only 2x2 region at (0,0) should be set
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
                 int expected = (x < 2 && y < 2) ? 1 : 0;
                 Assert.Equal(expected, dest.GetPixel(x, y));
@@ -286,9 +286,9 @@ public class BitmapTests
         dest.Blit(src, 6, 6, CombinationOperator.Or);
 
         // Only 2x2 region at (6,6) should be set
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
                 int expected = (x >= 6 && y >= 6) ? 1 : 0;
                 Assert.Equal(expected, dest.GetPixel(x, y));

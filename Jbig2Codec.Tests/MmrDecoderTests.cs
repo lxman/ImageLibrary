@@ -34,7 +34,7 @@ public class MmrDecoderTests
         var decoder = new MmrDecoder(data, 0, data.Length, 8, 1);
         decoder.CheckForEofb = false;
 
-        var bitmap = decoder.Decode();
+        Bitmap bitmap = decoder.Decode();
 
         Assert.NotNull(bitmap);
         Assert.Equal(8, bitmap.Width);
@@ -49,7 +49,7 @@ public class MmrDecoderTests
         var decoder = new MmrDecoder(data, 0, data.Length, 16, 2);
         decoder.CheckForEofb = false;
 
-        var bitmap = decoder.Decode();
+        Bitmap bitmap = decoder.Decode();
 
         Assert.Equal(16, bitmap.Width);
         Assert.Equal(2, bitmap.Height);
@@ -62,7 +62,7 @@ public class MmrDecoderTests
         var decoder = new MmrDecoder(data, 0, data.Length, 8, 1);
         decoder.CheckForEofb = false;
 
-        var bitmap = decoder.Decode();
+        Bitmap bitmap = decoder.Decode();
 
         Assert.True(decoder.BytesConsumed >= 0);
     }
@@ -96,10 +96,10 @@ public class MmrDecoderTests
         var decoder = new MmrDecoder(data, 0, data.Length, 8, 1);
         decoder.CheckForEofb = false;
 
-        var bitmap = decoder.Decode();
+        Bitmap bitmap = decoder.Decode();
 
         // Check all pixels are white (0)
-        for (int x = 0; x < 8; x++)
+        for (var x = 0; x < 8; x++)
         {
             Assert.Equal(0, bitmap.GetPixel(x, 0));
         }
@@ -116,7 +116,7 @@ public class MmrDecoderTests
         var decoder = new MmrDecoder(data, 0, data.Length, 8, 3);
         decoder.CheckForEofb = false;
 
-        var bitmap = decoder.Decode();
+        Bitmap bitmap = decoder.Decode();
 
         Assert.Equal(8, bitmap.Width);
         Assert.Equal(3, bitmap.Height);
@@ -132,7 +132,7 @@ public class MmrDecoderTests
         var decoder = new MmrDecoder(data, 0, data.Length, 64, 1);
         decoder.CheckForEofb = false;
 
-        var bitmap = decoder.Decode();
+        Bitmap bitmap = decoder.Decode();
 
         Assert.Equal(64, bitmap.Width);
         Assert.Equal(1, bitmap.Height);
@@ -145,16 +145,16 @@ public class MmrDecoderTests
 
         var decoder1 = new MmrDecoder(data, 0, data.Length, 8, 1);
         decoder1.CheckForEofb = false;
-        var bitmap1 = decoder1.Decode();
+        Bitmap bitmap1 = decoder1.Decode();
 
         var decoder2 = new MmrDecoder(data, 0, data.Length, 8, 1);
         decoder2.CheckForEofb = false;
-        var bitmap2 = decoder2.Decode();
+        Bitmap bitmap2 = decoder2.Decode();
 
         // Compare pixel by pixel
-        for (int y = 0; y < 1; y++)
+        for (var y = 0; y < 1; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
                 Assert.Equal(bitmap1.GetPixel(x, y), bitmap2.GetPixel(x, y));
             }
@@ -176,7 +176,7 @@ public class MmrDecoderTests
         decoder.CheckForEofb = true;
 
         // Should not throw
-        var bitmap = decoder.Decode();
+        Bitmap bitmap = decoder.Decode();
         Assert.NotNull(bitmap);
     }
 
@@ -220,7 +220,7 @@ public class MmrDecoderTests
         decoder.CheckForEofb = false;
 
         int beforeDecode = decoder.BytesConsumed;
-        var bitmap = decoder.Decode();
+        Bitmap bitmap = decoder.Decode();
         int afterDecode = decoder.BytesConsumed;
 
         // After decoding, some bytes should be consumed

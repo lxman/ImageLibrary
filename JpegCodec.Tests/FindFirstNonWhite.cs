@@ -18,17 +18,17 @@ public class FindFirstNonWhite
     public void FindFirstNonWhiteDC()
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         _output.WriteLine("Looking for first block with DC != 73...");
 
-        for (int i = 0; i < blocks[0].Length; i++)
+        for (var i = 0; i < blocks[0].Length; i++)
         {
             short dc = blocks[0][i][0];
             if (dc != 73)
@@ -58,16 +58,16 @@ public class FindFirstNonWhite
     public void CheckImageSharpTopRegion()
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        using var isImage = Image.Load<L8>(path);
+        using Image<L8> isImage = Image.Load<L8>(path);
 
         _output.WriteLine("ImageSharp pixel values at specific locations:");
 
         // Check top-left corner
         _output.WriteLine("\nTop-left 16x16 (MCU 0,0):");
-        for (int y = 0; y < 16; y += 4)
+        for (var y = 0; y < 16; y += 4)
         {
-            string row = $"y={y,2}: ";
-            for (int x = 0; x < 16; x += 4)
+            var row = $"y={y,2}: ";
+            for (var x = 0; x < 16; x += 4)
             {
                 row += $"{isImage[x, y].PackedValue,4}";
             }
@@ -76,10 +76,10 @@ public class FindFirstNonWhite
 
         // Check region around (16,8) - where first mismatch was
         _output.WriteLine("\n(16,8) region (MCU 1,0):");
-        for (int y = 8; y < 16; y++)
+        for (var y = 8; y < 16; y++)
         {
-            string row = $"y={y,2}: ";
-            for (int x = 16; x < 24; x++)
+            var row = $"y={y,2}: ";
+            for (var x = 16; x < 24; x++)
             {
                 row += $"{isImage[x, y].PackedValue,4}";
             }
@@ -88,9 +88,9 @@ public class FindFirstNonWhite
 
         // Find first ImageSharp pixel that's not 255
         _output.WriteLine("\nFirst non-255 ImageSharp pixel:");
-        for (int y = 0; y < isImage.Height; y++)
+        for (var y = 0; y < isImage.Height; y++)
         {
-            for (int x = 0; x < isImage.Width; x++)
+            for (var x = 0; x < isImage.Width; x++)
             {
                 byte val = isImage[x, y].PackedValue;
                 if (val < 250)
@@ -112,16 +112,16 @@ public class FindFirstNonWhite
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
 
-        var ourImage = JpegDecoder.DecodeFile(path);
-        using var isImage = Image.Load<L8>(path);
+        DecodedImage ourImage = JpegDecoder.DecodeFile(path);
+        using Image<L8> isImage = Image.Load<L8>(path);
 
         // Let's check where OUR image first has non-white
         _output.WriteLine("Finding first non-white pixel in OUR image:");
-        for (int y = 0; y < ourImage.Height; y++)
+        for (var y = 0; y < ourImage.Height; y++)
         {
-            for (int x = 0; x < ourImage.Width; x++)
+            for (var x = 0; x < ourImage.Width; x++)
             {
-                var (v, _, _) = ourImage.GetPixel(x, y);
+                (byte v, _, _) = ourImage.GetPixel(x, y);
                 if (v < 250)
                 {
                     _output.WriteLine($"Our first non-white: ({x}, {y}) = {v}");
@@ -131,14 +131,14 @@ public class FindFirstNonWhite
                     break;
                 }
             }
-            var (v2, _, _) = ourImage.GetPixel(0, y);
+            (byte v2, _, _) = ourImage.GetPixel(0, y);
             if (v2 < 250) break;
         }
 
         _output.WriteLine("\nFinding first non-white pixel in ImageSharp:");
-        for (int y = 0; y < isImage.Height; y++)
+        for (var y = 0; y < isImage.Height; y++)
         {
-            for (int x = 0; x < isImage.Width; x++)
+            for (var x = 0; x < isImage.Width; x++)
             {
                 byte val = isImage[x, y].PackedValue;
                 if (val < 250)

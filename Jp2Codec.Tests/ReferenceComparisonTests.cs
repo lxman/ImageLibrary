@@ -42,8 +42,8 @@ public class ReferenceComparisonTests
     [Fact]
     public void DecodeWithReference_8x8()
     {
-        var path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         // Decode with CoreJ2K
         var refImage = J2kImage.FromBytes(data);
@@ -53,14 +53,14 @@ public class ReferenceComparisonTests
         // Show some pixel values
         var comp0 = refImage.GetComponent(0);
         _output.WriteLine("Reference pixel values (first row):");
-        var row = string.Join(" ", Enumerable.Range(0, Math.Min(8, refImage.Width)).Select(x => comp0[x].ToString()));
+        string row = string.Join(" ", Enumerable.Range(0, Math.Min(8, refImage.Width)).Select(x => comp0[x].ToString()));
         _output.WriteLine(row);
 
         // Compare with our parsed header info
         var fileReader = new Jp2FileReader(data);
-        var fileInfo = fileReader.Read();
+        Jp2FileInfo fileInfo = fileReader.Read();
         var codestreamReader = new CodestreamReader(fileInfo.CodestreamData!);
-        var codestream = codestreamReader.ReadMainHeader();
+        Jp2Codestream codestream = codestreamReader.ReadMainHeader();
 
         _output.WriteLine($"\nOur parser: {codestream.Frame.Width}x{codestream.Frame.Height}, {codestream.Frame.ComponentCount} components");
 
@@ -72,8 +72,8 @@ public class ReferenceComparisonTests
     [Fact]
     public void DecodeWithReference_16x16()
     {
-        var path = Path.Combine(GetTestImagesPath(), "test_16x16.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_16x16.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         // Decode with CoreJ2K
         var refImage = J2kImage.FromBytes(data);
@@ -83,9 +83,9 @@ public class ReferenceComparisonTests
 
         // Show decomposition info from our parser
         var fileReader = new Jp2FileReader(data);
-        var fileInfo = fileReader.Read();
+        Jp2FileInfo fileInfo = fileReader.Read();
         var codestreamReader = new CodestreamReader(fileInfo.CodestreamData!);
-        var codestream = codestreamReader.ReadMainHeader();
+        Jp2Codestream codestream = codestreamReader.ReadMainHeader();
 
         _output.WriteLine($"Decomposition levels: {codestream.CodingParameters.DecompositionLevels}");
         _output.WriteLine($"Wavelet: {codestream.CodingParameters.WaveletType}");
@@ -97,14 +97,14 @@ public class ReferenceComparisonTests
     [Fact]
     public void DecodeWithReference_Conformance()
     {
-        var path = Path.Combine(GetTestImagesPath(), "conformance_test.jp2");
+        string path = Path.Combine(GetTestImagesPath(), "conformance_test.jp2");
         if (!File.Exists(path))
         {
             _output.WriteLine("Conformance test file not found, skipping");
             return;
         }
 
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         // Decode with CoreJ2K
         var refImage = J2kImage.FromBytes(data);
@@ -113,16 +113,16 @@ public class ReferenceComparisonTests
 
         // Sample some pixels
         _output.WriteLine("\nSample pixels at (0,0), (100,100), (200,200):");
-        for (int c = 0; c < refImage.NumberOfComponents; c++)
+        for (var c = 0; c < refImage.NumberOfComponents; c++)
         {
             _output.WriteLine($"  Component {c}: ({GetPixel(refImage, c, 0, 0)}, {GetPixel(refImage, c, 100, 100)}, {GetPixel(refImage, c, 200, 200)})");
         }
 
         // Compare with our parsed header info
         var fileReader = new Jp2FileReader(data);
-        var fileInfo = fileReader.Read();
+        Jp2FileInfo fileInfo = fileReader.Read();
         var codestreamReader = new CodestreamReader(fileInfo.CodestreamData!);
-        var codestream = codestreamReader.ReadMainHeader();
+        Jp2Codestream codestream = codestreamReader.ReadMainHeader();
 
         _output.WriteLine($"\nOur parser:");
         _output.WriteLine($"  Size: {codestream.Frame.Width}x{codestream.Frame.Height}");
@@ -138,15 +138,15 @@ public class ReferenceComparisonTests
     [Fact]
     public void ComparePixelValues_8x8()
     {
-        var path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
-        var data = File.ReadAllBytes(path);
+        string path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
+        byte[] data = File.ReadAllBytes(path);
 
         // Decode with reference
         var refImage = J2kImage.FromBytes(data);
 
         var comp0 = refImage.GetComponent(0);
         _output.WriteLine("Reference decoded pixel values:");
-        for (int y = 0; y < refImage.Height; y++)
+        for (var y = 0; y < refImage.Height; y++)
         {
             var rowValues = Enumerable.Range(0, refImage.Width)
                 .Select(x => comp0[y * refImage.Width + x].ToString().PadLeft(4));
@@ -167,18 +167,18 @@ public class ReferenceComparisonTests
         };
 
         _output.WriteLine("\nExpected values:");
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
-            var rowValues = Enumerable.Range(0, 8)
+            IEnumerable<string> rowValues = Enumerable.Range(0, 8)
                 .Select(x => expected[y, x].ToString().PadLeft(4));
             _output.WriteLine(string.Join("", rowValues));
         }
 
         // Verify lossless decode
-        int mismatches = 0;
-        for (int y = 0; y < 8; y++)
+        var mismatches = 0;
+        for (var y = 0; y < 8; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
                 int refVal = GetPixel(refImage, 0, x, y);
                 if (refVal != expected[y, x])

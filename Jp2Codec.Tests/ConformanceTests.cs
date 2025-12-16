@@ -33,32 +33,32 @@ public class ConformanceTests
     [Fact]
     public void ListAvailableTestFiles()
     {
-        var basePath = GetTestImagesPath();
+        string basePath = GetTestImagesPath();
 
         _output.WriteLine("=== Available Test Images ===\n");
 
         // Conformance tests
-        var conformancePath = Path.Combine(basePath, "conformance");
+        string conformancePath = Path.Combine(basePath, "conformance");
         if (Directory.Exists(conformancePath))
         {
-            var jp2Files = Directory.GetFiles(conformancePath, "*.jp2");
-            var j2cFiles = Directory.GetFiles(conformancePath, "*.j2c");
+            string[] jp2Files = Directory.GetFiles(conformancePath, "*.jp2");
+            string[] j2cFiles = Directory.GetFiles(conformancePath, "*.j2c");
             _output.WriteLine($"Conformance (ITU-T T.803): {jp2Files.Length} JP2, {j2cFiles.Length} J2C");
         }
 
         // Non-regression tests
-        var nonregPath = Path.Combine(basePath, "nonregression");
+        string nonregPath = Path.Combine(basePath, "nonregression");
         if (Directory.Exists(nonregPath))
         {
-            var files = Directory.GetFiles(nonregPath, "*.jp2");
+            string[] files = Directory.GetFiles(nonregPath, "*.jp2");
             _output.WriteLine($"Non-regression: {files.Length} JP2");
         }
 
         // Samples
-        var samplesPath = Path.Combine(basePath, "samples");
+        string samplesPath = Path.Combine(basePath, "samples");
         if (Directory.Exists(samplesPath))
         {
-            var files = Directory.GetFiles(samplesPath);
+            string[] files = Directory.GetFiles(samplesPath);
             _output.WriteLine($"Sample images: {files.Length} files");
         }
     }
@@ -75,14 +75,14 @@ public class ConformanceTests
     [InlineData("conformance/zoo2.jp2")]
     public void ParseConformanceJp2(string relativePath)
     {
-        var path = Path.Combine(GetTestImagesPath(), relativePath);
+        string path = Path.Combine(GetTestImagesPath(), relativePath);
         if (!File.Exists(path))
         {
             _output.WriteLine($"File not found: {path}");
             return;
         }
 
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
         var decoder = new Jp2Decoder(data);
 
         _output.WriteLine($"{Path.GetFileName(relativePath)}:");
@@ -103,18 +103,18 @@ public class ConformanceTests
     [InlineData("conformance/d1_colr.j2c")]
     public void ParseConformanceJ2c(string relativePath)
     {
-        var path = Path.Combine(GetTestImagesPath(), relativePath);
+        string path = Path.Combine(GetTestImagesPath(), relativePath);
         if (!File.Exists(path))
         {
             _output.WriteLine($"File not found: {path}");
             return;
         }
 
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         // J2C files are raw codestreams
         var codestreamReader = new CodestreamReader(data);
-        var codestream = codestreamReader.ReadMainHeader();
+        Jp2Codestream codestream = codestreamReader.ReadMainHeader();
 
         _output.WriteLine($"{Path.GetFileName(relativePath)}:");
         _output.WriteLine($"  Size: {codestream.Frame.Width}x{codestream.Frame.Height}");
@@ -129,14 +129,14 @@ public class ConformanceTests
     [Fact]
     public void ParseBalloonImage()
     {
-        var path = Path.Combine(GetTestImagesPath(), "samples", "balloon.jp2");
+        string path = Path.Combine(GetTestImagesPath(), "samples", "balloon.jp2");
         if (!File.Exists(path))
         {
             _output.WriteLine($"File not found: {path}");
             return;
         }
 
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
         var decoder = new Jp2Decoder(data);
 
         _output.WriteLine($"balloon.jp2:");
@@ -154,14 +154,14 @@ public class ConformanceTests
     [Fact]
     public void CompareBalloonWithReference()
     {
-        var path = Path.Combine(GetTestImagesPath(), "samples", "balloon.jp2");
+        string path = Path.Combine(GetTestImagesPath(), "samples", "balloon.jp2");
         if (!File.Exists(path))
         {
             _output.WriteLine($"File not found: {path}");
             return;
         }
 
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         // Decode with our decoder first
         var decoder = new Jp2Decoder(data);
@@ -195,26 +195,26 @@ public class ConformanceTests
     [Fact]
     public void ScanAllConformanceFiles()
     {
-        var conformancePath = Path.Combine(GetTestImagesPath(), "conformance");
+        string conformancePath = Path.Combine(GetTestImagesPath(), "conformance");
         if (!Directory.Exists(conformancePath))
         {
             _output.WriteLine("Conformance directory not found");
             return;
         }
 
-        var jp2Files = Directory.GetFiles(conformancePath, "*.jp2");
-        var j2cFiles = Directory.GetFiles(conformancePath, "*.j2c");
+        string[] jp2Files = Directory.GetFiles(conformancePath, "*.jp2");
+        string[] j2cFiles = Directory.GetFiles(conformancePath, "*.j2c");
 
         _output.WriteLine($"Scanning {jp2Files.Length} JP2 files and {j2cFiles.Length} J2C files\n");
 
-        int successCount = 0;
-        int failCount = 0;
+        var successCount = 0;
+        var failCount = 0;
 
-        foreach (var file in jp2Files)
+        foreach (string file in jp2Files)
         {
             try
             {
-                var data = File.ReadAllBytes(file);
+                byte[] data = File.ReadAllBytes(file);
                 var decoder = new Jp2Decoder(data);
                 _output.WriteLine($"OK: {Path.GetFileName(file)} - {decoder.Width}x{decoder.Height}x{decoder.ComponentCount}");
                 successCount++;
@@ -226,13 +226,13 @@ public class ConformanceTests
             }
         }
 
-        foreach (var file in j2cFiles)
+        foreach (string file in j2cFiles)
         {
             try
             {
-                var data = File.ReadAllBytes(file);
+                byte[] data = File.ReadAllBytes(file);
                 var reader = new CodestreamReader(data);
-                var codestream = reader.ReadMainHeader();
+                Jp2Codestream codestream = reader.ReadMainHeader();
                 _output.WriteLine($"OK: {Path.GetFileName(file)} - {codestream.Frame.Width}x{codestream.Frame.Height}x{codestream.Frame.ComponentCount}");
                 successCount++;
             }

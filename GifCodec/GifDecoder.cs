@@ -41,15 +41,15 @@ public static class GifDecoder
         if (data.Length < GifHeader.Size + LogicalScreenDescriptor.Size)
             throw new GifException("Data too small for GIF header");
 
-        int offset = 0;
+        var offset = 0;
 
         // Read header
-        var header = ReadHeader(data, ref offset);
+        GifHeader header = ReadHeader(data, ref offset);
         if (!header.IsValid)
             throw new GifException($"Invalid GIF signature: {header.Signature}{header.Version}");
 
         // Read logical screen descriptor
-        var screenDesc = ReadScreenDescriptor(data, ref offset);
+        LogicalScreenDescriptor screenDesc = ReadScreenDescriptor(data, ref offset);
         if (screenDesc.Width == 0 || screenDesc.Height == 0)
             throw new GifException("Invalid GIF dimensions");
 
@@ -69,13 +69,13 @@ public static class GifDecoder
         // Set background color
         if (globalColorTable != null && screenDesc.BackgroundColorIndex < globalColorTable.Length)
         {
-            var bg = globalColorTable[screenDesc.BackgroundColorIndex];
+            GifColor bg = globalColorTable[screenDesc.BackgroundColorIndex];
             gifFile.BackgroundColor = (bg.B, bg.G, bg.R, 255);
         }
 
         // Process blocks
         GraphicsControlExtension? graphicsControl = null;
-        int iterations = 0;
+        var iterations = 0;
         const int maxIterations = 10000;
 
         while (offset < data.Length)
@@ -110,7 +110,7 @@ public static class GifDecoder
                     break;
 
                 case GifBlockTypes.ImageSeparator:
-                    var frame = DecodeFrame(data, ref offset, screenDesc,
+                    GifImage frame = DecodeFrame(data, ref offset, screenDesc,
                         globalColorTable, graphicsControl);
                     gifFile.Frames.Add(frame);
                     graphicsControl = null;
@@ -130,7 +130,7 @@ public static class GifDecoder
     /// </summary>
     public static GifImage DecodeFirstFrame(byte[] data)
     {
-        var gifFile = Decode(data);
+        GifFile gifFile = Decode(data);
         if (gifFile.Frames.Count == 0)
             throw new GifException("GIF file contains no frames");
         return gifFile.Frames[0];
@@ -157,7 +157,7 @@ public static class GifDecoder
     private static GifColor[] ReadColorTable(byte[] data, ref int offset, int count)
     {
         var colors = new GifColor[count];
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             if (offset + 3 > data.Length)
                 throw new GifException("Unexpected end of data in color table");
@@ -236,7 +236,7 @@ public static class GifDecoder
             throw new GifException("Unexpected end of data in image descriptor");
 
         // Read image descriptor
-        var imageDesc = ReadImageDescriptor(data, ref offset);
+        ImageDescriptor imageDesc = ReadImageDescriptor(data, ref offset);
 
         // Validate frame dimensions
         if (imageDesc.Width == 0 || imageDesc.Height == 0)
@@ -285,7 +285,7 @@ public static class GifDecoder
         // Convert to BGRA
         int width = imageDesc.Width;
         int height = imageDesc.Height;
-        byte[] pixelData = new byte[width * height * 4];
+        var pixelData = new byte[width * height * 4];
 
         int transparentIndex = graphicsControl?.HasTransparency == true
             ? graphicsControl.Value.TransparentColorIndex
@@ -324,9 +324,9 @@ public static class GifDecoder
     private static void DecodeSequential(byte[] indices, byte[] pixelData,
         int width, int height, GifColor[] colorTable, int transparentIndex)
     {
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 int srcIndex = y * width + x;
                 int destOffset = srcIndex * 4;
@@ -345,7 +345,7 @@ public static class GifDecoder
                 }
                 else if (colorIndex < colorTable.Length)
                 {
-                    var color = colorTable[colorIndex];
+                    GifColor color = colorTable[colorIndex];
                     pixelData[destOffset] = color.B;
                     pixelData[destOffset + 1] = color.G;
                     pixelData[destOffset + 2] = color.R;
@@ -362,12 +362,12 @@ public static class GifDecoder
         int[] startRows = [0, 4, 2, 1];
         int[] increments = [8, 8, 4, 2];
 
-        int srcIndex = 0;
-        for (int pass = 0; pass < 4; pass++)
+        var srcIndex = 0;
+        for (var pass = 0; pass < 4; pass++)
         {
             for (int y = startRows[pass]; y < height; y += increments[pass])
             {
-                for (int x = 0; x < width; x++)
+                for (var x = 0; x < width; x++)
                 {
                     if (srcIndex >= indices.Length)
                         return;
@@ -384,7 +384,7 @@ public static class GifDecoder
                     }
                     else if (colorIndex < colorTable.Length)
                     {
-                        var color = colorTable[colorIndex];
+                        GifColor color = colorTable[colorIndex];
                         pixelData[destOffset] = color.B;
                         pixelData[destOffset + 1] = color.G;
                         pixelData[destOffset + 2] = color.R;
@@ -397,7 +397,7 @@ public static class GifDecoder
 
     private static ushort ReadUInt16(byte[] data, ref int offset)
     {
-        ushort value = (ushort)(data[offset] | (data[offset + 1] << 8));
+        var value = (ushort)(data[offset] | (data[offset + 1] << 8));
         offset += 2;
         return value;
     }

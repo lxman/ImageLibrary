@@ -102,7 +102,7 @@ public sealed class GenericRegionDecoder
         {
             // Create new contexts
             _contexts = new ArithmeticDecoder.Context[contextCount];
-            for (int i = 0; i < contextCount; i++)
+            for (var i = 0; i < contextCount; i++)
                 _contexts[i] = new ArithmeticDecoder.Context();
         }
     }
@@ -122,7 +122,7 @@ public sealed class GenericRegionDecoder
         };
 
         var contexts = new ArithmeticDecoder.Context[contextCount];
-        for (int i = 0; i < contextCount; i++)
+        for (var i = 0; i < contextCount; i++)
             contexts[i] = new ArithmeticDecoder.Context();
         return contexts;
     }
@@ -148,9 +148,9 @@ public sealed class GenericRegionDecoder
         _options.ValidateDimensions(width, height, "Generic region decode");
 
         var bitmap = new Bitmap(width, height, _options);
-        bool ltp = false; // Line is "typical" (same as previous)
+        var ltp = false; // Line is "typical" (same as previous)
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
             // Typical prediction for generic direct (TPGD)
             if (_typicalPrediction)
@@ -163,7 +163,7 @@ public sealed class GenericRegionDecoder
                     // Copy previous line
                     if (y > 0)
                     {
-                        for (int x = 0; x < width; x++)
+                        for (var x = 0; x < width; x++)
                             bitmap.SetPixel(x, y, bitmap.GetPixel(x, y - 1));
                     }
                     continue;
@@ -171,7 +171,7 @@ public sealed class GenericRegionDecoder
             }
 
             // Decode each pixel in the line
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 int context = GetContext(bitmap, x, y);
                 int pixel = _decoder.DecodeBit(_contexts[context]);
@@ -184,7 +184,7 @@ public sealed class GenericRegionDecoder
 
     private int GetContext(Bitmap bitmap, int x, int y)
     {
-        int context = 0;
+        var context = 0;
 
         switch (_template)
         {
@@ -216,7 +216,7 @@ public sealed class GenericRegionDecoder
         // Bits 12-14: 3 pixels from row y-2 at (x+1), (x), (x-1)
         // Bit 15:     Adaptive AT4 (default: x-2, y-2)
 
-        int ctx = 0;
+        var ctx = 0;
 
         // Row y (current row): 4 pixels, bits 0-3
         // Bit 0 = most recent (x-1), Bit 3 = oldest (x-4)
@@ -260,7 +260,7 @@ public sealed class GenericRegionDecoder
     private int GetContextTemplate1(Bitmap bitmap, int x, int y)
     {
         // 13-bit context for template 1
-        int ctx = 0;
+        var ctx = 0;
 
         // Row y-2: 3 pixels
         ctx |= bitmap.GetPixel(x - 3, y - 2) << 0;
@@ -295,7 +295,7 @@ public sealed class GenericRegionDecoder
         //   CONTEXT |= AT << 2;          // adaptive pixel
         //   CONTEXT |= (pd>>11) & 0x078; // 4 pixels from row y-1
         //   CONTEXT |= (ppd>>7) & 0x380; // 3 pixels from row y-2
-        int ctx = 0;
+        var ctx = 0;
 
         // Bits 0-1: Current row y - out_byte has newest pixel in bit 0
         // bit 0 = (x-1, y), bit 1 = (x-2, y)
@@ -324,7 +324,7 @@ public sealed class GenericRegionDecoder
     private int GetContextTemplate3(Bitmap bitmap, int x, int y)
     {
         // 9-bit context for template 3 (10 bits with TPGD)
-        int ctx = 0;
+        var ctx = 0;
 
         // Row y-1: 5 pixels
         ctx |= bitmap.GetPixel(x - 3, y - 1) << 0;

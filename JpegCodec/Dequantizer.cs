@@ -26,10 +26,10 @@ public class Dequantizer
     {
         var result = new int[blocks.Length][][];
 
-        for (int c = 0; c < blocks.Length; c++)
+        for (var c = 0; c < blocks.Length; c++)
         {
-            var comp = _frame.Components[c];
-            var qt = _frame.QuantizationTables[comp.QuantizationTableId];
+            JpegComponent comp = _frame.Components[c];
+            ushort[]? qt = _frame.QuantizationTables[comp.QuantizationTableId];
 
             if (qt == null)
             {
@@ -38,7 +38,7 @@ public class Dequantizer
 
             result[c] = new int[blocks[c].Length][];
 
-            for (int b = 0; b < blocks[c].Length; b++)
+            for (var b = 0; b < blocks[c].Length; b++)
             {
                 result[c][b] = DequantizeBlock(blocks[c][b], qt);
             }
@@ -61,7 +61,7 @@ public class Dequantizer
         // The quantization table is stored in zig-zag order in the JPEG file.
         // We need to match them up correctly.
 
-        for (int i = 0; i < 64; i++)
+        for (var i = 0; i < 64; i++)
         {
             // block[i] is the coefficient at position i in 8x8 order (row-major)
             // qt is in zig-zag order, so we need to use the zig-zag index
@@ -81,7 +81,7 @@ public class Dequantizer
     private static byte[] BuildNaturalToZigZag()
     {
         var result = new byte[64];
-        for (int i = 0; i < 64; i++)
+        for (var i = 0; i < 64; i++)
         {
             result[EntropyDecoder.ZigZagOrder[i]] = (byte)i;
         }
@@ -98,8 +98,8 @@ public class Dequantizer
     /// </summary>
     public int[] DequantizeSingleBlock(short[] block, int componentIndex)
     {
-        var comp = _frame.Components[componentIndex];
-        var qt = _frame.QuantizationTables[comp.QuantizationTableId];
+        JpegComponent comp = _frame.Components[componentIndex];
+        ushort[]? qt = _frame.QuantizationTables[comp.QuantizationTableId];
 
         if (qt == null)
         {

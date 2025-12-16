@@ -29,8 +29,8 @@ public static class GifEncoder
         using var ms = new MemoryStream();
 
         // Build global color table from first frame
-        var firstFrame = gifFile.Frames[0];
-        var (colorTable, indices) = BuildColorTable(firstFrame, maxColors);
+        GifImage? firstFrame = gifFile.Frames[0];
+        (GifColor[] colorTable, byte[] indices) = BuildColorTable(firstFrame, maxColors);
         int colorTableSize = GetColorTableSize(colorTable.Length);
         int colorBits = GetColorBits(colorTableSize);
 
@@ -50,9 +50,9 @@ public static class GifEncoder
         }
 
         // Write frames
-        for (int i = 0; i < gifFile.Frames.Count; i++)
+        for (var i = 0; i < gifFile.Frames.Count; i++)
         {
-            var frame = gifFile.Frames[i];
+            GifImage? frame = gifFile.Frames[i];
             byte[] frameIndices;
 
             if (i == 0)
@@ -87,7 +87,7 @@ public static class GifEncoder
         var uniqueColors = new Dictionary<int, int>(); // RGB -> count
         byte[] pixelData = image.PixelData;
 
-        for (int i = 0; i < pixelData.Length; i += 4)
+        for (var i = 0; i < pixelData.Length; i += 4)
         {
             // Skip transparent pixels
             if (pixelData[i + 3] < 128)
@@ -103,8 +103,8 @@ public static class GifEncoder
         {
             // Use all unique colors
             colorTable = new GifColor[uniqueColors.Count];
-            int idx = 0;
-            foreach (var rgb in uniqueColors.Keys)
+            var idx = 0;
+            foreach (int rgb in uniqueColors.Keys)
             {
                 colorTable[idx++] = new GifColor(
                     (byte)((rgb >> 16) & 0xFF),
@@ -119,8 +119,8 @@ public static class GifEncoder
         }
 
         // Map pixels to indices
-        byte[] indices = new byte[image.Width * image.Height];
-        for (int i = 0; i < indices.Length; i++)
+        var indices = new byte[image.Width * image.Height];
+        for (var i = 0; i < indices.Length; i++)
         {
             int pixelOffset = i * 4;
             byte b = pixelData[pixelOffset];
@@ -135,10 +135,10 @@ public static class GifEncoder
     private static GifColor[] QuantizeColors(Dictionary<int, int> colors, int maxColors)
     {
         // Simple popularity-based quantization
-        var sorted = colors.OrderByDescending(kv => kv.Value).Take(maxColors).ToList();
+        List<KeyValuePair<int, int>> sorted = colors.OrderByDescending(kv => kv.Value).Take(maxColors).ToList();
 
         var result = new GifColor[sorted.Count];
-        for (int i = 0; i < sorted.Count; i++)
+        for (var i = 0; i < sorted.Count; i++)
         {
             int rgb = sorted[i].Key;
             result[i] = new GifColor(
@@ -152,10 +152,10 @@ public static class GifEncoder
 
     private static byte[] QuantizeToColorTable(GifImage image, GifColor[] colorTable)
     {
-        byte[] indices = new byte[image.Width * image.Height];
+        var indices = new byte[image.Width * image.Height];
         byte[] pixelData = image.PixelData;
 
-        for (int i = 0; i < indices.Length; i++)
+        for (var i = 0; i < indices.Length; i++)
         {
             int pixelOffset = i * 4;
             byte b = pixelData[pixelOffset];
@@ -169,10 +169,10 @@ public static class GifEncoder
 
     private static int FindClosestColor(GifColor[] colorTable, byte r, byte g, byte b)
     {
-        int bestIndex = 0;
-        int bestDist = int.MaxValue;
+        var bestIndex = 0;
+        var bestDist = int.MaxValue;
 
-        for (int i = 0; i < colorTable.Length; i++)
+        for (var i = 0; i < colorTable.Length; i++)
         {
             int dr = r - colorTable[i].R;
             int dg = g - colorTable[i].G;
@@ -194,7 +194,7 @@ public static class GifEncoder
     private static int GetColorTableSize(int numColors)
     {
         // Color table size must be a power of 2
-        int size = 2;
+        var size = 2;
         while (size < numColors)
             size *= 2;
         return Math.Min(size, 256);
@@ -202,7 +202,7 @@ public static class GifEncoder
 
     private static int GetColorBits(int colorTableSize)
     {
-        int bits = 1;
+        var bits = 1;
         while ((1 << bits) < colorTableSize)
             bits++;
         return bits;
@@ -230,7 +230,7 @@ public static class GifEncoder
         // Color Resolution = colorBits - 1 (bits 4-6)
         // Sort Flag = 0 (bit 3)
         // Size of Global Color Table = colorBits - 1 (bits 0-2)
-        byte packed = (byte)(0x80 | ((colorBits - 1) << 4) | (colorBits - 1));
+        var packed = (byte)(0x80 | ((colorBits - 1) << 4) | (colorBits - 1));
         stream.WriteByte(packed);
 
         // Background color index
@@ -242,7 +242,7 @@ public static class GifEncoder
 
     private static void WriteColorTable(Stream stream, GifColor[] colors, int tableSize)
     {
-        for (int i = 0; i < tableSize; i++)
+        for (var i = 0; i < tableSize; i++)
         {
             if (i < colors.Length)
             {

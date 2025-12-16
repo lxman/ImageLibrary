@@ -16,7 +16,7 @@ public class TgaRoundtripTests
         original.SetPixel(1, 1, 128, 128, 128);  // Gray
 
         byte[] encoded = TgaEncoder.Encode(original, 24);
-        var decoded = TgaDecoder.Decode(encoded);
+        TgaImage decoded = TgaDecoder.Decode(encoded);
 
         Assert.Equal(original.Width, decoded.Width);
         Assert.Equal(original.Height, decoded.Height);
@@ -38,7 +38,7 @@ public class TgaRoundtripTests
         original.SetPixel(2, 2, 0, 0, 255, 64);
 
         byte[] encoded = TgaEncoder.Encode(original, 32);
-        var decoded = TgaDecoder.Decode(encoded);
+        TgaImage decoded = TgaDecoder.Decode(encoded);
 
         Assert.Equal(original.Width, decoded.Width);
         Assert.Equal(original.Height, decoded.Height);
@@ -56,7 +56,7 @@ public class TgaRoundtripTests
         original.SetPixel(2, 2, 0, 0, 255, 64);
 
         byte[] encoded = TgaEncoder.Encode(original, 32, useRle: true);
-        var decoded = TgaDecoder.Decode(encoded);
+        TgaImage decoded = TgaDecoder.Decode(encoded);
 
         Assert.Equal(original.Width, decoded.Width);
         Assert.Equal(original.Height, decoded.Height);
@@ -75,7 +75,7 @@ public class TgaRoundtripTests
         original.SetPixel(3, 0, 255, 255, 255);
 
         byte[] encoded = TgaEncoder.Encode(original, 24, useRle: true);
-        var decoded = TgaDecoder.Decode(encoded);
+        TgaImage decoded = TgaDecoder.Decode(encoded);
 
         Assert.Equal(original.Width, decoded.Width);
         Assert.Equal(original.Height, decoded.Height);
@@ -90,9 +90,9 @@ public class TgaRoundtripTests
     {
         // Create a solid color image - should compress well
         var original = new TgaImage(100, 100);
-        for (int y = 0; y < 100; y++)
+        for (var y = 0; y < 100; y++)
         {
-            for (int x = 0; x < 100; x++)
+            for (var x = 0; x < 100; x++)
             {
                 original.SetPixel(x, y, 128, 64, 32, 255);
             }
@@ -105,7 +105,7 @@ public class TgaRoundtripTests
         Assert.True(compressed.Length < uncompressed.Length / 2);
 
         // Verify roundtrip
-        var decoded = TgaDecoder.Decode(compressed);
+        TgaImage decoded = TgaDecoder.Decode(compressed);
         Assert.Equal(100, decoded.Width);
         Assert.Equal(100, decoded.Height);
         Assert.Equal((128, 64, 32, 255), decoded.GetPixel(50, 50));
@@ -123,29 +123,29 @@ public class TgaRoundtripTests
         var original = new TgaImage(width, height);
 
         // Fill with gradient
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                byte r = (byte)(x * 255 / Math.Max(1, width - 1));
-                byte g = (byte)(y * 255 / Math.Max(1, height - 1));
-                byte b = (byte)((x + y) * 127 / Math.Max(1, width + height - 2));
+                var r = (byte)(x * 255 / Math.Max(1, width - 1));
+                var g = (byte)(y * 255 / Math.Max(1, height - 1));
+                var b = (byte)((x + y) * 127 / Math.Max(1, width + height - 2));
                 original.SetPixel(x, y, r, g, b);
             }
         }
 
         byte[] encoded = TgaEncoder.Encode(original, 24);
-        var decoded = TgaDecoder.Decode(encoded);
+        TgaImage decoded = TgaDecoder.Decode(encoded);
 
         Assert.Equal(width, decoded.Width);
         Assert.Equal(height, decoded.Height);
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                var expected = original.GetPixel(x, y);
-                var actual = decoded.GetPixel(x, y);
+                (byte R, byte G, byte B, byte A) expected = original.GetPixel(x, y);
+                (byte R, byte G, byte B, byte A) actual = decoded.GetPixel(x, y);
                 Assert.Equal(expected.R, actual.R);
                 Assert.Equal(expected.G, actual.G);
                 Assert.Equal(expected.B, actual.B);
@@ -159,7 +159,7 @@ public class TgaHeaderTests
     [Fact]
     public void Decode_TooSmall_Throws()
     {
-        byte[] data = new byte[10];
+        var data = new byte[10];
         Assert.Throws<TgaException>(() => TgaDecoder.Decode(data));
     }
 
@@ -167,7 +167,7 @@ public class TgaHeaderTests
     public void Decode_ZeroDimensions_Throws()
     {
         // Create a valid header but with zero width
-        byte[] data = new byte[18];
+        var data = new byte[18];
         data[2] = (byte)TgaImageType.TrueColor;
         data[12] = 0; // Width low
         data[13] = 0; // Width high
@@ -245,7 +245,7 @@ public class TgaImageTests
         var image = new TgaImage(10, 10);
 
         image.SetPixel(5, 5, 100, 150, 200, 255);
-        var pixel = image.GetPixel(5, 5);
+        (byte R, byte G, byte B, byte A) pixel = image.GetPixel(5, 5);
 
         Assert.Equal(100, pixel.R);
         Assert.Equal(150, pixel.G);
@@ -258,7 +258,7 @@ public class TgaImageTests
     {
         var image = new TgaImage(5, 5);
 
-        var pixel = image.GetPixel(2, 2);
+        (byte R, byte G, byte B, byte A) pixel = image.GetPixel(2, 2);
         Assert.Equal(0, pixel.R);
         Assert.Equal(0, pixel.G);
         Assert.Equal(0, pixel.B);

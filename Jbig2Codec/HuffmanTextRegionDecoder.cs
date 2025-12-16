@@ -55,7 +55,7 @@ public sealed class HuffmanTextRegionDecoder
             throw new Jbig2DataException("No symbols available for text region decoding");
 
         // Custom tables are used in order of reference
-        int customTableIndex = 0;
+        var customTableIndex = 0;
 
         // Select Huffman tables based on parameters (7.4.3.1.6)
         _tableFS = SelectTable(_params.HuffmanFS, ref customTableIndex, customTables,
@@ -130,7 +130,7 @@ public sealed class HuffmanTextRegionDecoder
     {
         // Step 1: Read 35 4-bit values for the runcode table
         var runcodeLengths = new HuffmanLine[35];
-        for (int i = 0; i < 35; i++)
+        for (var i = 0; i < 35; i++)
         {
             int prefLen = _decoder.ReadBits(4);
             runcodeLengths[i] = new HuffmanLine(prefLen, 0, i);
@@ -142,7 +142,7 @@ public sealed class HuffmanTextRegionDecoder
 
         // Step 2: Decode symbol code lengths using run-length coding
         var symcodeLengths = new HuffmanLine[_totalSymbols];
-        int index = 0;
+        var index = 0;
 
         while (index < _totalSymbols)
         {
@@ -187,7 +187,7 @@ public sealed class HuffmanTextRegionDecoder
                 range = _totalSymbols - index;
             }
 
-            for (int r = 0; r < range; r++)
+            for (var r = 0; r < range; r++)
             {
                 symcodeLengths[index + r] = new HuffmanLine(len, 0, index + r);
             }
@@ -222,10 +222,10 @@ public sealed class HuffmanTextRegionDecoder
             throw new Jbig2DataException("Unexpected OOB in initial strip T");
         stript *= -_params.StripSize;
 
-        int firstS = 0;
-        int instancesDecoded = 0;
+        var firstS = 0;
+        var instancesDecoded = 0;
 
-        int loopIterations = 0;
+        var loopIterations = 0;
 
         while (instancesDecoded < _params.NumInstances)
         {
@@ -246,8 +246,8 @@ public sealed class HuffmanTextRegionDecoder
             firstS += dfs;
             int curS = firstS;
 
-            bool firstSymbol = true;
-            int innerIterations = 0;
+            var firstSymbol = true;
+            var innerIterations = 0;
 
             // Decode symbols in this strip
             while (true)
@@ -392,7 +392,7 @@ public sealed class HuffmanTextRegionDecoder
             _params.RefinementAdaptivePixels,
             _options);
 
-        var result = refinementDecoder.Decode(iboWidth, iboHeight);
+        Bitmap result = refinementDecoder.Decode(iboWidth, iboHeight);
 
         // Advance past the refinement data
         if (bmsize > 0)

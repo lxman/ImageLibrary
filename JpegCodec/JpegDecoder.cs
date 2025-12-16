@@ -29,22 +29,22 @@ public class JpegDecoder
     {
         // Stage 1: Parse markers
         var reader = new JpegReader(_data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         // Stage 2 & 3: Entropy decode (includes Huffman table building)
         var entropyDecoder = new EntropyDecoder(frame, _data);
-        var dctCoefficients = entropyDecoder.DecodeAllBlocks();
+        short[][][] dctCoefficients = entropyDecoder.DecodeAllBlocks();
 
         // Stage 4: Dequantize
         var dequantizer = new Dequantizer(frame);
-        var dequantized = dequantizer.DequantizeAll(dctCoefficients);
+        int[][][] dequantized = dequantizer.DequantizeAll(dctCoefficients);
 
         // Stage 5: Inverse DCT
-        var pixels = InverseDct.TransformAll(dequantized);
+        byte[][][] pixels = InverseDct.TransformAll(dequantized);
 
         // Stage 6: Color conversion and assembly
         var colorConverter = new ColorConverter(frame);
-        var rgb = colorConverter.AssembleImage(pixels);
+        byte[] rgb = colorConverter.AssembleImage(pixels);
 
         return new DecodedImage(frame.Width, frame.Height, rgb);
     }
@@ -54,7 +54,7 @@ public class JpegDecoder
     /// </summary>
     public static DecodedImage DecodeFile(string path)
     {
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
         var decoder = new JpegDecoder(data);
         return decoder.Decode();
     }
@@ -108,7 +108,7 @@ public class DecodedImage
     /// </summary>
     public byte GetGrayscale(int x, int y)
     {
-        var (r, _, _) = GetPixel(x, y);
+        (byte r, _, _) = GetPixel(x, y);
         return r;
     }
 }

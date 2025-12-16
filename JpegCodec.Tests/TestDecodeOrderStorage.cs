@@ -21,18 +21,18 @@ public class TestDecodeOrderStorage
     public void CompareWithDecodeOrderStorage()
     {
         var path = "/Users/michaeljordan/RiderProjects/ImageLibrary/TestImages/jpeg_test/backhoe-006.jpg";
-        var data = File.ReadAllBytes(path);
+        byte[] data = File.ReadAllBytes(path);
 
         var reader = new JpegReader(data);
-        var frame = reader.ReadFrame();
+        JpegFrame frame = reader.ReadFrame();
 
         var decoder = new EntropyDecoder(frame, data);
-        var blocks = decoder.DecodeAllBlocks();
+        short[][][] blocks = decoder.DecodeAllBlocks();
 
         // Get the blocks in decode order by re-decoding sequentially
         decoder.Reset();
         var decodeOrderBlocks = new short[frame.McuCount * 4][];
-        for (int i = 0; i < decodeOrderBlocks.Length; i++)
+        for (var i = 0; i < decodeOrderBlocks.Length; i++)
         {
             decodeOrderBlocks[i] = decoder.DecodeSingleBlock(0);
         }
@@ -45,8 +45,8 @@ public class TestDecodeOrderStorage
         _output.WriteLine($"  Our block 20 DC: {blocks[0][20][0]}");
         _output.WriteLine($"  Decode order 40 DC: {decodeOrderBlocks[40][0]}");
 
-        bool match = true;
-        for (int i = 0; i < 64; i++)
+        var match = true;
+        for (var i = 0; i < 64; i++)
         {
             if (blocks[0][20][i] != decodeOrderBlocks[40][i])
             {
@@ -67,15 +67,15 @@ public class TestDecodeOrderStorage
         // Create arrays for dequantizer
         var tempBlocks = new short[1][][];
         tempBlocks[0] = decodeOrderBlocks;
-        var dequantBlocks = dequant.DequantizeAll(tempBlocks);
+        int[][][] dequantBlocks = dequant.DequantizeAll(tempBlocks);
 
-        for (int i = 0; i < decodeOrderBlocks.Length; i++)
+        for (var i = 0; i < decodeOrderBlocks.Length; i++)
         {
             pixelBlocks[i] = InverseDct.Transform(dequantBlocks[0][i]);
         }
 
         // Now create image using decode order mapping
-        using var isImage = Image.Load<L8>(path);
+        using Image<L8> isImage = Image.Load<L8>(path);
 
         _output.WriteLine("Pixel comparison at (16,8) - MCU 1, sub(0,1):");
         // MCU 1, sub(0,1) = decode position 6 (MCU 1 is at position 1, sub(0,1) is 3rd sub-block = 4+2=6)
@@ -85,7 +85,7 @@ public class TestDecodeOrderStorage
         _output.WriteLine($"  ImageSharp pixel (16,8): {isImage[16, 8].PackedValue}");
 
         // Let's also check what decode position would give us the ImageSharp pixel value
-        for (int dp = 0; dp < Math.Min(80, pixelBlocks.Length); dp++)
+        for (var dp = 0; dp < Math.Min(80, pixelBlocks.Length); dp++)
         {
             if (Math.Abs(pixelBlocks[dp][0] - isImage[16, 8].PackedValue) < 5)
             {
@@ -96,21 +96,21 @@ public class TestDecodeOrderStorage
         // Check what decode position has the block that matches ImageSharp's (16,8) region
         _output.WriteLine("");
         _output.WriteLine("Finding which decode position matches ImageSharp (16,8)-(23,15) block:");
-        byte[] isBlock = new byte[64];
-        for (int y = 0; y < 8; y++)
+        var isBlock = new byte[64];
+        for (var y = 0; y < 8; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
                 isBlock[y * 8 + x] = isImage[16 + x, 8 + y].PackedValue;
             }
         }
 
         int bestMatch = -1;
-        int bestScore = int.MaxValue;
-        for (int dp = 0; dp < pixelBlocks.Length; dp++)
+        var bestScore = int.MaxValue;
+        for (var dp = 0; dp < pixelBlocks.Length; dp++)
         {
-            int score = 0;
-            for (int i = 0; i < 64; i++)
+            var score = 0;
+            for (var i = 0; i < 64; i++)
             {
                 score += Math.Abs(pixelBlocks[dp][i] - isBlock[i]);
             }
@@ -140,10 +140,10 @@ public class TestDecodeOrderStorage
         _output.WriteLine("DecodePos | MCU(x,y) | Sub(x,y) | SpatialIdx | PixelStart");
         _output.WriteLine("----------|----------|----------|------------|----------");
 
-        int blocksPerRow = 38;
-        int mcuCountX = 19;
+        var blocksPerRow = 38;
+        var mcuCountX = 19;
 
-        for (int decodePos = 0; decodePos < 80; decodePos++)
+        for (var decodePos = 0; decodePos < 80; decodePos++)
         {
             int mcuIdx = decodePos / 4;
             int subIdx = decodePos % 4;

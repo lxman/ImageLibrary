@@ -61,7 +61,7 @@ public sealed class RefinementRegionDecoder
             // Create contexts
             int contextCount = template == 0 ? 8192 : 1024; // 13 bits or 10 bits
             _contexts = new ArithmeticDecoder.Context[contextCount];
-            for (int i = 0; i < contextCount; i++)
+            for (var i = 0; i < contextCount; i++)
                 _contexts[i] = new ArithmeticDecoder.Context();
         }
     }
@@ -85,9 +85,9 @@ public sealed class RefinementRegionDecoder
 
         var bitmap = new Bitmap(width, height, _options);
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 int context = GetContext(bitmap, x, y);
                 int pixel = _decoder.DecodeBit(_contexts[context]);
@@ -110,7 +110,7 @@ public sealed class RefinementRegionDecoder
         // T.88 Figure 12 - Template 0 refinement context (13 bits)
         // Based on jbig2dec jbig2_refinement.c implementation
 
-        int ctx = 0;
+        var ctx = 0;
 
         // Reference bitmap position
         int rx = x - _refDx;
@@ -151,7 +151,7 @@ public sealed class RefinementRegionDecoder
         // T.88 Figure 13 - Template 1 refinement context (10 bits)
         // Based on jbig2dec jbig2_refinement.c implementation
 
-        int ctx = 0;
+        var ctx = 0;
 
         // Reference bitmap position
         int rx = x - _refDx;

@@ -42,9 +42,9 @@ public class Dequantizer : IDequantizer
             int magbits = guardBits + exponent - 1;
             int shift = 31 - magbits;
 
-            for (int y = 0; y < input.Height; y++)
+            for (var y = 0; y < input.Height; y++)
             {
-                for (int x = 0; x < input.Width; x++)
+                for (var x = 0; x < input.Width; x++)
                 {
                     int signMag = input.Coefficients[y, x];
                     // Convert sign-magnitude to signed integer with proper shift
@@ -77,9 +77,9 @@ public class Dequantizer : IDequantizer
             // where Rb is the component precision and epsilon is the exponent from QCD marker
             double stepSize = Math.Pow(2, bitDepth - exponent) * (1.0 + input.StepSize.Mantissa / 2048.0);
 
-            for (int y = 0; y < input.Height; y++)
+            for (var y = 0; y < input.Height; y++)
             {
-                for (int x = 0; x < input.Width; x++)
+                for (var x = 0; x < input.Width; x++)
                 {
                     int signMag = input.Coefficients[y, x];
                     // Extract quantized magnitude by shifting
@@ -112,20 +112,20 @@ public class Dequantizer : IDequantizer
         int numResolutions = subbands.Max(s => s.ResolutionLevel) + 1;
 
         // Calculate full resolution dimensions from highest resolution subband
-        var highestRes = subbands.Where(s => s.ResolutionLevel == numResolutions - 1).ToArray();
+        QuantizedSubband[] highestRes = subbands.Where(s => s.ResolutionLevel == numResolutions - 1).ToArray();
         int width = 0, height = 0;
 
         if (numResolutions == 1)
         {
             // Only LL subband
-            var ll = subbands.First(s => s.Type == SubbandType.LL);
+            QuantizedSubband ll = subbands.First(s => s.Type == SubbandType.LL);
             width = ll.Width;
             height = ll.Height;
         }
         else
         {
             // Compute from highest resolution detail subbands
-            foreach (var sub in highestRes)
+            foreach (QuantizedSubband sub in highestRes)
             {
                 if (sub.Type == SubbandType.HL || sub.Type == SubbandType.HH)
                 {
@@ -139,7 +139,7 @@ public class Dequantizer : IDequantizer
             // If no detail subbands, use LL dimensions
             if (width == 0 || height == 0)
             {
-                var ll = subbands.First(s => s.Type == SubbandType.LL);
+                QuantizedSubband ll = subbands.First(s => s.Type == SubbandType.LL);
                 width = ll.Width;
                 height = ll.Height;
             }
@@ -151,15 +151,15 @@ public class Dequantizer : IDequantizer
         var dequantized = new List<double[,]>();
 
         // First add LL subband
-        var llSubband = subbands.First(s => s.Type == SubbandType.LL);
+        QuantizedSubband llSubband = subbands.First(s => s.Type == SubbandType.LL);
         dequantized.Add(Process(llSubband, componentIndex));
 
         // Then add detail subbands for each resolution level > 0
-        for (int r = 1; r < numResolutions; r++)
+        for (var r = 1; r < numResolutions; r++)
         {
-            var hl = subbands.FirstOrDefault(s => s.ResolutionLevel == r && s.Type == SubbandType.HL);
-            var lh = subbands.FirstOrDefault(s => s.ResolutionLevel == r && s.Type == SubbandType.LH);
-            var hh = subbands.FirstOrDefault(s => s.ResolutionLevel == r && s.Type == SubbandType.HH);
+            QuantizedSubband? hl = subbands.FirstOrDefault(s => s.ResolutionLevel == r && s.Type == SubbandType.HL);
+            QuantizedSubband? lh = subbands.FirstOrDefault(s => s.ResolutionLevel == r && s.Type == SubbandType.LH);
+            QuantizedSubband? hh = subbands.FirstOrDefault(s => s.ResolutionLevel == r && s.Type == SubbandType.HH);
 
             if (hl != null) dequantized.Add(Process(hl, componentIndex));
             if (lh != null) dequantized.Add(Process(lh, componentIndex));
