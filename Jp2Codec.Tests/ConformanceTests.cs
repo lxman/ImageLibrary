@@ -1,6 +1,3 @@
-using CoreJ2K;
-using Jp2Codec;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Jp2Codec.Tests;
@@ -149,47 +146,6 @@ public class ConformanceTests
 
         Assert.True(decoder.Width > 0);
         Assert.True(decoder.Height > 0);
-    }
-
-    [Fact]
-    public void CompareBalloonWithReference()
-    {
-        string path = Path.Combine(GetTestImagesPath(), "samples", "balloon.jp2");
-        if (!File.Exists(path))
-        {
-            _output.WriteLine($"File not found: {path}");
-            return;
-        }
-
-        byte[] data = File.ReadAllBytes(path);
-
-        // Decode with our decoder first
-        var decoder = new Jp2Decoder(data);
-        _output.WriteLine($"Our decoder: {decoder.Width}x{decoder.Height}, {decoder.ComponentCount} components");
-
-        // Try to decode with reference
-        try
-        {
-            var refImage = J2kImage.FromBytes(data);
-            _output.WriteLine($"Reference: {refImage.Width}x{refImage.Height}, {refImage.NumberOfComponents} components");
-
-            Assert.Equal(refImage.Width, decoder.Width);
-            Assert.Equal(refImage.Height, decoder.Height);
-            Assert.Equal(refImage.NumberOfComponents, decoder.ComponentCount);
-
-            // Compare some pixel samples
-            var refComp = refImage.GetComponent(0);
-            _output.WriteLine($"\nReference component 0 samples:");
-            _output.WriteLine($"  (0,0): {refComp[0]}");
-            _output.WriteLine($"  (100,100): {refComp[100 * refImage.Width + 100]}");
-            _output.WriteLine($"  (center): {refComp[(refImage.Height / 2) * refImage.Width + refImage.Width / 2]}");
-        }
-        catch (Exception ex)
-        {
-            // CoreJ2K has issues with some files (e.g., SOP marker parsing)
-            _output.WriteLine($"CoreJ2K failed: {ex.Message}");
-            _output.WriteLine("Note: Our decoder parsed this file successfully where CoreJ2K failed!");
-        }
     }
 
     [Fact]

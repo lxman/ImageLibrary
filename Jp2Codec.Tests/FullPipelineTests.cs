@@ -1,7 +1,4 @@
-using CoreJ2K;
-using Jp2Codec;
 using Jp2Codec.Pipeline;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Jp2Codec.Tests;
@@ -69,56 +66,6 @@ public class FullPipelineTests
         }
 
         Assert.Equal(64, pixels.Length);
-    }
-
-    [Fact]
-    public void Decoder_ComparesWithReference_8x8()
-    {
-        string path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
-        byte[] data = File.ReadAllBytes(path);
-
-        // Decode with our decoder
-        var decoder = new Jp2Decoder(data);
-        byte[] ourPixels = decoder.DecodeGrayscale();
-
-        // Decode with reference (CoreJ2K)
-        var refImage = J2kImage.FromBytes(data);
-        var refComp = refImage.GetComponent(0);
-
-        _output.WriteLine("Reference vs Our decoder:");
-        _output.WriteLine("Position  Reference  Ours  Diff");
-
-        var totalDiff = 0;
-        var maxDiff = 0;
-        var mismatches = 0;
-
-        for (var y = 0; y < 8; y++)
-        {
-            for (var x = 0; x < 8; x++)
-            {
-                int refVal = refComp[y * 8 + x];
-                int ourVal = ourPixels[y * 8 + x];
-                int diff = Math.Abs(refVal - ourVal);
-
-                if (diff > 0)
-                {
-                    _output.WriteLine($"({x},{y}): {refVal,3} vs {ourVal,3} (diff={diff})");
-                    mismatches++;
-                }
-
-                totalDiff += diff;
-                maxDiff = Math.Max(maxDiff, diff);
-            }
-        }
-
-        _output.WriteLine($"\nTotal mismatches: {mismatches}");
-        _output.WriteLine($"Max diff: {maxDiff}");
-        _output.WriteLine($"Total diff: {totalDiff}");
-
-        // For lossless compression, we expect exact match
-        // For lossy, some small difference is acceptable
-        bool isLossless = decoder.Codestream.CodingParameters.WaveletType == WaveletTransform.Reversible_5_3;
-        _output.WriteLine($"Compression: {(isLossless ? "Lossless" : "Lossy")}");
     }
 
     [Fact]

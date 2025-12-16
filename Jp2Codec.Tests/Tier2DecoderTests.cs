@@ -1,7 +1,5 @@
-using Jp2Codec;
 using Jp2Codec.Pipeline;
 using Jp2Codec.Tier2;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Jp2Codec.Tests;

@@ -1,5 +1,4 @@
 using Xunit;
-using Jbig2Codec;
 
 namespace Jbig2Codec.Tests;
 

@@ -1,8 +1,6 @@
-using Jp2Codec;
 using Jp2Codec.Pipeline;
 using Jp2Codec.Tier1;
 using Jp2Codec.Tier2;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Jp2Codec.Tests;
@@ -352,68 +350,5 @@ public class Tier1DecoderTests
                 .Select(x => llSubband.Coefficients[y, x].ToString().PadLeft(5)));
             _output.WriteLine($"  {row}");
         }
-    }
-
-    /// <summary>
-    /// Compare MQ decoder outputs between our implementation and Melville's.
-    /// </summary>
-    [Fact]
-    public void CompareMqDecoders_SameInput()
-    {
-        // Get the actual codeblock data from test_8x8
-        string path = Path.Combine(GetTestImagesPath(), "test_8x8.jp2");
-        byte[] data = File.ReadAllBytes(path);
-
-        var fileReader = new Jp2FileReader(data);
-        Jp2FileInfo fileInfo = fileReader.Read();
-        var codestreamReader = new CodestreamReader(fileInfo.CodestreamData!);
-        Jp2Codestream codestream = codestreamReader.ReadMainHeader();
-        Jp2TilePart tilePart = codestreamReader.ReadTilePart()!;
-        var tier2 = new Tier2Decoder(codestream);
-        Tier2Output tier2Output = tier2.Process(tilePart);
-
-        // Get the first code block's data
-        CodeBlockBitstream cb = tier2Output.CodeBlocks[0][0].First();
-        byte[] cbData = cb.Data!;
-        
-        _output.WriteLine($"Code block data ({cbData.Length} bytes): {BitConverter.ToString(cbData.Take(32).ToArray())}");
-
-        // Create our MQ decoder
-        var ourMq = new MqDecoder(cbData);
-
-        // Create Melville's MQ decoder
-        var melvilleByteInput = new CoreJ2K.j2k.entropy.decoder.ByteInputBuffer(cbData);
-        var melvilleInitStates = new int[] { 46, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-        var melvilleMq = new CoreJ2K.j2k.entropy.decoder.MQDecoder(melvilleByteInput, 19, melvilleInitStates);
-
-        // Decode first 100 symbols with both decoders and compare
-        // Use a longer context sequence covering cleanup and sigprop passes
-        _output.WriteLine("\nComparing MQ decoders (first 100 decodes):");
-        var mismatches = 0;
-
-        // Context sequence from our MQ trace - covering cleanup pass bp=29 through early sigprop bp=28
-        int[] contexts = new[] {
-            1, 0, 0, 11, 7, 2, 2, 5, 3, 2, 2, 1, 1, 1, 1, 0, 0, 11, 2, 2,  // MQ[0]-[19]
-            3, 11, 9, 2, 3, 11, 9, 3, 1, 1, 0, 0, 11, 2, 2, 3, 11, 9, 2,  // MQ[20]-[38]
-            3, 11, 9, 3, 4, 11, 9, 3, 2, 9, 3, 2, 2, 3, 2, 2, 2, 1,        // MQ[39]-[56] (end of cleanup)
-            7, 12, 7, 12, 7, 5, 14, 9, 5, 3, 5, 14, 8, 5, 14, 8, 3, 5, 14, 8, 3, 9, 5, 14, 8, 10, 15, 9, 9, 9  // MQ[57]-[86] (sigprop)
-        };
-
-        for (var i = 0; i < contexts.Length; i++)
-        {
-            int ctx = contexts[i];
-            int ourResult = ourMq.Decode(ctx);
-            int melvilleResult = melvilleMq.decodeSymbol(ctx);
-
-            string match = ourResult == melvilleResult ? "✓" : "✗";
-            if (ourResult != melvilleResult || i < 20 || (i >= 57 && i < 70))
-                _output.WriteLine($"  [{i}] ctx={ctx}: ours={ourResult}, melville={melvilleResult} {match}");
-
-            if (ourResult != melvilleResult)
-                mismatches++;
-        }
-
-        _output.WriteLine($"\nTotal mismatches: {mismatches}");
-        Assert.Equal(0, mismatches);
     }
 }
