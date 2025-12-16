@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace ImageLibrary.Gif;
 
@@ -12,9 +13,17 @@ public static class GifDecoder
     /// </summary>
     public static GifFile Decode(byte[] data)
     {
+        return Decode(data.AsSpan());
+    }
+
+    /// <summary>
+    /// Decode a GIF file from a span.
+    /// </summary>
+    public static GifFile Decode(ReadOnlySpan<byte> data)
+    {
         try
         {
-            return DecodeInternal(data);
+            return DecodeInternal(data.ToArray());
         }
         catch (GifException)
         {
@@ -36,6 +45,24 @@ public static class GifDecoder
         {
             throw new GifException($"Failed to decode GIF: {ex.Message}", ex);
         }
+    }
+
+    /// <summary>
+    /// Decode a GIF file from a stream.
+    /// </summary>
+    public static GifFile Decode(Stream stream)
+    {
+        using var ms = new MemoryStream();
+        stream.CopyTo(ms);
+        return Decode(ms.ToArray());
+    }
+
+    /// <summary>
+    /// Decode a GIF file from a file.
+    /// </summary>
+    public static GifFile Decode(string path)
+    {
+        return Decode(File.ReadAllBytes(path));
     }
 
     private static GifFile DecodeInternal(byte[] data)

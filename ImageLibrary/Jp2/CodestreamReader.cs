@@ -388,10 +388,29 @@ internal class CodestreamReader
 /// </summary>
 public class Jp2Codestream
 {
+    /// <summary>
+    /// Gets or sets the frame information containing image dimensions and component details.
+    /// </summary>
     public Jp2Frame Frame { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the coding parameters that control how the image is compressed.
+    /// </summary>
     public CodingParameters CodingParameters { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the quantization parameters used for coefficient quantization.
+    /// </summary>
     public QuantizationParameters QuantizationParameters { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the list of comments embedded in the codestream.
+    /// </summary>
     public List<string> Comments { get; set; } = new List<string>();
+
+    /// <summary>
+    /// Gets or sets the list of tile-parts that make up the compressed image data.
+    /// </summary>
     public List<Jp2TilePart> TileParts { get; set; } = new List<Jp2TilePart>();
 }
 
@@ -400,9 +419,24 @@ public class Jp2Codestream
 /// </summary>
 public class Jp2TilePart
 {
+    /// <summary>
+    /// Gets or sets the index of the tile this part belongs to.
+    /// </summary>
     public int TileIndex { get; set; }
+
+    /// <summary>
+    /// Gets or sets the index of this part within the tile.
+    /// </summary>
     public int TilePartIndex { get; set; }
+
+    /// <summary>
+    /// Gets or sets the total number of tile-parts for this tile.
+    /// </summary>
     public int TilePartCount { get; set; }
+
+    /// <summary>
+    /// Gets or sets the compressed bitstream data for this tile-part.
+    /// </summary>
     public byte[] BitstreamData { get; set; } = Array.Empty<byte>();
 }
 
@@ -411,6 +445,16 @@ public class Jp2TilePart
 /// </summary>
 public class Jp2Exception : Exception
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Jp2Exception"/> class with a specified error message.
+    /// </summary>
+    /// <param name="message">The message that describes the error.</param>
     public Jp2Exception(string message) : base(message) { }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Jp2Exception"/> class with a specified error message and a reference to the inner exception that is the cause of this exception.
+    /// </summary>
+    /// <param name="message">The error message that explains the reason for the exception.</param>
+    /// <param name="inner">The exception that is the cause of the current exception.</param>
     public Jp2Exception(string message, Exception inner) : base(message, inner) { }
 }

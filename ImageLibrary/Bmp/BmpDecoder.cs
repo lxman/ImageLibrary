@@ -113,7 +113,7 @@ public static class BmpDecoder
     /// <summary>
     /// Decode a BMP image from a file.
     /// </summary>
-    public static BmpImage DecodeFile(string path)
+    public static BmpImage Decode(string path)
     {
         return Decode(File.ReadAllBytes(path));
     }

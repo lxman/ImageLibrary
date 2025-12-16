@@ -53,10 +53,10 @@ public class Jp2Frame
 /// </summary>
 public class Jp2Component
 {
-    /// <summary>Bit depth (Ssiz & 0x7F), 0-based (actual bits = BitDepth + 1).</summary>
+    /// <summary>Bit depth (Ssiz &amp; 0x7F), 0-based (actual bits = BitDepth + 1).</summary>
     public int BitDepth { get; set; }
 
-    /// <summary>Whether the component is signed (Ssiz & 0x80).</summary>
+    /// <summary>Whether the component is signed (Ssiz &amp; 0x80).</summary>
     public bool IsSigned { get; set; }
 
     /// <summary>Horizontal subsampling factor (XRsiz).</summary>

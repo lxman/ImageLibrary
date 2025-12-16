@@ -84,6 +84,23 @@ public static class TgaEncoder
         return result;
     }
 
+    /// <summary>
+    /// Encode a TGA image to a stream.
+    /// </summary>
+    public static void Encode(TgaImage image, Stream stream, int bitsPerPixel = 32, bool useRle = false)
+    {
+        byte[] data = Encode(image, bitsPerPixel, useRle);
+        stream.Write(data, 0, data.Length);
+    }
+
+    /// <summary>
+    /// Encode a TGA image to a file.
+    /// </summary>
+    public static void Encode(TgaImage image, string path, int bitsPerPixel = 32, bool useRle = false)
+    {
+        File.WriteAllBytes(path, Encode(image, bitsPerPixel, useRle));
+    }
+
     private static byte[] EncodeUncompressed(TgaImage image, int bytesPerPixel)
     {
         var result = new byte[image.Width * image.Height * bytesPerPixel];

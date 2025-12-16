@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using ImageLibrary.Jp2.Dequantization;
 using ImageLibrary.Jp2.Pipeline;
@@ -28,10 +29,25 @@ public class Jp2Decoder
     private readonly PostProcessor _postProcessor;
 
     // JP2 color space constants
+    /// <summary>
+    /// Color space constant for sRGB.
+    /// </summary>
     public const int ColorSpaceSRGB = 16;
+
+    /// <summary>
+    /// Color space constant for greyscale.
+    /// </summary>
     public const int ColorSpaceGreyscale = 17;
+
+    /// <summary>
+    /// Color space constant for YCC (sYCC).
+    /// </summary>
     public const int ColorSpaceYCC = 18;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Jp2Decoder"/> class from JPEG2000 data.
+    /// </summary>
+    /// <param name="data">The JPEG2000 file data (JP2 or raw codestream).</param>
     public Jp2Decoder(byte[] data)
     {
         // Check if this is a JP2 file or raw codestream
@@ -74,6 +90,29 @@ public class Jp2Decoder
         _dequantizer = new Dequantizer(_codestream);
         _inverseDwt = new InverseDwt(_codestream.CodingParameters.WaveletType);
         _postProcessor = new PostProcessor(_codestream, _jp2ColorSpace, fileInfo?.ChannelDefinitions);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Jp2Decoder"/> class from a stream.
+    /// </summary>
+    /// <param name="stream">Stream containing JPEG2000 data (JP2 or raw codestream).</param>
+    public Jp2Decoder(Stream stream) : this(ReadStreamToArray(stream))
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Jp2Decoder"/> class from a file path.
+    /// </summary>
+    /// <param name="path">Path to JPEG2000 file (JP2 or raw codestream).</param>
+    public Jp2Decoder(string path) : this(File.ReadAllBytes(path))
+    {
+    }
+
+    private static byte[] ReadStreamToArray(Stream stream)
+    {
+        using var ms = new MemoryStream();
+        stream.CopyTo(ms);
+        return ms.ToArray();
     }
 
     /// <summary>
@@ -360,7 +399,18 @@ public class Jp2Decoder
 /// </summary>
 public class IntermediateData
 {
+    /// <summary>
+    /// Gets or sets the output from the Tier-2 decoding stage (packet parsing).
+    /// </summary>
     public Tier2Output? Tier2Output { get; set; }
+
+    /// <summary>
+    /// Gets or sets the quantized subbands after Tier-1 decoding.
+    /// </summary>
     public QuantizedSubband[]? Subbands { get; set; }
+
+    /// <summary>
+    /// Gets or sets the DWT coefficients after dequantization.
+    /// </summary>
     public DwtCoefficients? DwtCoefficients { get; set; }
 }

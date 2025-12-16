@@ -50,7 +50,7 @@ public static class BmpEncoder
     /// <summary>
     /// Encode a BMP image to a file.
     /// </summary>
-    public static void EncodeFile(BmpImage image, string path, int bitsPerPixel = 24)
+    public static void Encode(BmpImage image, string path, int bitsPerPixel = 24)
     {
         File.WriteAllBytes(path, Encode(image, bitsPerPixel));
     }

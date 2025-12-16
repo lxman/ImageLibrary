@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace ImageLibrary.Jbig2;
 
@@ -26,6 +27,40 @@ public sealed class Jbig2Decoder
     public Jbig2Decoder(byte[] data, byte[]? globalData = null, Jbig2DecoderOptions? options = null)
     {
         _data = data ?? throw new ArgumentNullException(nameof(data));
+        _globalData = globalData;
+        _options = options ?? Jbig2DecoderOptions.Default;
+
+        if (_data.Length == 0)
+            throw new Jbig2DataException("JBIG2 data is empty");
+    }
+
+    /// <summary>
+    /// Creates a decoder from a stream.
+    /// </summary>
+    /// <param name="stream">Stream containing JBIG2 data</param>
+    /// <param name="globalData">Optional global segment data (JBIG2Globals in PDF)</param>
+    /// <param name="options">Decoder options with resource limits</param>
+    public Jbig2Decoder(Stream stream, byte[]? globalData = null, Jbig2DecoderOptions? options = null)
+    {
+        using var ms = new MemoryStream();
+        stream.CopyTo(ms);
+        _data = ms.ToArray();
+        _globalData = globalData;
+        _options = options ?? Jbig2DecoderOptions.Default;
+
+        if (_data.Length == 0)
+            throw new Jbig2DataException("JBIG2 data is empty");
+    }
+
+    /// <summary>
+    /// Creates a decoder from a file path.
+    /// </summary>
+    /// <param name="path">Path to JBIG2 file</param>
+    /// <param name="globalData">Optional global segment data (JBIG2Globals in PDF)</param>
+    /// <param name="options">Decoder options with resource limits</param>
+    public Jbig2Decoder(string path, byte[]? globalData = null, Jbig2DecoderOptions? options = null)
+    {
+        _data = System.IO.File.ReadAllBytes(path);
         _globalData = globalData;
         _options = options ?? Jbig2DecoderOptions.Default;
 

@@ -59,6 +59,7 @@ internal sealed class GenericRegionDecoder
     /// <param name="adaptivePixels">Adaptive template pixel positions (4 for template 0, 1 for others)</param>
     /// <param name="typicalPrediction">Whether to use typical prediction</param>
     /// <param name="options">Decoder options for resource limits</param>
+    /// <param name="contexts">Pre-allocated arithmetic decoder contexts (optional)</param>
     public GenericRegionDecoder(
         ArithmeticDecoder decoder,
         int template = 0,

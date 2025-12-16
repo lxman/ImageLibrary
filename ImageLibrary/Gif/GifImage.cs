@@ -26,6 +26,12 @@ public class GifImage
     /// <summary>Frame delay in milliseconds (for animated GIFs).</summary>
     public int DelayMs { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GifImage"/> class with the specified dimensions and pixel data.
+    /// </summary>
+    /// <param name="width">The width of the image in pixels.</param>
+    /// <param name="height">The height of the image in pixels.</param>
+    /// <param name="pixelData">The pixel data in BGRA format (32 bits per pixel).</param>
     public GifImage(int width, int height, byte[] pixelData)
     {
         if (width <= 0) throw new ArgumentOutOfRangeException(nameof(width));
@@ -99,6 +105,11 @@ public class GifFile
     /// <summary>Background color (BGRA).</summary>
     public (byte B, byte G, byte R, byte A) BackgroundColor { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GifFile"/> class with the specified logical screen dimensions.
+    /// </summary>
+    /// <param name="width">The logical screen width.</param>
+    /// <param name="height">The logical screen height.</param>
     public GifFile(int width, int height)
     {
         if (width <= 0) throw new ArgumentOutOfRangeException(nameof(width));

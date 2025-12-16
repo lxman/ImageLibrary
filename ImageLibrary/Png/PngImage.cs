@@ -28,6 +28,14 @@ public class PngImage
     /// <summary>Stride of the BGRA pixel data (Width * 4).</summary>
     public int Stride => Width * 4;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PngImage"/> class with the specified dimensions and pixel data.
+    /// </summary>
+    /// <param name="width">The width of the image in pixels.</param>
+    /// <param name="height">The height of the image in pixels.</param>
+    /// <param name="bitDepth">The bit depth of the original PNG image.</param>
+    /// <param name="colorType">The color type of the original PNG image.</param>
+    /// <param name="pixelData">The pixel data in BGRA format (32 bits per pixel).</param>
     public PngImage(int width, int height, int bitDepth, PngColorType colorType, byte[] pixelData)
     {
         if (width <= 0) throw new ArgumentOutOfRangeException(nameof(width));

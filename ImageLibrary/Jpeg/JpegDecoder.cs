@@ -25,6 +25,24 @@ public class JpegDecoder
     }
 
     /// <summary>
+    /// Creates a decoder from a stream.
+    /// </summary>
+    public JpegDecoder(Stream stream)
+    {
+        using var ms = new MemoryStream();
+        stream.CopyTo(ms);
+        _data = ms.ToArray();
+    }
+
+    /// <summary>
+    /// Creates a decoder from a file path.
+    /// </summary>
+    public JpegDecoder(string path)
+    {
+        _data = File.ReadAllBytes(path);
+    }
+
+    /// <summary>
     /// Decodes the JPEG image and returns the RGB pixel data.
     /// </summary>
     /// <returns>A DecodedImage containing the width, height, and RGB pixel data</returns>
@@ -84,6 +102,12 @@ public class DecodedImage
     /// </summary>
     public byte[] RgbData { get; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DecodedImage"/> class with the specified dimensions and RGB pixel data.
+    /// </summary>
+    /// <param name="width">The width of the image in pixels.</param>
+    /// <param name="height">The height of the image in pixels.</param>
+    /// <param name="rgbData">The RGB pixel data (R, G, B, R, G, B, ...).</param>
     public DecodedImage(int width, int height, byte[] rgbData)
     {
         Width = width;

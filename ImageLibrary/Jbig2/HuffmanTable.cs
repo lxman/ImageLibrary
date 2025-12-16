@@ -26,6 +26,12 @@ public readonly struct HuffmanLine
     /// </summary>
     public readonly int RangeLow;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HuffmanLine"/> struct.
+    /// </summary>
+    /// <param name="prefixLength">Prefix code length in bits.</param>
+    /// <param name="rangeLength">Number of additional bits for range offset.</param>
+    /// <param name="rangeLow">Base value for the range.</param>
     public HuffmanLine(int prefixLength, int rangeLength, int rangeLow)
     {
         PrefixLength = prefixLength;

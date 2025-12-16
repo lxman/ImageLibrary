@@ -9,8 +9,19 @@ public sealed class Bitmap
 {
     private readonly byte[] _data;
 
+    /// <summary>
+    /// Gets the width of the bitmap in pixels.
+    /// </summary>
     public int Width { get; }
+
+    /// <summary>
+    /// Gets the height of the bitmap in pixels.
+    /// </summary>
     public int Height { get; }
+
+    /// <summary>
+    /// Gets the number of bytes per row (stride) in the bitmap data.
+    /// </summary>
     public int Stride { get; }
 
     /// <summary>
@@ -191,9 +202,28 @@ public sealed class Bitmap
 /// </summary>
 public enum CombinationOperator
 {
+    /// <summary>
+    /// Bitwise OR operation.
+    /// </summary>
     Or = 0,
+
+    /// <summary>
+    /// Bitwise AND operation.
+    /// </summary>
     And = 1,
+
+    /// <summary>
+    /// Bitwise XOR (exclusive OR) operation.
+    /// </summary>
     Xor = 2,
+
+    /// <summary>
+    /// Bitwise XNOR (exclusive NOR) operation.
+    /// </summary>
     Xnor = 3,
+
+    /// <summary>
+    /// Replace operation (source overwrites destination).
+    /// </summary>
     Replace = 4
 }

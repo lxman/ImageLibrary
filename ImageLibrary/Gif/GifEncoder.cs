@@ -86,6 +86,40 @@ public static class GifEncoder
         return ms.ToArray();
     }
 
+    /// <summary>
+    /// Encode a single image to GIF format and write to a stream.
+    /// </summary>
+    public static void Encode(GifImage image, Stream stream, int maxColors = 256)
+    {
+        byte[] data = Encode(image, maxColors);
+        stream.Write(data, 0, data.Length);
+    }
+
+    /// <summary>
+    /// Encode a single image to GIF format and write to a file.
+    /// </summary>
+    public static void Encode(GifImage image, string path, int maxColors = 256)
+    {
+        File.WriteAllBytes(path, Encode(image, maxColors));
+    }
+
+    /// <summary>
+    /// Encode a GIF file to a stream.
+    /// </summary>
+    public static void Encode(GifFile gifFile, Stream stream, int maxColors = 256)
+    {
+        byte[] data = Encode(gifFile, maxColors);
+        stream.Write(data, 0, data.Length);
+    }
+
+    /// <summary>
+    /// Encode a GIF file to a file.
+    /// </summary>
+    public static void Encode(GifFile gifFile, string path, int maxColors = 256)
+    {
+        File.WriteAllBytes(path, Encode(gifFile, maxColors));
+    }
+
     private static (GifColor[] colors, byte[] indices) BuildColorTable(GifImage image, int maxColors)
     {
         // Simple median cut color quantization

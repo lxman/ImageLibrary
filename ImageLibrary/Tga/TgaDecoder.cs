@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace ImageLibrary.Tga;
 
@@ -12,13 +13,22 @@ public static class TgaDecoder
     /// </summary>
     public static TgaImage Decode(byte[] data)
     {
+        return Decode(data.AsSpan());
+    }
+
+    /// <summary>
+    /// Decode a TGA image from a span.
+    /// </summary>
+    public static TgaImage Decode(ReadOnlySpan<byte> data)
+    {
         try
         {
-            if (data.Length < TgaHeader.Size)
+            byte[] dataArray = data.ToArray();
+            if (dataArray.Length < TgaHeader.Size)
                 throw new TgaException("Data too small for TGA header");
 
             var offset = 0;
-            TgaHeader header = ReadHeader(data, ref offset);
+            TgaHeader header = ReadHeader(dataArray, ref offset);
 
             if (header.Width == 0 || header.Height == 0)
                 throw new TgaException("Invalid image dimensions");
@@ -37,10 +47,10 @@ public static class TgaDecoder
             {
                 colorMapBytesPerEntry = (header.ColorMapEntrySize + 7) / 8;
                 int colorMapSize = header.ColorMapLength * colorMapBytesPerEntry;
-                if (offset + colorMapSize > data.Length)
+                if (offset + colorMapSize > dataArray.Length)
                     throw new TgaException("Unexpected end of data reading color map");
                 colorMap = new byte[colorMapSize];
-                Array.Copy(data, offset, colorMap, 0, colorMapSize);
+                Array.Copy(dataArray, offset, colorMap, 0, colorMapSize);
                 offset += colorMapSize;
             }
 
@@ -55,27 +65,27 @@ public static class TgaDecoder
                     throw new TgaException("TGA file contains no image data");
 
                 case TgaImageType.ColorMapped:
-                    DecodeColorMapped(data, ref offset, header, colorMap!, colorMapBytesPerEntry, pixelData);
+                    DecodeColorMapped(dataArray, ref offset, header, colorMap!, colorMapBytesPerEntry, pixelData);
                     break;
 
                 case TgaImageType.TrueColor:
-                    DecodeTrueColor(data, ref offset, header, pixelData);
+                    DecodeTrueColor(dataArray, ref offset, header, pixelData);
                     break;
 
                 case TgaImageType.Grayscale:
-                    DecodeGrayscale(data, ref offset, header, pixelData);
+                    DecodeGrayscale(dataArray, ref offset, header, pixelData);
                     break;
 
                 case TgaImageType.RleColorMapped:
-                    DecodeRleColorMapped(data, ref offset, header, colorMap!, colorMapBytesPerEntry, pixelData);
+                    DecodeRleColorMapped(dataArray, ref offset, header, colorMap!, colorMapBytesPerEntry, pixelData);
                     break;
 
                 case TgaImageType.RleTrueColor:
-                    DecodeRleTrueColor(data, ref offset, header, pixelData);
+                    DecodeRleTrueColor(dataArray, ref offset, header, pixelData);
                     break;
 
                 case TgaImageType.RleGrayscale:
-                    DecodeRleGrayscale(data, ref offset, header, pixelData);
+                    DecodeRleGrayscale(dataArray, ref offset, header, pixelData);
                     break;
 
                 default:
@@ -107,6 +117,24 @@ public static class TgaDecoder
         {
             throw new TgaException($"Failed to decode TGA: {ex.Message}", ex);
         }
+    }
+
+    /// <summary>
+    /// Decode a TGA image from a stream.
+    /// </summary>
+    public static TgaImage Decode(Stream stream)
+    {
+        using var ms = new MemoryStream();
+        stream.CopyTo(ms);
+        return Decode(ms.ToArray());
+    }
+
+    /// <summary>
+    /// Decode a TGA image from a file.
+    /// </summary>
+    public static TgaImage Decode(string path)
+    {
+        return Decode(File.ReadAllBytes(path));
     }
 
     private static TgaHeader ReadHeader(byte[] data, ref int offset)

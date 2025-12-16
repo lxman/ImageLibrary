@@ -31,6 +31,13 @@ public class BmpImage
     /// <summary>Stride of the BGRA pixel data (Width * 4).</summary>
     public int Stride => Width * 4;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BmpImage"/> class with the specified dimensions and pixel data.
+    /// </summary>
+    /// <param name="width">The width of the image in pixels.</param>
+    /// <param name="height">The height of the image in pixels.</param>
+    /// <param name="bitsPerPixel">The bits per pixel of the original BMP image.</param>
+    /// <param name="pixelData">The pixel data in BGRA format (32 bits per pixel).</param>
     public BmpImage(int width, int height, int bitsPerPixel, byte[] pixelData)
     {
         if (width <= 0) throw new ArgumentOutOfRangeException(nameof(width));

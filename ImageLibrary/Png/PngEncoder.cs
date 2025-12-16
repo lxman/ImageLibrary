@@ -50,6 +50,23 @@ public static class PngEncoder
         return ms.ToArray();
     }
 
+    /// <summary>
+    /// Encode a PNG image to a stream.
+    /// </summary>
+    public static void Encode(PngImage image, Stream stream, PngColorType colorType = PngColorType.Rgba)
+    {
+        byte[] data = Encode(image, colorType);
+        stream.Write(data, 0, data.Length);
+    }
+
+    /// <summary>
+    /// Encode a PNG image to a file.
+    /// </summary>
+    public static void Encode(PngImage image, string path, PngColorType colorType = PngColorType.Rgba)
+    {
+        File.WriteAllBytes(path, Encode(image, colorType));
+    }
+
     private static bool ImageHasAlpha(PngImage image)
     {
         for (var i = 3; i < image.PixelData.Length; i += 4)

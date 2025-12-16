@@ -50,6 +50,7 @@ public class CodingParameters
 [Flags]
 public enum CodingStyle : byte
 {
+    /// <summary>No coding style flags set.</summary>
     None = 0,
     /// <summary>Precincts defined in COD marker.</summary>
     PrecinctsDefined = 0x01,
@@ -82,6 +83,7 @@ public enum ProgressionOrder : byte
 [Flags]
 public enum CodeBlockStyle : byte
 {
+    /// <summary>No code-block style flags set.</summary>
     None = 0,
     /// <summary>Selective arithmetic coding bypass.</summary>
     SelectiveBypass = 0x01,
@@ -141,9 +143,21 @@ public enum QuantizationStyle : byte
 /// </summary>
 public readonly struct QuantizationStepSize
 {
+    /// <summary>
+    /// Gets the exponent component of the quantization step size.
+    /// </summary>
     public readonly int Exponent;
+
+    /// <summary>
+    /// Gets the mantissa component of the quantization step size.
+    /// </summary>
     public readonly int Mantissa;
-        
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="QuantizationStepSize"/> struct.
+    /// </summary>
+    /// <param name="exponent">The exponent component.</param>
+    /// <param name="mantissa">The mantissa component.</param>
     public QuantizationStepSize(int exponent, int mantissa)
     {
         Exponent = exponent;

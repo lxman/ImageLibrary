@@ -14,9 +14,17 @@ public static class PngDecoder
     /// </summary>
     public static PngImage Decode(byte[] data)
     {
+        return Decode(data.AsSpan());
+    }
+
+    /// <summary>
+    /// Decode a PNG image from a span.
+    /// </summary>
+    public static PngImage Decode(ReadOnlySpan<byte> data)
+    {
         try
         {
-            return DecodeInternal(data);
+            return DecodeInternal(data.ToArray());
         }
         catch (PngException)
         {
@@ -42,6 +50,24 @@ public static class PngDecoder
         {
             throw new PngException($"Failed to decode PNG: {ex.Message}", ex);
         }
+    }
+
+    /// <summary>
+    /// Decode a PNG image from a stream.
+    /// </summary>
+    public static PngImage Decode(Stream stream)
+    {
+        using var ms = new MemoryStream();
+        stream.CopyTo(ms);
+        return Decode(ms.ToArray());
+    }
+
+    /// <summary>
+    /// Decode a PNG image from a file.
+    /// </summary>
+    public static PngImage Decode(string path)
+    {
+        return Decode(File.ReadAllBytes(path));
     }
 
     private static PngImage DecodeInternal(byte[] data)
