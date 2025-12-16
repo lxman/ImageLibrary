@@ -26,8 +26,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Jp2Codec\Jp2Codec.csproj" />
     <ProjectReference Include="..\PngCodec\PngCodec.csproj" />
-    <!-- Reference Melville.CSJ2K for comparison testing only -->
-    <ProjectReference Include="..\..\Pdf\Src\Melville.CSJ2k\Melville.CSJ2K.csproj" />
   </ItemGroup>
 
 </Project>

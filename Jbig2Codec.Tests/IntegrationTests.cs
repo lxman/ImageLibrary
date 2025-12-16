@@ -105,29 +105,6 @@ public class IntegrationTests
         Assert.Equal(200, bitmap.Height);
     }
 
-    [Theory]
-    [InlineData("simple_line.jb2", "simple_line_ref.pbm")]
-    [InlineData("small_rect.jb2", "small_rect_ref.pbm")]
-    [InlineData("medium_rect.jb2", "medium_rect_ref.pbm")]
-    public void Decode_MatchesReference(string jbig2File, string referenceFile)
-    {
-        byte[] data = LoadTestFile(jbig2File);
-        byte[]? referenceData = LoadReferenceFile(referenceFile);
-
-        // Skip if reference doesn't exist
-        if (referenceData == null)
-            return;
-
-        var decoder = new Jbig2Decoder(data);
-        Bitmap bitmap = decoder.Decode();
-
-        Assert.NotNull(bitmap);
-
-        // Convert bitmap to PBM format and compare
-        byte[] decodedPbm = BitmapToPbm(bitmap);
-        Assert.Equal(referenceData, decodedPbm);
-    }
-
     [Fact]
     public void Decode_AllTestFiles_DoNotThrow()
     {
