@@ -77,6 +77,9 @@ internal enum TiffTag : ushort
     /// <summary>Sample format (1=unsigned int, 2=signed int, 3=IEEE float).</summary>
     SampleFormat = 339,
 
+    /// <summary>JPEG quantization and Huffman tables (TIFF Technical Note #2).</summary>
+    JpegTables = 347,
+
     /// <summary>Predictor (1=none, 2=horizontal differencing).</summary>
     Predictor = 317
 }

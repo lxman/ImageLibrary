@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using ImageLibrary.Ccitt;
+using ImageLibrary.Jpeg;
 using ImageLibrary.Lzw;
 
 namespace ImageLibrary.Tiff;
@@ -165,7 +166,16 @@ public static class TiffDecoder
         }
 
         // Convert to BGRA format
-        byte[] pixelData = ConvertToBgra(decompressedData, width, height, photometric, samplesPerPixel, bitsPerSample, planarConfiguration);
+        // Note: JPEG decompression already produces BGRA data, so skip conversion for JPEG
+        byte[] pixelData;
+        if (compression == TiffCompression.Jpeg || compression == TiffCompression.OldJpeg)
+        {
+            pixelData = decompressedData; // Already in BGRA format from DecompressJpeg
+        }
+        else
+        {
+            pixelData = ConvertToBgra(decompressedData, width, height, photometric, samplesPerPixel, bitsPerSample, planarConfiguration, littleEndian);
+        }
 
         // Apply aspect ratio correction for images with non-square pixels
         double xResolution = ReadRational(reader, tags, TiffTag.XResolution, littleEndian);
@@ -415,6 +425,7 @@ public static class TiffDecoder
             TiffCompression.Lzw => DecompressLzw(data, tags),
             TiffCompression.AdobeDeflate or TiffCompression.Deflate => DecompressDeflate(data, width, height, tags),
             TiffCompression.PackBits => DecompressPackBits(data),
+            TiffCompression.Jpeg or TiffCompression.OldJpeg => DecompressJpeg(data, width, height, tags),
             _ => throw new TiffException($"Unsupported TIFF compression: {compression}")
         };
     }
@@ -617,6 +628,74 @@ public static class TiffDecoder
         return output.ToArray();
     }
 
+    private static byte[] DecompressJpeg(byte[] data, int width, int height, Dictionary<TiffTag, object> tags)
+    {
+        // TIFF JPEG (Technical Note #2) can store JPEG tables separately in JPEGTables tag (347)
+        // If present, we need to combine the tables with the abbreviated strip/tile data
+        byte[] jpegData = data;
+
+        if (tags.TryGetValue(TiffTag.JpegTables, out object? jpegTablesObj))
+        {
+            byte[] jpegTables = (byte[])jpegTablesObj;
+
+            // JPEGTables contains: SOI (0xFFD8) + DHT/DQT/... + EOI (0xFFD9)
+            // Strip data contains: SOI (0xFFD8) + SOS + compressed data + EOI (0xFFD9)
+            // Combine as: SOI + (tables without SOI/EOI) + (strip data without SOI/EOI) + EOI
+
+            // Extract tables (skip first 2 bytes SOI and last 2 bytes EOI)
+            int tablesLength = jpegTables.Length - 4; // Remove SOI and EOI
+            byte[] tablesContent = new byte[tablesLength];
+            Array.Copy(jpegTables, 2, tablesContent, 0, tablesLength);
+
+            // Extract strip data (skip first 2 bytes SOI and last 2 bytes EOI)
+            int stripLength = data.Length - 4;
+            byte[] stripContent = new byte[stripLength];
+            Array.Copy(data, 2, stripContent, 0, stripLength);
+
+            // Combine: SOI + tables + strip content + EOI
+            jpegData = new byte[2 + tablesLength + stripLength + 2];
+            jpegData[0] = 0xFF; // SOI
+            jpegData[1] = 0xD8;
+            Array.Copy(tablesContent, 0, jpegData, 2, tablesLength);
+            Array.Copy(stripContent, 0, jpegData, 2 + tablesLength, stripLength);
+            jpegData[jpegData.Length - 2] = 0xFF; // EOI
+            jpegData[jpegData.Length - 1] = 0xD9;
+        }
+
+        // Decode JPEG data using the ImageLibrary JPEG decoder
+        var decoder = new JpegDecoder(jpegData);
+        var decodedImage = decoder.Decode();
+
+        // Verify dimensions match expected tile/strip dimensions
+        if (decodedImage.Width != width || decodedImage.Height != height)
+        {
+            throw new TiffException($"JPEG dimensions ({decodedImage.Width}x{decodedImage.Height}) do not match expected dimensions ({width}x{height})");
+        }
+
+        // Convert RGB (3 bytes/pixel) to BGRA (4 bytes/pixel)
+        // JPEG decoder outputs: R, G, B, R, G, B, ...
+        // TIFF expects: B, G, R, A, B, G, R, A, ...
+        int pixelCount = width * height;
+        byte[] bgra = new byte[pixelCount * 4];
+
+        for (int i = 0; i < pixelCount; i++)
+        {
+            int rgbOffset = i * 3;
+            int bgraOffset = i * 4;
+
+            byte r = decodedImage.RgbData[rgbOffset];
+            byte g = decodedImage.RgbData[rgbOffset + 1];
+            byte b = decodedImage.RgbData[rgbOffset + 2];
+
+            bgra[bgraOffset] = b;     // Blue
+            bgra[bgraOffset + 1] = g; // Green
+            bgra[bgraOffset + 2] = r; // Red
+            bgra[bgraOffset + 3] = 255; // Alpha (opaque)
+        }
+
+        return bgra;
+    }
+
     private static byte[] ApplyHorizontalDifferencing(byte[] data, int width, int height)
     {
         // TIFF Predictor 2: horizontal differencing (similar to PNG Sub filter)
@@ -638,7 +717,7 @@ public static class TiffDecoder
     }
 
     private static byte[] ConvertToBgra(byte[] data, int width, int height, TiffPhotometricInterpretation photometric,
-        int samplesPerPixel, int[] bitsPerSample, int planarConfiguration)
+        int samplesPerPixel, int[] bitsPerSample, int planarConfiguration, bool littleEndian)
     {
         var pixelData = new byte[width * height * 4];
 
@@ -656,6 +735,14 @@ public static class TiffDecoder
                 // 8-bit grayscale
                 ConvertGrayscaleToBgra(data, pixelData, width, height);
                 break;
+            case TiffPhotometricInterpretation.BlackIsZero when bitsPerSample[0] == 16 && samplesPerPixel == 1:
+                // 16-bit grayscale
+                ConvertGrayscale16ToBgra(data, pixelData, width, height, littleEndian);
+                break;
+            case TiffPhotometricInterpretation.WhiteIsZero when bitsPerSample[0] == 16 && samplesPerPixel == 1:
+                // 16-bit grayscale (inverted)
+                ConvertGrayscale16ToBgra(data, pixelData, width, height, littleEndian, invertColors: true);
+                break;
             case TiffPhotometricInterpretation.Rgb when bitsPerSample[0] == 8 && samplesPerPixel == 3:
                 // 24-bit RGB
                 if (planarConfiguration == 2)
@@ -666,6 +753,17 @@ public static class TiffDecoder
             case TiffPhotometricInterpretation.Rgb when bitsPerSample[0] == 8 && samplesPerPixel == 4:
                 // 32-bit RGBA
                 ConvertRgbaToBgra(data, pixelData, width, height);
+                break;
+            case TiffPhotometricInterpretation.Rgb when bitsPerSample[0] == 16 && samplesPerPixel == 3:
+                // 48-bit RGB (16-bit per channel)
+                if (planarConfiguration == 2)
+                    ConvertPlanarRgb16ToBgra(data, pixelData, width, height, littleEndian);
+                else
+                    ConvertRgb16ToBgra(data, pixelData, width, height, littleEndian);
+                break;
+            case TiffPhotometricInterpretation.Rgb when bitsPerSample[0] == 16 && samplesPerPixel == 4:
+                // 64-bit RGBA (16-bit per channel)
+                ConvertRgba16ToBgra(data, pixelData, width, height, littleEndian);
                 break;
             default:
                 throw new TiffException($"Unsupported TIFF format: {photometric} with {bitsPerSample[0]} bits/sample and {samplesPerPixel} samples/pixel");
@@ -760,6 +858,144 @@ public static class TiffDecoder
             byte g = data[i + 1];
             byte b = data[i + 2];
             byte a = data[i + 3];
+
+            pixelData[pixelIndex++] = b; // Blue
+            pixelData[pixelIndex++] = g; // Green
+            pixelData[pixelIndex++] = r; // Red
+            pixelData[pixelIndex++] = a; // Alpha
+        }
+    }
+
+    private static void ConvertGrayscale16ToBgra(byte[] data, byte[] pixelData, int width, int height, bool littleEndian, bool invertColors = false)
+    {
+        // First pass: find min/max for normalization
+        ushort minVal = ushort.MaxValue, maxVal = 0;
+
+        for (var i = 0; i < data.Length; i += 2)
+        {
+            ushort value16 = littleEndian
+                ? (ushort)(data[i] | (data[i + 1] << 8))
+                : (ushort)((data[i] << 8) | data[i + 1]);
+
+            minVal = Math.Min(minVal, value16);
+            maxVal = Math.Max(maxVal, value16);
+        }
+
+        // Calculate scaling factor for normalization
+        float range = maxVal - minVal;
+        float scale = range > 0 ? 255.0f / range : 0;
+
+        // Second pass: convert with normalization
+        var pixelIndex = 0;
+        for (var i = 0; i < data.Length; i += 2)
+        {
+            ushort value16 = littleEndian
+                ? (ushort)(data[i] | (data[i + 1] << 8))
+                : (ushort)((data[i] << 8) | data[i + 1]);
+
+            // Normalize to 0-255 range
+            byte gray = (byte)Math.Min(255, (int)((value16 - minVal) * scale));
+
+            if (invertColors)
+                gray = (byte)(255 - gray);
+
+            pixelData[pixelIndex++] = gray; // Blue
+            pixelData[pixelIndex++] = gray; // Green
+            pixelData[pixelIndex++] = gray; // Red
+            pixelData[pixelIndex++] = 255;  // Alpha
+        }
+    }
+
+    private static void ConvertRgb16ToBgra(byte[] data, byte[] pixelData, int width, int height, bool littleEndian)
+    {
+        var pixelIndex = 0;
+        for (var i = 0; i < data.Length; i += 6) // 6 bytes = 3 channels × 2 bytes
+        {
+            // Read 16-bit values respecting byte order
+            ushort r16 = littleEndian
+                ? (ushort)(data[i] | (data[i + 1] << 8))
+                : (ushort)((data[i] << 8) | data[i + 1]);
+            ushort g16 = littleEndian
+                ? (ushort)(data[i + 2] | (data[i + 3] << 8))
+                : (ushort)((data[i + 2] << 8) | data[i + 3]);
+            ushort b16 = littleEndian
+                ? (ushort)(data[i + 4] | (data[i + 5] << 8))
+                : (ushort)((data[i + 4] << 8) | data[i + 5]);
+
+            // Downsample to 8-bit
+            byte r = (byte)((r16 + 128) >> 8);
+            byte g = (byte)((g16 + 128) >> 8);
+            byte b = (byte)((b16 + 128) >> 8);
+
+            pixelData[pixelIndex++] = b; // Blue
+            pixelData[pixelIndex++] = g; // Green
+            pixelData[pixelIndex++] = r; // Red
+            pixelData[pixelIndex++] = 255; // Alpha
+        }
+    }
+
+    private static void ConvertPlanarRgb16ToBgra(byte[] data, byte[] pixelData, int width, int height, bool littleEndian)
+    {
+        // Planar format: all R values, then all G values, then all B values (each 16-bit)
+        int pixelCount = width * height;
+        var rOffset = 0;
+        int gOffset = pixelCount * 2; // Each value is 2 bytes
+        int bOffset = pixelCount * 4;
+
+        var pixelIndex = 0;
+        for (var i = 0; i < pixelCount; i++)
+        {
+            int rPos = rOffset + (i * 2);
+            int gPos = gOffset + (i * 2);
+            int bPos = bOffset + (i * 2);
+
+            // Read 16-bit values respecting byte order
+            ushort r16 = littleEndian
+                ? (ushort)(data[rPos] | (data[rPos + 1] << 8))
+                : (ushort)((data[rPos] << 8) | data[rPos + 1]);
+            ushort g16 = littleEndian
+                ? (ushort)(data[gPos] | (data[gPos + 1] << 8))
+                : (ushort)((data[gPos] << 8) | data[gPos + 1]);
+            ushort b16 = littleEndian
+                ? (ushort)(data[bPos] | (data[bPos + 1] << 8))
+                : (ushort)((data[bPos] << 8) | data[bPos + 1]);
+
+            // Downsample to 8-bit
+            byte r = (byte)((r16 + 128) >> 8);
+            byte g = (byte)((g16 + 128) >> 8);
+            byte b = (byte)((b16 + 128) >> 8);
+
+            pixelData[pixelIndex++] = b; // Blue
+            pixelData[pixelIndex++] = g; // Green
+            pixelData[pixelIndex++] = r; // Red
+            pixelData[pixelIndex++] = 255; // Alpha
+        }
+    }
+
+    private static void ConvertRgba16ToBgra(byte[] data, byte[] pixelData, int width, int height, bool littleEndian)
+    {
+        var pixelIndex = 0;
+        for (var i = 0; i < data.Length; i += 8) // 8 bytes = 4 channels × 2 bytes
+        {
+            // Read 16-bit values respecting byte order
+            ushort r16 = littleEndian
+                ? (ushort)(data[i] | (data[i + 1] << 8))
+                : (ushort)((data[i] << 8) | data[i + 1]);
+            ushort g16 = littleEndian
+                ? (ushort)(data[i + 2] | (data[i + 3] << 8))
+                : (ushort)((data[i + 2] << 8) | data[i + 3]);
+            ushort b16 = littleEndian
+                ? (ushort)(data[i + 4] | (data[i + 5] << 8))
+                : (ushort)((data[i + 4] << 8) | data[i + 5]);
+            ushort a16 = littleEndian
+                ? (ushort)(data[i + 6] | (data[i + 7] << 8))
+                : (ushort)((data[i + 6] << 8) | data[i + 7]);
+
+            // Downsample to 8-bit
+            byte r = (byte)((r16 + 128) >> 8);
+            byte g = (byte)((g16 + 128) >> 8);
+            byte b = (byte)((b16 + 128) >> 8);
+            byte a = (byte)((a16 + 128) >> 8);
 
             pixelData[pixelIndex++] = b; // Blue
             pixelData[pixelIndex++] = g; // Green
