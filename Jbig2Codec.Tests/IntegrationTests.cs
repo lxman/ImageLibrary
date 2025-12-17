@@ -1,3 +1,4 @@
+using System.Text;
 using ImageLibrary.Jbig2;
 using Xunit;
 
@@ -158,7 +159,7 @@ public class IntegrationTests
     [Fact]
     public void Decoder_EmptyData_ThrowsException()
     {
-        byte[] emptyData = Array.Empty<byte>();
+        byte[] emptyData = [];
 
         Assert.ThrowsAny<Exception>(() => new Jbig2Decoder(emptyData));
     }
@@ -195,7 +196,7 @@ public class IntegrationTests
     public void Decoder_WithGlobalData_AcceptsGlobals()
     {
         byte[] data = LoadTestFile("simple_line.jb2");
-        byte[] globals = Array.Empty<byte>(); // No actual globals needed for this test
+        byte[] globals = []; // No actual globals needed for this test
 
         var decoder = new Jbig2Decoder(data, globals);
         Bitmap bitmap = decoder.Decode();
@@ -222,7 +223,7 @@ public class IntegrationTests
     private static byte[] BitmapToPbm(Bitmap bitmap)
     {
         using var ms = new MemoryStream();
-        using var writer = new StreamWriter(ms, System.Text.Encoding.ASCII);
+        using var writer = new StreamWriter(ms, Encoding.ASCII);
 
         writer.WriteLine("P4");
         writer.WriteLine($"{bitmap.Width} {bitmap.Height}");

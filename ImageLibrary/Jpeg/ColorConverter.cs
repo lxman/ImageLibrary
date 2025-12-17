@@ -26,10 +26,8 @@ internal class ColorConverter
         {
             return AssembleGrayscale(pixels[0]);
         }
-        else
-        {
-            return AssembleColor(pixels);
-        }
+
+        return AssembleColor(pixels);
     }
 
     /// <summary>

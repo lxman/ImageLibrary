@@ -218,7 +218,7 @@ public class GifImageTests
     {
         var image = new GifImage(10, 10);
 
-        image.SetPixel(5, 5, 100, 150, 200, 255);
+        image.SetPixel(5, 5, 100, 150, 200);
         (byte R, byte G, byte B, byte A) pixel = image.GetPixel(5, 5);
 
         Assert.Equal(100, pixel.R);

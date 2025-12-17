@@ -71,5 +71,5 @@ internal sealed class PatternDictionaryParams
     /// <summary>
     /// Adaptive template pixels (for template 0).
     /// </summary>
-    public (int dx, int dy)[] AdaptivePixels { get; set; } = Array.Empty<(int, int)>();
+    public (int dx, int dy)[] AdaptivePixels { get; set; } = [];
 }

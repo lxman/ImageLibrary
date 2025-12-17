@@ -26,7 +26,7 @@ internal class MqDecoder
     // MQ lookup table (Qe values and state transitions)
     // From JPEG2000 spec Table D.2
     private static readonly MqState[] States =
-    {
+    [
         new MqState(0x5601, 1, 1, true),   // 0
         new MqState(0x3401, 2, 6, false),  // 1
         new MqState(0x1801, 3, 9, false),  // 2
@@ -74,7 +74,7 @@ internal class MqDecoder
         new MqState(0x0005, 45, 42, false), // 44
         new MqState(0x0001, 45, 43, false), // 45
         new MqState(0x5601, 46, 46, false) // 46 (uniform context)
-    };
+    ];
 
     public MqDecoder(byte[] data)
     {
@@ -215,7 +215,7 @@ internal class MqDecoder
         else
         {
             // LPS path
-            _c -= (uint)_a << 16;
+            _c -= _a << 16;
 
             if (_a < qe)
             {

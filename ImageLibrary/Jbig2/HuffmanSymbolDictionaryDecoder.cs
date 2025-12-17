@@ -286,11 +286,9 @@ internal sealed class HuffmanSymbolDictionaryDecoder
             // Single symbol refinement
             return DecodeSingleRefinement(width, height, newSymbols);
         }
-        else
-        {
-            // Multiple symbol aggregation
-            throw new Jbig2UnsupportedException("Multi-symbol aggregation not yet implemented");
-        }
+
+        // Multiple symbol aggregation
+        throw new Jbig2UnsupportedException("Multi-symbol aggregation not yet implemented");
     }
 
     private Bitmap DecodeSingleRefinement(int width, int height, SymbolDictionary newSymbols)

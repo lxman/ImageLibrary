@@ -1,5 +1,3 @@
-using System;
-
 namespace ImageLibrary.Jp2.Pipeline;
 
 /// <summary>
@@ -21,7 +19,7 @@ public class Tier2Output
     /// Resolution 0 has only LL subband.
     /// Resolution r > 0 has HL, LH, HH subbands.
     /// </summary>
-    public CodeBlockBitstream[][][] CodeBlocks { get; set; } = Array.Empty<CodeBlockBitstream[][]>();
+    public CodeBlockBitstream[][][] CodeBlocks { get; set; } = [];
 }
 
 /// <summary>
@@ -48,7 +46,7 @@ public class CodeBlockBitstream
     public int ZeroBitPlanes { get; set; }
 
     /// <summary>The compressed bitstream data.</summary>
-    public byte[] Data { get; set; } = Array.Empty<byte>();
+    public byte[] Data { get; set; } = [];
 
     /// <summary>Bit offset within the first byte.</summary>
     public int BitOffset { get; set; }
@@ -118,7 +116,7 @@ public class DwtCoefficients
     /// Level 0 contains only LL (the final approximation).
     /// Level n > 0 contains HL, LH, HH from decomposition level n.
     /// </summary>
-    public double[][,] Subbands { get; set; } = Array.Empty<double[,]>();
+    public double[][,] Subbands { get; set; } = [];
 }
 
 /// <summary>
@@ -145,5 +143,5 @@ internal class ReconstructedTile
     /// Component data [component][y, x].
     /// Values are floating-point before final conversion to integers.
     /// </summary>
-    public double[][,] Components { get; set; } = Array.Empty<double[,]>();
+    public double[][,] Components { get; set; } = [];
 }

@@ -416,14 +416,15 @@ internal sealed class MmrDecoder
         }
     }
 
-    private static readonly byte[] LeftMask = { 0xFF, 0x7F, 0x3F, 0x1F, 0x0F, 0x07, 0x03, 0x01 };
-    private static readonly byte[] RightMask = { 0x00, 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE };
+    private static readonly byte[] LeftMask = [0xFF, 0x7F, 0x3F, 0x1F, 0x0F, 0x07, 0x03, 0x01];
+    private static readonly byte[] RightMask = [0x00, 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE];
 
     private readonly record struct MmrTableEntry(short Value, short Bits);
 
     // White run-length decode table (304 entries) - from jbig2dec
     // Indexed by top 8 bits of the bit stream
-    private static readonly MmrTableEntry[] WhiteTable = {
+    private static readonly MmrTableEntry[] WhiteTable =
+    [
         new(256,12), new(272,12), new(29,8), new(30,8), new(45,8), new(46,8), new(22,7), new(22,7),
         new(23,7), new(23,7), new(47,8), new(48,8), new(13,6), new(13,6), new(13,6), new(13,6),
         new(20,7), new(20,7), new(33,8), new(34,8), new(35,8), new(36,8), new(37,8), new(38,8),
@@ -461,12 +462,13 @@ internal sealed class MmrDecoder
         new(1792,3), new(1792,3), new(1984,4), new(2048,4), new(2112,4), new(2176,4), new(2240,4), new(2304,4),
         new(1856,3), new(1856,3), new(1920,3), new(1920,3), new(2368,4), new(2432,4), new(2496,4), new(2560,4),
         new(1472,1), new(1536,1), new(1600,1), new(1728,1), new(704,1), new(768,1), new(832,1), new(896,1),
-        new(960,1), new(1024,1), new(1088,1), new(1152,1), new(1216,1), new(1280,1), new(1344,1), new(1408,1),
-    };
+        new(960,1), new(1024,1), new(1088,1), new(1152,1), new(1216,1), new(1280,1), new(1344,1), new(1408,1)
+    ];
 
     // Black run-length decode table (320 entries) - from jbig2dec
     // Indexed by top 7 bits of the bit stream
-    private static readonly MmrTableEntry[] BlackTable = {
+    private static readonly MmrTableEntry[] BlackTable =
+    [
         new(128,12), new(160,13), new(224,12), new(256,12), new(10,7), new(11,7), new(288,12), new(12,7),
         new(9,6), new(9,6), new(8,6), new(8,6), new(7,5), new(7,5), new(7,5), new(7,5),
         new(6,4), new(6,4), new(6,4), new(6,4), new(6,4), new(6,4), new(6,4), new(6,4),
@@ -506,6 +508,6 @@ internal sealed class MmrDecoder
         new(15,2), new(15,2), new(15,2), new(15,2), new(15,2), new(15,2), new(15,2), new(15,2),
         new(128,5), new(192,5), new(26,5), new(27,5), new(28,5), new(29,5), new(19,4), new(19,4),
         new(20,4), new(20,4), new(34,5), new(35,5), new(36,5), new(37,5), new(38,5), new(39,5),
-        new(21,4), new(21,4), new(42,5), new(43,5), new(0,3), new(0,3), new(0,3), new(0,3),
-    };
+        new(21,4), new(21,4), new(42,5), new(43,5), new(0,3), new(0,3), new(0,3), new(0,3)
+    ];
 }

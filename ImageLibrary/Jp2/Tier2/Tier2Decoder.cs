@@ -155,8 +155,8 @@ internal class TilePartDecoder
                     if (numCbY == 0) numCbY = 1;
 
                     _codeBlocks[c, r, s] = new List<CodeBlockInfo>[numCbY * numCbX];
-                    _inclusionTrees[c, r, s] = new[] { new TagTree(numCbX, numCbY) };
-                    _zeroBitPlaneTrees[c, r, s] = new[] { new TagTree(numCbX, numCbY) };
+                    _inclusionTrees[c, r, s] = [new TagTree(numCbX, numCbY)];
+                    _zeroBitPlaneTrees[c, r, s] = [new TagTree(numCbX, numCbY)];
                     _firstInclusion[c, r, s] = new int[numCbY, numCbX];
 
                     for (var by = 0; by < numCbY; by++)
@@ -164,7 +164,7 @@ internal class TilePartDecoder
                         for (var bx = 0; bx < numCbX; bx++)
                         {
                             int idx = by * numCbX + bx;
-                            _codeBlocks[c, r, s][idx] = new List<CodeBlockInfo>();
+                            _codeBlocks[c, r, s][idx] = [];
                             _firstInclusion[c, r, s][by, bx] = -1; // Not yet included
                         }
                     }
@@ -572,7 +572,7 @@ internal class TilePartDecoder
                 List<CodeBlockInfo>[]? blockList = _codeBlocks[component, r, s];
                 if (blockList == null)
                 {
-                    resolutionBlocks[r][s] = Array.Empty<CodeBlockBitstream>();
+                    resolutionBlocks[r][s] = [];
                     continue;
                 }
 
@@ -690,5 +690,5 @@ internal class CodeBlockInfo
     public int Layer { get; set; }
     public int CodingPasses { get; set; }
     public int ZeroBitPlanes { get; set; }
-    public byte[] Data { get; set; } = Array.Empty<byte>();
+    public byte[] Data { get; set; } = [];
 }

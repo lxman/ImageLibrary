@@ -18,7 +18,7 @@ public class BmpRoundtripTests
         original.SetPixel(1, 1, 128, 128, 128);  // Gray
 
         // Encode to 24-bit BMP
-        byte[] encoded = BmpEncoder.Encode(original, 24);
+        byte[] encoded = BmpEncoder.Encode(original);
 
         // Decode back
         BmpImage decoded = BmpDecoder.Decode(encoded);
@@ -40,7 +40,7 @@ public class BmpRoundtripTests
     public void RoundTrip_32Bit_PreservesPixels()
     {
         var original = new BmpImage(3, 3);
-        original.SetPixel(0, 0, 255, 0, 0, 255);
+        original.SetPixel(0, 0, 255, 0, 0);
         original.SetPixel(1, 1, 0, 255, 0, 128);
         original.SetPixel(2, 2, 0, 0, 255, 64);
 
@@ -78,7 +78,7 @@ public class BmpRoundtripTests
             }
         }
 
-        byte[] encoded = BmpEncoder.Encode(original, 24);
+        byte[] encoded = BmpEncoder.Encode(original);
         BmpImage decoded = BmpDecoder.Decode(encoded);
 
         Assert.Equal(width, decoded.Width);
@@ -173,7 +173,7 @@ public class BmpImageTests
     {
         var image = new BmpImage(10, 10);
 
-        image.SetPixel(5, 5, 100, 150, 200, 255);
+        image.SetPixel(5, 5, 100, 150, 200);
         (byte R, byte G, byte B, byte A) pixel = image.GetPixel(5, 5);
 
         Assert.Equal(100, pixel.R);

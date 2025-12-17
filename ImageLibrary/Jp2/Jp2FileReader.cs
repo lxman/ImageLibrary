@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 
 namespace ImageLibrary.Jp2;
 
@@ -72,7 +73,7 @@ internal class Jp2FileReader
                     break;
 
                 case var t when t == FTYP:
-                    info.Brand = System.Text.Encoding.ASCII.GetString(box.Data, 0, 4);
+                    info.Brand = Encoding.ASCII.GetString(box.Data, 0, 4);
                     break;
 
                 case var t when t == JP2H:
@@ -333,7 +334,7 @@ internal struct ChannelDefinition
 internal class Jp2Box
 {
     public uint Type { get; set; }
-    public byte[] Data { get; set; } = Array.Empty<byte>();
+    public byte[] Data { get; set; } = [];
 }
 
 /// <summary>
@@ -343,7 +344,7 @@ internal class Jp2Palette
 {
     public int NumEntries { get; set; }
     public int NumColumns { get; set; }
-    public int[] BitDepths { get; set; } = Array.Empty<int>();
+    public int[] BitDepths { get; set; } = [];
     public int[,] Entries { get; set; } = new int[0, 0];
 }
 

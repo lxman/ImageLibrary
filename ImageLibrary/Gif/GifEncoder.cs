@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace ImageLibrary.Gif;
 
@@ -249,7 +250,7 @@ public static class GifEncoder
 
     private static void WriteHeader(Stream stream)
     {
-        byte[] header = System.Text.Encoding.ASCII.GetBytes(GifHeader.Gif89a);
+        byte[] header = Encoding.ASCII.GetBytes(GifHeader.Gif89a);
         stream.Write(header, 0, header.Length);
     }
 
@@ -306,7 +307,7 @@ public static class GifEncoder
         stream.WriteByte(11); // Block size
 
         // NETSCAPE2.0
-        byte[] netscape = System.Text.Encoding.ASCII.GetBytes("NETSCAPE2.0");
+        byte[] netscape = Encoding.ASCII.GetBytes("NETSCAPE2.0");
         stream.Write(netscape, 0, 11);
 
         // Sub-block

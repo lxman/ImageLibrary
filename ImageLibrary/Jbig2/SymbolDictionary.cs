@@ -9,7 +9,7 @@ namespace ImageLibrary.Jbig2;
 /// </summary>
 internal sealed class SymbolDictionary
 {
-    private readonly List<Bitmap> _symbols = new();
+    private readonly List<Bitmap> _symbols = [];
 
     /// <summary>
     /// Number of symbols in this dictionary.
@@ -115,12 +115,12 @@ internal sealed class SymbolDictionaryParams
     /// <summary>
     /// Adaptive template pixels for generic region.
     /// </summary>
-    public (int dx, int dy)[] AdaptivePixels { get; set; } = Array.Empty<(int, int)>();
+    public (int dx, int dy)[] AdaptivePixels { get; set; } = [];
 
     /// <summary>
     /// Adaptive template pixels for refinement.
     /// </summary>
-    public (int dx, int dy)[] RefinementAdaptivePixels { get; set; } = Array.Empty<(int, int)>();
+    public (int dx, int dy)[] RefinementAdaptivePixels { get; set; } = [];
 
     // Huffman table selections (7.4.2.1.1)
     // Values 0-2 select standard tables, 3 = custom table

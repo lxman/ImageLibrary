@@ -1,7 +1,7 @@
-using Xunit;
-using Xunit.Abstractions;
 using ImageLibrary.Jbig2;
 using ImageLibrary.Png;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace ImageLibrary.IntegrationTests;
 

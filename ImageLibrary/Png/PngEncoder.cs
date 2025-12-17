@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Text;
 
 namespace ImageLibrary.Png;
 
@@ -310,7 +311,7 @@ public static class PngEncoder
         WriteUInt32BE(stream, (uint)data.Length);
 
         // Type
-        byte[] typeBytes = System.Text.Encoding.ASCII.GetBytes(type);
+        byte[] typeBytes = Encoding.ASCII.GetBytes(type);
         stream.Write(typeBytes, 0, 4);
 
         // Data

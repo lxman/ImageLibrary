@@ -1,3 +1,4 @@
+using System.Text;
 using ImageLibrary.Png;
 using Xunit;
 
@@ -9,15 +10,15 @@ public class PngRoundtripTests
     public void RoundTrip_Rgba_PreservesPixels()
     {
         var original = new PngImage(4, 4);
-        original.SetPixel(0, 0, 255, 0, 0, 255);      // Red
-        original.SetPixel(1, 0, 0, 255, 0, 255);      // Green
-        original.SetPixel(2, 0, 0, 0, 255, 255);      // Blue
-        original.SetPixel(3, 0, 255, 255, 255, 255);  // White
-        original.SetPixel(0, 1, 0, 0, 0, 255);        // Black
-        original.SetPixel(1, 1, 128, 128, 128, 255);  // Gray
+        original.SetPixel(0, 0, 255, 0, 0);      // Red
+        original.SetPixel(1, 0, 0, 255, 0);      // Green
+        original.SetPixel(2, 0, 0, 0, 255);      // Blue
+        original.SetPixel(3, 0, 255, 255, 255);  // White
+        original.SetPixel(0, 1, 0, 0, 0);        // Black
+        original.SetPixel(1, 1, 128, 128, 128);  // Gray
         original.SetPixel(2, 1, 255, 0, 0, 128);      // Semi-transparent red
 
-        byte[] encoded = PngEncoder.Encode(original, PngColorType.Rgba);
+        byte[] encoded = PngEncoder.Encode(original);
         PngImage decoded = PngDecoder.Decode(encoded);
 
         Assert.Equal(original.Width, decoded.Width);
@@ -197,7 +198,7 @@ public class PngHeaderTests
 
         // First chunk after signature should be IHDR
         // Signature (8) + Length (4) + Type (4)
-        string chunkType = System.Text.Encoding.ASCII.GetString(data, 12, 4);
+        string chunkType = Encoding.ASCII.GetString(data, 12, 4);
         Assert.Equal("IHDR", chunkType);
     }
 
@@ -209,7 +210,7 @@ public class PngHeaderTests
         byte[] data = PngEncoder.Encode(image);
 
         // IEND should be at the end: Length(4) + "IEND"(4) + CRC(4) = 12 bytes from end
-        string chunkType = System.Text.Encoding.ASCII.GetString(data, data.Length - 12 + 4, 4);
+        string chunkType = Encoding.ASCII.GetString(data, data.Length - 12 + 4, 4);
         Assert.Equal("IEND", chunkType);
     }
 }
@@ -257,7 +258,7 @@ public class PngImageTests
     {
         var image = new PngImage(10, 10);
 
-        image.SetPixel(5, 5, 100, 150, 200, 255);
+        image.SetPixel(5, 5, 100, 150, 200);
         (byte R, byte G, byte B, byte A) pixel = image.GetPixel(5, 5);
 
         Assert.Equal(100, pixel.R);

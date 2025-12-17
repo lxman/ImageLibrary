@@ -35,7 +35,7 @@ public class CodingParameters
     public WaveletTransform WaveletType { get; set; }
 
     /// <summary>Precinct sizes for each resolution level.</summary>
-    public (int Width, int Height)[] PrecinctSizes { get; set; } = Array.Empty<(int, int)>();
+    public (int Width, int Height)[] PrecinctSizes { get; set; } = [];
 
     /// <summary>Code-block width.</summary>
     public int CodeBlockWidth => 1 << CodeBlockWidthExponent;
@@ -122,7 +122,7 @@ public class QuantizationParameters
     public int GuardBits { get; set; }
 
     /// <summary>Quantization step sizes for each subband.</summary>
-    public QuantizationStepSize[] StepSizes { get; set; } = Array.Empty<QuantizationStepSize>();
+    public QuantizationStepSize[] StepSizes { get; set; } = [];
 }
 
 /// <summary>

@@ -103,7 +103,8 @@ internal class EbcotDecoder : ITier1Decoder
             // no neighbors → ctx 2
             return 0; // 0+2=2
         }
-        else if (subband == 1) // LH - vertical primary
+
+        if (subband == 1) // LH - vertical primary
         {
             // 2 horizontal (vert/diag irrelevant) → ctx 10
             if (sumH == 2) return 8; // 8+2=10
@@ -124,26 +125,25 @@ internal class EbcotDecoder : ITier1Decoder
             // no neighbors → ctx 2
             return 0; // 0+2=2
         }
-        else // HH or LL
+
+        // HH or LL
+        int sumHV = sumH + sumV;
+        if (sumD >= 3) return 8;
+        if (sumD == 2)
         {
-            int sumHV = sumH + sumV;
-            if (sumD >= 3) return 8;
-            if (sumD == 2)
-            {
-                if (sumHV >= 1) return 7;
-                return 6;
-            }
-            if (sumD == 1)
-            {
-                if (sumHV >= 2) return 5;
-                if (sumHV == 1) return 4;
-                return 3;
-            }
-            // sumD == 0
-            if (sumHV >= 2) return 2;
-            if (sumHV == 1) return 1;
-            return 0;
+            if (sumHV >= 1) return 7;
+            return 6;
         }
+        if (sumD == 1)
+        {
+            if (sumHV >= 2) return 5;
+            if (sumHV == 1) return 4;
+            return 3;
+        }
+        // sumD == 0
+        if (sumHV >= 2) return 2;
+        if (sumHV == 1) return 1;
+        return 0;
     }
 
     private static (int ctx, int xorBit)[] InitSignContexts()
@@ -211,7 +211,7 @@ internal class CodeBlockDecoder
     private const byte Visited = 0x08;
 
     public CodeBlockDecoder(byte[] data, int width, int height, int numPasses, int zeroBitPlanes,
-        Pipeline.SubbandType subbandType, CodeBlockStyle style)
+        SubbandType subbandType, CodeBlockStyle style)
     {
         _data = data;
         _width = width;
@@ -224,10 +224,10 @@ internal class CodeBlockDecoder
         // HL -> 0, LH -> 1, LL -> 1 (same as LH!), HH -> 2
         _zcSubband = subbandType switch
         {
-            Pipeline.SubbandType.HL => 0,
-            Pipeline.SubbandType.LH => 1,
-            Pipeline.SubbandType.LL => 1,  // LL uses LH table, not HH
-            Pipeline.SubbandType.HH => 2,
+            SubbandType.HL => 0,
+            SubbandType.LH => 1,
+            SubbandType.LL => 1,  // LL uses LH table, not HH
+            SubbandType.HH => 2,
             _ => 2  // default to HH
         };
 

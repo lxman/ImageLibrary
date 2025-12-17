@@ -1,5 +1,3 @@
-using System;
-
 namespace ImageLibrary.Jp2;
 
 /// <summary>
@@ -36,7 +34,7 @@ public class Jp2Frame
     public int ComponentCount { get; set; }
 
     /// <summary>Component parameters.</summary>
-    public Jp2Component[] Components { get; set; } = Array.Empty<Jp2Component>();
+    public Jp2Component[] Components { get; set; } = [];
 
     /// <summary>Number of tiles in horizontal direction.</summary>
     public int NumTilesX => (Width - TileXOffset + TileWidth - 1) / TileWidth;

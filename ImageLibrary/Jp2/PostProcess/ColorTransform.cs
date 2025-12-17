@@ -215,7 +215,7 @@ internal class PostProcessor : IPostProcessor
             }
         }
 
-        return new[] { r, g, b };
+        return [r, g, b];
     }
 
     /// <summary>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace ImageLibrary.Jp2;
 
@@ -254,7 +255,7 @@ internal class CodestreamReader
 
         if (rcom == 1 && textLength > 0)
         {
-            return System.Text.Encoding.GetEncoding("iso-8859-1").GetString(_data, _position, textLength);
+            return Encoding.GetEncoding("iso-8859-1").GetString(_data, _position, textLength);
         }
 
         return $"<binary data, {textLength} bytes>";
@@ -406,12 +407,12 @@ public class Jp2Codestream
     /// <summary>
     /// Gets or sets the list of comments embedded in the codestream.
     /// </summary>
-    public List<string> Comments { get; set; } = new List<string>();
+    public List<string> Comments { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the list of tile-parts that make up the compressed image data.
     /// </summary>
-    public List<Jp2TilePart> TileParts { get; set; } = new List<Jp2TilePart>();
+    public List<Jp2TilePart> TileParts { get; set; } = [];
 }
 
 /// <summary>
@@ -437,7 +438,7 @@ public class Jp2TilePart
     /// <summary>
     /// Gets or sets the compressed bitstream data for this tile-part.
     /// </summary>
-    public byte[] BitstreamData { get; set; } = Array.Empty<byte>();
+    public byte[] BitstreamData { get; set; } = [];
 }
 
 /// <summary>

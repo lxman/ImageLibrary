@@ -34,11 +34,11 @@ public class TgaRoundtripTests
     public void RoundTrip_32Bit_PreservesPixels()
     {
         var original = new TgaImage(3, 3);
-        original.SetPixel(0, 0, 255, 0, 0, 255);
+        original.SetPixel(0, 0, 255, 0, 0);
         original.SetPixel(1, 1, 0, 255, 0, 128);
         original.SetPixel(2, 2, 0, 0, 255, 64);
 
-        byte[] encoded = TgaEncoder.Encode(original, 32);
+        byte[] encoded = TgaEncoder.Encode(original);
         TgaImage decoded = TgaDecoder.Decode(encoded);
 
         Assert.Equal(original.Width, decoded.Width);
@@ -52,11 +52,11 @@ public class TgaRoundtripTests
     public void RoundTrip_32BitRle_PreservesPixels()
     {
         var original = new TgaImage(3, 3);
-        original.SetPixel(0, 0, 255, 0, 0, 255);
+        original.SetPixel(0, 0, 255, 0, 0);
         original.SetPixel(1, 1, 0, 255, 0, 128);
         original.SetPixel(2, 2, 0, 0, 255, 64);
 
-        byte[] encoded = TgaEncoder.Encode(original, 32, useRle: true);
+        byte[] encoded = TgaEncoder.Encode(original, useRle: true);
         TgaImage decoded = TgaDecoder.Decode(encoded);
 
         Assert.Equal(original.Width, decoded.Width);
@@ -95,12 +95,12 @@ public class TgaRoundtripTests
         {
             for (var x = 0; x < 100; x++)
             {
-                original.SetPixel(x, y, 128, 64, 32, 255);
+                original.SetPixel(x, y, 128, 64, 32);
             }
         }
 
-        byte[] uncompressed = TgaEncoder.Encode(original, 32, useRle: false);
-        byte[] compressed = TgaEncoder.Encode(original, 32, useRle: true);
+        byte[] uncompressed = TgaEncoder.Encode(original);
+        byte[] compressed = TgaEncoder.Encode(original, useRle: true);
 
         // RLE should be much smaller for solid color
         Assert.True(compressed.Length < uncompressed.Length / 2);
@@ -215,7 +215,7 @@ public class TgaImageTests
     {
         var image = new TgaImage(10, 10);
 
-        image.SetPixel(5, 5, 100, 150, 200, 255);
+        image.SetPixel(5, 5, 100, 150, 200);
         (byte R, byte G, byte B, byte A) pixel = image.GetPixel(5, 5);
 
         Assert.Equal(100, pixel.R);

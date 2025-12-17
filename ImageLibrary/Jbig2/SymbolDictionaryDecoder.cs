@@ -188,12 +188,10 @@ internal sealed class SymbolDictionaryDecoder
             // Single symbol refinement
             return DecodeSingleRefinement(width, height, newSymbols);
         }
-        else
-        {
-            // Multiple symbol aggregation - T.88 Section 6.5.8.2.3
-            // Uses a text region decoder to composite multiple symbols
-            return DecodeMultipleAggregation(width, height, aggregateCount, newSymbols);
-        }
+
+        // Multiple symbol aggregation - T.88 Section 6.5.8.2.3
+        // Uses a text region decoder to composite multiple symbols
+        return DecodeMultipleAggregation(width, height, aggregateCount, newSymbols);
     }
 
     private Bitmap DecodeMultipleAggregation(int width, int height, int aggregateCount, SymbolDictionary newSymbols)
@@ -244,7 +242,7 @@ internal sealed class SymbolDictionaryDecoder
         var textDecoder = new TextRegionDecoder(
             _decoder,
             textParams,
-            new[] { combinedSymbols },
+            [combinedSymbols],
             _options,
             _textRegionContexts);
 

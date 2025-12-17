@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 
 namespace ImageLibrary.Gif;
 
@@ -144,10 +145,6 @@ public static class GifDecoder
                     gifFile.Frames.Add(frame);
                     graphicsControl = null;
                     break;
-
-                default:
-                    // Unknown block, try to skip
-                    break;
             }
         }
 
@@ -167,8 +164,8 @@ public static class GifDecoder
 
     private static GifHeader ReadHeader(byte[] data, ref int offset)
     {
-        string signature = System.Text.Encoding.ASCII.GetString(data, offset, 3);
-        string version = System.Text.Encoding.ASCII.GetString(data, offset + 3, 3);
+        string signature = Encoding.ASCII.GetString(data, offset, 3);
+        string version = Encoding.ASCII.GetString(data, offset + 3, 3);
         offset += GifHeader.Size;
         return new GifHeader(signature, version);
     }
@@ -226,8 +223,8 @@ public static class GifDecoder
             return;
         }
 
-        string appId = System.Text.Encoding.ASCII.GetString(data, offset, 8);
-        string authCode = System.Text.Encoding.ASCII.GetString(data, offset + 8, 3);
+        string appId = Encoding.ASCII.GetString(data, offset, 8);
+        string authCode = Encoding.ASCII.GetString(data, offset + 8, 3);
         offset += 11;
 
         // Check for NETSCAPE extension (animation looping)

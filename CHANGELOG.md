@@ -130,17 +130,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Alpha channel support
 - **API**: `TgaDecoder.Decode()`, `TgaEncoder.Encode()`, `TgaImage` class
 
+#### TIFF Codec (ImageLibrary.Tiff)
+- **Decoder**: Full TIFF (Tagged Image File Format) support
+- **Encoder**: Uncompressed and LZW compression
+- **Compression Support**:
+  - Decoder: None, LZW, DEFLATE, CCITT Group 3, CCITT Group 4, PackBits
+  - Encoder: None, LZW
+- **Color Types**: Bi-level (1-bit), Grayscale (8-bit), RGB (24-bit), RGBA (32-bit)
+- **Features**:
+  - Big-endian and little-endian byte order support
+  - Strip-based and tile-based images
+  - TIFF Predictor 2 (horizontal differencing) for DEFLATE
+  - IFD (Image File Directory) parsing
+  - Multiple photometric interpretations (WhiteIsZero, BlackIsZero, RGB)
+- **API**: `TiffDecoder.Decode()`, `TiffEncoder.Encode()`, `TiffImage` class, `TiffCompression` enum
+
+#### CCITT Codec (ImageLibrary.Ccitt)
+- **Compression**: CCITT fax compression for bi-level (1-bit monochrome) images
+- **Modes**: Group 3 1D (Modified Huffman), Group 3 2D (Modified READ), Group 4 (MMR)
+- **Features**:
+  - Huffman entropy encoding/decoding
+  - 2D coding for better compression ratios
+  - Configurable K parameter for PDF compatibility
+  - BlackIs1/WhiteIsZero photometric interpretation support
+  - End-of-line (EOL) and end-of-block markers
+- **API**: `Ccitt.Compress()`, `Ccitt.Decompress()`, `CcittEncoder`, `CcittDecoder`, `CcittOptions` class
+
+#### LZW Codec (ImageLibrary.Lzw)
+- **Compression**: Lempel-Ziv-Welch dictionary-based compression
+- **Usage**: Used by TIFF and PDF (internal to GIF)
+- **Features**:
+  - PDF-compatible mode (default)
+  - TIFF-compatible mode
+  - Configurable EarlyChange behavior
+  - Stream-based encoding/decoding
+  - Variable-length code tables (9-12 bits)
+  - Clear code and end-of-information code support
+- **API**: `Lzw.Compress()`, `Lzw.Decompress()`, `LzwEncoder`, `LzwDecoder`, `LzwOptions` class
+
 ### Public API
 
-**Decoders**: `BmpDecoder`, `GifDecoder`, `PngDecoder`, `TgaDecoder`, `JpegDecoder`, `Jbig2Decoder`, `Jp2Decoder`
+**Decoders**: `BmpDecoder`, `GifDecoder`, `PngDecoder`, `TgaDecoder`, `TiffDecoder`, `JpegDecoder`, `Jbig2Decoder`, `Jp2Decoder`
 
-**Encoders**: `BmpEncoder`, `GifEncoder`, `PngEncoder`, `TgaEncoder`
+**Encoders**: `BmpEncoder`, `GifEncoder`, `PngEncoder`, `TgaEncoder`, `TiffEncoder`
 
-**Image Types**: `BmpImage`, `GifImage`, `PngImage`, `TgaImage`, `DecodedImage`, `Bitmap`
+**Image Types**: `BmpImage`, `GifImage`, `PngImage`, `TgaImage`, `TiffImage`, `DecodedImage`, `Bitmap`
 
-**Exceptions**: `BmpException`, `GifException`, `PngException`, `TgaException`, `JpegException`, `Jbig2Exception`, `Jp2Exception`
+**Exceptions**: `BmpException`, `GifException`, `PngException`, `TgaException`, `TiffException`, `JpegException`, `Jbig2Exception`, `Jp2Exception`
 
-**Configuration**: `Jbig2DecoderOptions`, `PngColorType`, `CombinationOperator`
+**Configuration**: `Jbig2DecoderOptions`, `PngColorType`, `CombinationOperator`, `CcittOptions`, `LzwOptions`, `TiffCompression`
+
+**Compression Codecs**: `Ccitt` (static helper), `Lzw` (static helper), `CcittEncoder`, `CcittDecoder`, `LzwEncoder`, `LzwDecoder`
 
 **JPEG 2000 Types**: `Jp2Codestream`, `Jp2Frame`, `Jp2Component`, `CodingParameters`, `QuantizationParameters`, and related enums/structs
 

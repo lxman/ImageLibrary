@@ -394,7 +394,7 @@ internal sealed class TextRegionParams
     /// <summary>
     /// Adaptive template pixels for refinement.
     /// </summary>
-    public (int dx, int dy)[] RefinementAdaptivePixels { get; set; } = Array.Empty<(int, int)>();
+    public (int dx, int dy)[] RefinementAdaptivePixels { get; set; } = [];
 
     /// <summary>
     /// Log of strip size (LOGSBSTRIPS).

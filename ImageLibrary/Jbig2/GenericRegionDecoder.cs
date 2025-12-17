@@ -20,29 +20,29 @@ internal sealed class GenericRegionDecoder
 
     // Template 1 context pixel positions (10 pixels)
     private static readonly (int dx, int dy)[] Template1 =
-    {
+    [
         (-3, -2), (-2, -2), (-1, -2),
         (-4, -1), (-3, -1), (-2, -1), (-1, -1), (0, -1), (1, -1), (2, -1),
         (-2, 0), (-1, 0)
         // Plus adaptive pixel
-    };
+    ];
 
     // Template 2 context pixel positions (7 pixels)
     private static readonly (int dx, int dy)[] Template2 =
-    {
+    [
         (-2, -2), (-1, -2),
         (-2, -1), (-1, -1), (0, -1), (1, -1),
         (-1, 0)
         // Plus adaptive pixel
-    };
+    ];
 
     // Template 3 context pixel positions (5 pixels)
     private static readonly (int dx, int dy)[] Template3 =
-    {
+    [
         (-3, -1), (-2, -1), (-1, -1), (0, -1), (1, -1),
         (-1, 0)
         // Plus adaptive pixel
-    };
+    ];
 
     private readonly ArithmeticDecoder _decoder;
     private readonly int _template;

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Text;
 
 namespace ImageLibrary.Png;
 
@@ -153,7 +154,7 @@ public static class PngDecoder
             throw new PngException("Unexpected end of data reading chunk header");
 
         uint length = ReadUInt32BE(data, offset);
-        string type = System.Text.Encoding.ASCII.GetString(data, offset + 4, 4);
+        string type = Encoding.ASCII.GetString(data, offset + 4, 4);
         int dataOffset = offset + 8;
 
         if (dataOffset + length + 4 > data.Length)

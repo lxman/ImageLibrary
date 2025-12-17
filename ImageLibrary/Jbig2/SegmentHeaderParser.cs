@@ -37,7 +37,7 @@ internal static class SegmentHeaderParser
             // Short form: count is in bits 5-7
             referredToCount = refCountIndicator;
             // Retention flags are in bits 0-4 of this byte (up to 5 segments)
-            retentionFlags = new[] { (byte)(refCountByte & 0x1F) };
+            retentionFlags = [(byte)(refCountByte & 0x1F)];
         }
         else if (refCountIndicator == 7)
         {

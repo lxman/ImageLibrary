@@ -60,7 +60,7 @@ public sealed class Jbig2Decoder
     /// <param name="options">Decoder options with resource limits</param>
     public Jbig2Decoder(string path, byte[]? globalData = null, Jbig2DecoderOptions? options = null)
     {
-        _data = System.IO.File.ReadAllBytes(path);
+        _data = File.ReadAllBytes(path);
         _globalData = globalData;
         _options = options ?? Jbig2DecoderOptions.Default;
 
@@ -153,16 +153,14 @@ public sealed class Jbig2Decoder
                 {
                     throw new Jbig2UnsupportedException("Unknown segment length not yet supported");
                 }
-                else
-                {
-                    // Validate we have enough data
-                    if (reader.RemainingBytes < (int)header.DataLength)
-                        throw new Jbig2DataException($"Segment data truncated: expected {header.DataLength} bytes, have {reader.RemainingBytes}");
 
-                    segmentData = new byte[header.DataLength];
-                    Array.Copy(data, dataOffset, segmentData, 0, (int)header.DataLength);
-                    reader.SkipBytes((int)header.DataLength);
-                }
+                // Validate we have enough data
+                if (reader.RemainingBytes < (int)header.DataLength)
+                    throw new Jbig2DataException($"Segment data truncated: expected {header.DataLength} bytes, have {reader.RemainingBytes}");
+
+                segmentData = new byte[header.DataLength];
+                Array.Copy(data, dataOffset, segmentData, 0, (int)header.DataLength);
+                reader.SkipBytes((int)header.DataLength);
 
                 ProcessSegment(header, segmentData);
                 _segmentsProcessed++;
@@ -236,10 +234,6 @@ public sealed class Jbig2Decoder
 
             case SegmentType.IntermediateGenericRefinementRegion:
                 ProcessGenericRefinementRegion(header, data, immediate: false);
-                break;
-
-            default:
-                // Unknown or unimplemented segment type - skip
                 break;
         }
     }
@@ -347,7 +341,7 @@ public sealed class Jbig2Decoder
                 // 1 adaptive template pixel for templates 1-3
                 var atx = (sbyte)reader.ReadByte();
                 var aty = (sbyte)reader.ReadByte();
-                adaptivePixels = new (int, int)[] { ((int)atx, (int)aty) };
+                adaptivePixels = [(atx, aty)];
             }
 
             // Create arithmetic decoder from remaining data
@@ -434,7 +428,7 @@ public sealed class Jbig2Decoder
         }
         else
         {
-            adaptivePixels = Array.Empty<(int, int)>();
+            adaptivePixels = [];
         }
 
         // Read refinement adaptive template pixels
@@ -447,7 +441,7 @@ public sealed class Jbig2Decoder
         }
         else
         {
-            refinementAdaptivePixels = Array.Empty<(int, int)>();
+            refinementAdaptivePixels = [];
         }
 
         // 7.4.2.1.2 - Number of exported symbols (4 bytes)
@@ -567,7 +561,7 @@ public sealed class Jbig2Decoder
         }
         else
         {
-            refinementAdaptivePixels = Array.Empty<(int, int)>();
+            refinementAdaptivePixels = [];
         }
 
         // Huffman flags (only present if useHuffman)
@@ -732,7 +726,7 @@ public sealed class Jbig2Decoder
         }
         else
         {
-            adaptivePixels = Array.Empty<(int, int)>();
+            adaptivePixels = [];
         }
 
         // Create parameters
@@ -816,7 +810,7 @@ public sealed class Jbig2Decoder
         }
         else
         {
-            adaptivePixels = Array.Empty<(int, int)>();
+            adaptivePixels = [];
         }
 
         // Find pattern dictionary from referred segments
@@ -911,7 +905,7 @@ public sealed class Jbig2Decoder
         }
         else
         {
-            adaptivePixels = Array.Empty<(int, int)>();
+            adaptivePixels = [];
         }
 
         // Find reference bitmap from referred segments

@@ -176,7 +176,7 @@ public class BitmapTests
         var src = new Bitmap(4, 4);
         src.Fill(1);
 
-        dest.Blit(src, 2, 2, CombinationOperator.Or);
+        dest.Blit(src, 2, 2);
 
         // Check the 4x4 region at (2,2) is set
         for (var y = 0; y < 8; y++)
@@ -263,7 +263,7 @@ public class BitmapTests
         var src = new Bitmap(4, 4);
         src.Fill(1);
 
-        dest.Blit(src, -2, -2, CombinationOperator.Or);
+        dest.Blit(src, -2, -2);
 
         // Only 2x2 region at (0,0) should be set
         for (var y = 0; y < 8; y++)
@@ -283,7 +283,7 @@ public class BitmapTests
         var src = new Bitmap(4, 4);
         src.Fill(1);
 
-        dest.Blit(src, 6, 6, CombinationOperator.Or);
+        dest.Blit(src, 6, 6);
 
         // Only 2x2 region at (6,6) should be set
         for (var y = 0; y < 8; y++)

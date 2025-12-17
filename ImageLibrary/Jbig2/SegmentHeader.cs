@@ -1,5 +1,3 @@
-using System;
-
 namespace ImageLibrary.Jbig2;
 
 /// <summary>
@@ -30,7 +28,7 @@ internal sealed class SegmentHeader
     /// <summary>
     /// Segment numbers that this segment refers to.
     /// </summary>
-    public uint[] ReferredToSegments { get; init; } = Array.Empty<uint>();
+    public uint[] ReferredToSegments { get; init; } = [];
 
     /// <summary>
     /// Length of the segment data in bytes.
